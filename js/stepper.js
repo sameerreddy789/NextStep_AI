@@ -41,7 +41,7 @@ class Stepper {
         container.innerHTML = `
             <div class="stepper-outer">
                 <div class="stepper-box" style="--accent: ${accentColor}">
-                    <!-- Step Indicators -->
+                    <!-- Left Side: Step Indicators -->
                     <div class="stepper-indicators">
                         ${steps.map((_, i) => `
                             <div class="step-indicator" data-step="${i + 1}">
@@ -57,30 +57,35 @@ class Stepper {
                         `).join('')}
                     </div>
 
-                    <!-- Step Content -->
-                    <div class="stepper-content">
-                        ${steps.map((step, i) => `
-                            <div class="step-panel" data-panel="${i + 1}">
-                                <div class="step-panel-icon">${step.icon}</div>
-                                <h3 class="step-panel-title">${step.title}</h3>
-                                <p class="step-panel-desc">${step.description}</p>
-                                ${step.detail ? `<p class="step-panel-detail">${step.detail}</p>` : ''}
-                            </div>
-                        `).join('')}
-                    </div>
+                    <!-- Right Side: Content and Footer -->
+                    <div class="stepper-right">
+                        <!-- Step Content -->
+                        <div class="stepper-content">
+                            ${steps.map((step, i) => `
+                                <div class="step-panel" data-panel="${i + 1}">
+                                    <div class="step-panel-icon">${step.icon}</div>
+                                    <div class="step-panel-text">
+                                        <h3 class="step-panel-title">${step.title}</h3>
+                                        <p class="step-panel-desc">${step.description}</p>
+                                        ${step.detail ? `<p class="step-panel-detail">${step.detail}</p>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
 
-                    <!-- Completed State -->
-                    <div class="stepper-completed">
-                        <div class="completed-icon">✅</div>
-                        <h3>All Steps Complete!</h3>
-                        <p>You're ready to accelerate your career.</p>
-                        <a href="auth.html" class="stepper-cta-btn">Get Started Free</a>
-                    </div>
+                        <!-- Completed State -->
+                        <div class="stepper-completed">
+                            <div class="completed-icon">✅</div>
+                            <h3>All Steps Complete!</h3>
+                            <p>You're ready to accelerate your career.</p>
+                            <a href="auth.html" class="stepper-cta-btn">Get Started Free</a>
+                        </div>
 
-                    <!-- Footer -->
-                    <div class="stepper-footer">
-                        <button class="stepper-back-btn">${this.options.backButtonText}</button>
-                        <button class="stepper-next-btn">${this.options.nextButtonText}</button>
+                        <!-- Footer -->
+                        <div class="stepper-footer">
+                            <button class="stepper-back-btn">${this.options.backButtonText}</button>
+                            <button class="stepper-next-btn">${this.options.nextButtonText}</button>
+                        </div>
                     </div>
                 </div>
             </div>
