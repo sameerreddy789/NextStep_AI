@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Gap Analysis | CareerPilot AI</title>
+    <meta name="description" content="See what skills you need vs what you have">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar (populated by sidebar.js) -->
+        <aside class="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">📊 Skill Gap Analysis</h1>
+                <p class="page-subtitle">Compare your skills against market requirements for your target role</p>
+            </div>
+
+            <!-- Target Role Card -->
+            <div class="card mb-lg"
+                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                    <div>
+                        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">Target Role</div>
+                        <div style="font-size: 24px; font-weight: 700;" id="target-role-display">Software Developer
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">Your Readiness</div>
+                        <div style="font-size: 32px; font-weight: 700; color: var(--accent-gold);" id="readiness-score">
+                            58%</div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <div class="progress-bar" style="height: 10px;">
+                        <div class="progress-fill" id="readiness-bar" style="width: 58%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skill Categories -->
+            <div class="skills-grid" style="grid-template-columns: 1fr;">
+                <!-- Must-Have Skills -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🔴 Must-Have Skills</h2>
+                        <span class="badge badge-red">High Priority</span>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Essential skills that most job
+                        postings require</p>
+                    <div id="must-have-skills" class="skill-gap-list">
+                        <!-- Skills will be injected -->
+                    </div>
+                </div>
+
+                <!-- Good-to-Have Skills -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🟡 Good-to-Have Skills</h2>
+                        <span class="badge badge-gold">Medium Priority</span>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Skills that make you stand out
+                        from other candidates</p>
+                    <div id="good-to-have-skills" class="skill-gap-list">
+                        <!-- Skills will be injected -->
+                    </div>
+                </div>
+
+                <!-- Future-Proof Skills -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">🟢 Future-Proof Skills</h2>
+                        <span class="badge badge-green">Growing Demand</span>
+                    </div>
+                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Emerging skills that will be
+                        valuable in the future</p>
+                    <div id="future-proof-skills" class="skill-gap-list">
+                        <!-- Skills will be injected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA -->
+            <div style="text-align: center; margin-top: 32px;">
+                <a href="interview.html" class="btn btn-primary btn-lg">
+                    Start AI Interview →
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .skill-gap-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .skill-gap-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            transition: var(--transition-fast);
+        }
+
+        .skill-gap-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .skill-gap-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .skill-gap-icon.present {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .skill-gap-icon.partial {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .skill-gap-icon.missing {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .skill-gap-content {
+            flex: 1;
+        }
+
+        .skill-gap-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .skill-gap-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .skill-gap-status {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .skill-gap-status .badge {
+            margin-bottom: 4px;
+        }
+
+        .skill-gap-priority {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+    </style>
+
+    <script>
+        // Skill gap data based on target role
+        const SKILL_GAP_DATA = {
+            sde: {
+                mustHave: [
+                    { name: 'Data Structures & Algorithms', status: 'partial', priority: 'Critical', desc: 'Foundation for technical interviews' },
+                    { name: 'System Design', status: 'missing', priority: 'Critical', desc: 'Required for senior roles' },
+                    { name: 'JavaScript/TypeScript', status: 'present', priority: 'Essential', desc: 'Core language proficiency' },
+                    { name: 'SQL & Databases', status: 'present', priority: 'Essential', desc: 'Data management skills' },
+                    { name: 'Git & Version Control', status: 'present', priority: 'Essential', desc: 'Collaboration and code management' }
+                ],
+                goodToHave: [
+                    { name: 'Docker', status: 'partial', priority: 'High', desc: 'Containerization for deployment' },
+                    { name: 'AWS/Cloud Services', status: 'partial', priority: 'High', desc: 'Cloud infrastructure knowledge' },
+                    { name: 'CI/CD Pipelines', status: 'missing', priority: 'Medium', desc: 'Automation and deployment' },
+                    { name: 'Redis/Caching', status: 'missing', priority: 'Medium', desc: 'Performance optimization' }
+                ],
+                futureProof: [
+                    { name: 'Kubernetes', status: 'missing', priority: 'Growing', desc: 'Container orchestration' },
+                    { name: 'GraphQL', status: 'missing', priority: 'Growing', desc: 'Modern API design' },
+                    { name: 'AI/ML Basics', status: 'missing', priority: 'Emerging', desc: 'AI integration skills' },
+                    { name: 'Microservices', status: 'missing', priority: 'Growing', desc: 'Scalable architecture' }
+                ]
+            }
+        };
+
+        // Load user data
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            const resumeData = JSON.parse(localStorage.getItem('careerPilot_resume') || '{}');
+
+
+
+            const roleNames = {
+                'sde': 'Software Developer',
+                'frontend': 'Frontend Developer',
+                'backend': 'Backend Developer',
+                'fullstack': 'Full Stack Developer',
+                'data-analyst': 'Data Analyst',
+                'data-scientist': 'Data Scientist',
+                'ml-engineer': 'ML Engineer',
+                'devops': 'DevOps Engineer',
+                'product': 'Product Manager',
+                'designer': 'UI/UX Designer'
+            };
+
+            const role = userData.targetRole || 'sde';
+
+            document.getElementById('target-role-display').textContent = roleNames[role] || 'Software Developer';
+
+            if (resumeData.readiness) {
+                document.getElementById('readiness-score').textContent = resumeData.readiness + '%';
+                document.getElementById('readiness-bar').style.width = resumeData.readiness + '%';
+            }
+
+            // Render skill gaps
+            const data = SKILL_GAP_DATA[role] || SKILL_GAP_DATA.sde;
+            renderSkillList('must-have-skills', data.mustHave);
+            renderSkillList('good-to-have-skills', data.goodToHave);
+            renderSkillList('future-proof-skills', data.futureProof);
+        });
+
+        function renderSkillList(containerId, skills) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = skills.map(skill => {
+                const statusIcon = skill.status === 'present' ? '✓' : skill.status === 'partial' ? '◐' : '✗';
+                const statusLabel = skill.status === 'present' ? 'You Have' : skill.status === 'partial' ? 'Partial' : 'Missing';
+                const badgeClass = skill.status === 'present' ? 'badge-green' : skill.status === 'partial' ? 'badge-gold' : 'badge-red';
+
+                return `
+                    <div class="skill-gap-item">
+                        <div class="skill-gap-icon ${skill.status}">${statusIcon}</div>
+                        <div class="skill-gap-content">
+                            <div class="skill-gap-name">${skill.name}</div>
+                            <div class="skill-gap-desc">${skill.desc}</div>
+                        </div>
+                        <div class="skill-gap-status">
+                            <span class="badge ${badgeClass}">${statusLabel}</span>
+                            <div class="skill-gap-priority">${skill.priority}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    </script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview | CareerPilot AI</title>
+    <meta name="description" content="Take adaptive AI-powered mock interviews">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar (populated by sidebar.js) -->
+        <aside class="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Mode Selection (shown initially) -->
+            <div id="mode-selection">
+                <div class="page-header">
+                    <h1 class="page-title">🎤 AI Interview</h1>
+                    <p class="page-subtitle">Choose your interview mode and test your skills</p>
+                </div>
+
+                <div class="interview-modes">
+                    <div class="mode-card" onclick="startInterview('technical')">
+                        <div class="mode-icon">💻</div>
+                        <h3 class="mode-title">Technical Interview</h3>
+                        <p class="mode-desc">DSA, system design, and coding questions tailored to your target role</p>
+                        <div class="mode-meta">
+                            <span class="badge badge-primary">8-10 Questions</span>
+                            <span>~30 mins</span>
+                        </div>
+                    </div>
+
+                    <div class="mode-card" onclick="startInterview('behavioral')">
+                        <div class="mode-icon">🗣️</div>
+                        <h3 class="mode-title">Behavioral Interview</h3>
+                        <p class="mode-desc">STAR method questions about teamwork, leadership, and problem-solving</p>
+                        <div class="mode-meta">
+                            <span class="badge badge-green">6-8 Questions</span>
+                            <span>~20 mins</span>
+                        </div>
+                    </div>
+
+                    <div class="mode-card" onclick="startInterview('mixed')">
+                        <div class="mode-icon">🎯</div>
+                        <h3 class="mode-title">Mixed Interview</h3>
+                        <p class="mode-desc">Comprehensive evaluation with both technical and behavioral questions</p>
+                        <div class="mode-meta">
+                            <span class="badge badge-gold">12-15 Questions</span>
+                            <span>~45 mins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interview In Progress -->
+            <div id="interview-section" class="hidden">
+                <div class="interview-header">
+                    <div>
+                        <span class="badge badge-primary" id="interview-mode-badge">Technical Interview</span>
+                        <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                            Question <span id="current-q">1</span> of <span id="total-q">10</span>
+                        </div>
+                    </div>
+                    <div class="interview-timer">
+                        <span>⏱️</span>
+                        <span id="timer">02:00</span>
+                    </div>
+                </div>
+
+                <div class="interview-progress">
+                    <div class="progress-bar" style="height: 6px;">
+                        <div class="progress-fill" id="interview-progress" style="width: 10%;"></div>
+                    </div>
+                </div>
+
+                <div class="question-card">
+                    <div class="question-category" id="question-category">Data Structures</div>
+                    <h2 class="question-text" id="question-text">
+                        Explain the difference between a stack and a queue. When would you use each?
+                    </h2>
+                </div>
+
+                <div class="answer-section">
+                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px;">Your
+                        Answer</label>
+                    <textarea class="answer-input" id="answer-input"
+                        placeholder="Type your answer here... Be clear and structured in your response."></textarea>
+
+                    <div class="answer-tips">
+                        <span>💡 Tips:</span>
+                        <span>Be specific</span>
+                        <span>Use examples</span>
+                        <span>Structure your answer</span>
+                    </div>
+                </div>
+
+                <div class="interview-actions">
+                    <button class="btn btn-secondary" onclick="skipQuestion()">
+                        Skip Question
+                    </button>
+                    <button class="btn btn-primary" onclick="submitAnswer()">
+                        Submit Answer →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interview Complete -->
+            <div id="complete-section" class="hidden" style="text-align: center; padding: 60px 20px;">
+                <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+                <h2 style="font-size: 32px; margin-bottom: 12px;">Interview Complete!</h2>
+                <p class="text-muted" style="margin-bottom: 32px;">Great job! Your responses are being analyzed by AI.
+                </p>
+                <a href="feedback.html" class="btn btn-primary btn-lg">
+                    View Your Feedback →
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .interview-modes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        .mode-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .mode-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .mode-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .mode-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .mode-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .mode-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .interview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .interview-timer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: rgba(245, 158, 11, 0.15);
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .interview-progress {
+            margin-bottom: 32px;
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .question-category {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.15);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--accent-primary);
+            margin-bottom: 16px;
+        }
+
+        .question-text {
+            font-size: 22px;
+            font-weight: 600;
+            line-height: 1.5;
+        }
+
+        .answer-section {
+            margin-bottom: 24px;
+        }
+
+        .answer-tips {
+            display: flex;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .answer-tips span:first-child {
+            color: var(--accent-gold);
+        }
+
+        .interview-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+    </style>
+
+    <script>
+        // Interview questions by mode
+        const QUESTIONS = {
+            technical: [
+                { category: 'Data Structures', text: 'Explain the difference between a stack and a queue. When would you use each?' },
+                { category: 'Algorithms', text: 'How would you find the middle element of a linked list in one pass?' },
+                { category: 'System Design', text: 'How would you design a URL shortening service like bit.ly?' },
+                { category: 'JavaScript', text: 'Explain closures in JavaScript with an example.' },
+                { category: 'Databases', text: 'What is the difference between SQL and NoSQL databases? When would you choose one over the other?' },
+                { category: 'APIs', text: 'Explain REST API principles. What makes an API RESTful?' },
+                { category: 'Problem Solving', text: 'Given an array of integers, find two numbers that add up to a target sum.' },
+                { category: 'System Design', text: 'How would you handle rate limiting in a high-traffic API?' }
+            ],
+            behavioral: [
+                { category: 'Teamwork', text: 'Tell me about a time you had a conflict with a team member. How did you resolve it?' },
+                { category: 'Leadership', text: 'Describe a situation where you had to lead a project. What was the outcome?' },
+                { category: 'Problem Solving', text: 'Tell me about a challenging problem you faced and how you solved it.' },
+                { category: 'Learning', text: 'How do you stay updated with new technologies and industry trends?' },
+                { category: 'Failure', text: 'Tell me about a time you failed. What did you learn from it?' },
+                { category: 'Communication', text: 'Describe a situation where you had to explain a complex technical concept to a non-technical person.' }
+            ],
+            mixed: [
+                { category: 'Technical', text: 'Explain the concept of Big O notation and why it matters.' },
+                { category: 'Behavioral', text: 'Tell me about a time you had to meet a tight deadline.' },
+                { category: 'Technical', text: 'What is the difference between synchronous and asynchronous programming?' },
+                { category: 'Behavioral', text: 'How do you prioritize tasks when you have multiple deadlines?' },
+                { category: 'Technical', text: 'Explain how HTTP caching works.' },
+                { category: 'Behavioral', text: 'Describe your ideal work environment.' },
+                { category: 'Technical', text: 'What are microservices? What are their pros and cons?' },
+                { category: 'Behavioral', text: 'Tell me about a project you are most proud of.' }
+            ]
+        };
+
+        let currentMode = '';
+        let currentQuestionIndex = 0;
+        let answers = [];
+        let timerInterval = null;
+        let timeLeft = 120;
+
+        // Load user data
+        document.addEventListener('DOMContentLoaded', () => {
+            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            if (userData.name) {
+                document.getElementById('user-name').textContent = userData.name;
+                document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
+            }
+            if (userData.targetRole) {
+                const roleNames = {
+                    'sde': 'Software Developer',
+                    'frontend': 'Frontend Dev',
+                    'backend': 'Backend Dev'
+                };
+                document.getElementById('user-role').textContent = roleNames[userData.targetRole] || userData.targetRole;
+            }
+        });
+
+        function startInterview(mode) {
+            currentMode = mode;
+            currentQuestionIndex = 0;
+            answers = [];
+
+            document.getElementById('mode-selection').classList.add('hidden');
+            document.getElementById('interview-section').classList.remove('hidden');
+
+            const modeNames = { technical: 'Technical Interview', behavioral: 'Behavioral Interview', mixed: 'Mixed Interview' };
+            document.getElementById('interview-mode-badge').textContent = modeNames[mode];
+            document.getElementById('total-q').textContent = QUESTIONS[mode].length;
+
+            showQuestion();
+            startTimer();
+        }
+
+        function showQuestion() {
+            const questions = QUESTIONS[currentMode];
+            const q = questions[currentQuestionIndex];
+
+            document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+            document.getElementById('question-category').textContent = q.category;
+            document.getElementById('question-text').textContent = q.text;
+            document.getElementById('answer-input').value = '';
+            document.getElementById('interview-progress').style.width =
+                ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+
+            timeLeft = 120;
+            updateTimerDisplay();
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    submitAnswer();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer').textContent =
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+            // Change color when low
+            const timer = document.querySelector('.interview-timer');
+            if (timeLeft <= 30) {
+                timer.style.background = 'rgba(239, 68, 68, 0.15)';
+                timer.style.color = 'var(--accent-red)';
+            } else {
+                timer.style.background = 'rgba(245, 158, 11, 0.15)';
+                timer.style.color = 'var(--accent-gold)';
+            }
+        }
+
+        function submitAnswer() {
+            const answer = document.getElementById('answer-input').value;
+            const questions = QUESTIONS[currentMode];
+
+            answers.push({
+                question: questions[currentQuestionIndex],
+                answer: answer,
+                timeSpent: 120 - timeLeft
+            });
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex >= questions.length) {
+                completeInterview();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function skipQuestion() {
+            const questions = QUESTIONS[currentMode];
+
+            answers.push({
+                question: questions[currentQuestionIndex],
+                answer: '',
+                skipped: true
+            });
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex >= questions.length) {
+                completeInterview();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function completeInterview() {
+            clearInterval(timerInterval);
+
+            // Save interview results
+            const interviewData = {
+                mode: currentMode,
+                answers: answers,
+                completedAt: new Date().toISOString()
+            };
+            localStorage.setItem('careerPilot_interview', JSON.stringify(interviewData));
+
+            document.getElementById('interview-section').classList.add('hidden');
+            document.getElementById('complete-section').classList.remove('hidden');
+        }
+    </script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

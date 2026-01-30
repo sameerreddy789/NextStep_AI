@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up | CareerPilot AI</title>
+    <meta name="description" content="Create your account and start your AI-powered career journey">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-card fade-in">
+            <div class="auth-header">
+                <div class="auth-logo">🚀</div>
+                <h1 class="auth-title">Welcome to CareerPilot</h1>
+                <p class="auth-subtitle">Your AI-powered career co-pilot</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="showTab('signup')">Sign Up</button>
+                <button class="auth-tab" onclick="showTab('login')">Login</button>
+            </div>
+
+            <!-- Sign Up Form -->
+            <form id="signup-form" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label class="form-label">I am a...</label>
+                    <select class="form-select" id="user-type" required onchange="updateSignupForm()">
+                        <option value="">Select your profile</option>
+                        <option value="student">Student / Fresher</option>
+                        <option value="careerGap">Career Gap / Returning Professional</option>
+                    </select>
+                </div>
+
+                <div id="common-fields" class="hidden">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="signup-name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="signup-email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-input" required>
+                    </div>
+                </div>
+
+                <div id="student-fields" class="hidden">
+                    <input type="text" id="college-name" class="form-input" placeholder="College Name">
+                    <input type="text" id="degree" class="form-input" placeholder="Degree">
+                    <input type="number" id="graduation-year" class="form-input" placeholder="Graduation Year">
+                    <select class="form-select" id="student-target-role">
+                        <option value="">Select your target role</option>
+                        <option value="sde">Software Developer</option>
+                        <option value="frontend">Frontend Developer</option>
+                        <option value="backend">Backend Developer</option>
+                    </select>
+                </div>
+
+                <div id="career-gap-fields" class="hidden">
+                    <input type="text" id="last-job-role" class="form-input" placeholder="Last Job Role">
+                    <input type="number" id="years-experience" class="form-input" placeholder="Years of Experience">
+                    <input type="number" id="gap-duration" class="form-input" placeholder="Career Gap (months)">
+                    <select class="form-select" id="career-gap-target-role">
+                        <option value="">Select your target role</option>
+                        <option value="sde">Software Developer</option>
+                        <option value="frontend">Frontend Developer</option>
+                        <option value="backend">Backend Developer</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="signup-btn" disabled>Create Account</button>
+            </form>
+
+            <!-- Login Form -->
+            <form id="login-form" class="hidden" onsubmit="handleLogin(event)">
+                <input type="email" id="login-email" class="form-input" placeholder="Email" required>
+                <input type="password" id="login-password" class="form-input" placeholder="Password" required>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+
+            <div class="oauth-divider"><span>or continue with</span></div>
+
+            <button class="oauth-btn" onclick="handleOAuth()">Continue with Google</button>
+
+            <div class="auth-footer">
+                <a href="index.html">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            document.getElementById("signup-form").classList.toggle("hidden", tab !== "signup");
+            document.getElementById("login-form").classList.toggle("hidden", tab !== "login");
+        }
+
+        function updateSignupForm() {
+            const userType = document.getElementById("user-type").value;
+            document.getElementById("common-fields").classList.remove("hidden");
+            document.getElementById("student-fields").classList.toggle("hidden", userType !== "student");
+            document.getElementById("career-gap-fields").classList.toggle("hidden", userType !== "careerGap");
+            document.getElementById("signup-btn").disabled = !userType;
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+
+            const userType = document.getElementById("user-type").value;
+            const name = document.getElementById("signup-name").value;
+            const email = document.getElementById("signup-email").value;
+            const password = document.getElementById("signup-password").value;
+
+            let targetRole = "";
+
+            if (userType === "student") {
+                targetRole = document.getElementById("student-target-role").value;
+            } else if (userType === "careerGap") {
+                targetRole = document.getElementById("career-gap-target-role").value;
+            }
+
+            const profile = {
+                name: name,
+                email: email,
+                password: password,
+                targetRole: targetRole,
+                createdAt: new Date().toISOString()
+            };
+
+            localStorage.setItem("userType", userType);
+            localStorage.setItem("userProfile", JSON.stringify(profile));
+
+            // Also store in old format for compatibility
+            localStorage.setItem("careerPilot_user", JSON.stringify({
+                name: profile.name,
+                email: profile.email,
+                targetRole: profile.targetRole,
+                experienceLevel: userType === "student" ? "student" : "experienced"
+            }));
+
+            alert("Account created successfully!");
+            window.location.href = "dashboard.html";
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById("login-email").value;
+            const password = document.getElementById("login-password").value;
+            const stored = JSON.parse(localStorage.getItem("userProfile"));
+
+            if (!stored) {
+                alert("No account found. Please sign up first.");
+                return;
+            }
+
+            if (stored.email === email && stored.password === password) {
+                alert("Login successful!");
+                window.location.href = "dashboard.html";
+            } else {
+                alert("Invalid credentials");
+            }
+        }
+
+        function handleOAuth() {
+            let userType = prompt("Are you a Student or Career Gap user? Type: student or careerGap");
+
+            if (userType !== "student" && userType !== "careerGap") {
+                alert("Invalid selection. Please try again.");
+                return;
+            }
+
+            const userData = {
+                name: "Google User",
+                email: "googleuser@example.com",
+                password: "oauth",
+                targetRole: "sde",
+                createdAt: new Date().toISOString()
+            };
+
+            localStorage.setItem("userType", userType);
+            localStorage.setItem("userProfile", JSON.stringify(userData));
+
+            localStorage.setItem("careerPilot_user", JSON.stringify({
+                name: userData.name,
+                email: userData.email,
+                targetRole: userData.targetRole,
+                experienceLevel: userType === "student" ? "student" : "experienced"
+            }));
+
+            window.location.href = "dashboard.html";
+        }
+    </script>
+</body>
+
+</html>

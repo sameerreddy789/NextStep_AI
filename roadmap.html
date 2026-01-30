@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Roadmap | CareerPilot AI</title>
+    <meta name="description" content="Your personalized week-by-week learning plan">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar (populated by sidebar.js) -->
+        <aside class="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">🗺️ Your Learning Roadmap</h1>
+                <p class="page-subtitle">Personalized 6-week plan based on your skill gaps and interview feedback</p>
+            </div>
+
+            <!-- Progress Overview -->
+            <div class="roadmap-overview">
+                <div class="overview-stat">
+                    <span class="overview-value">2/6</span>
+                    <span class="overview-label">Weeks Complete</span>
+                </div>
+                <div class="overview-progress">
+                    <div class="progress-bar" style="height: 10px;">
+                        <div class="progress-fill green" style="width: 33%;"></div>
+                    </div>
+                </div>
+                <div class="overview-stat">
+                    <span class="overview-value">33%</span>
+                    <span class="overview-label">Overall Progress</span>
+                </div>
+            </div>
+
+            <!-- Weeks -->
+            <div class="roadmap-weeks" id="roadmap-weeks">
+                <!-- Injected by JS -->
+            </div>
+
+            <!-- CTA -->
+            <div style="text-align: center; margin-top: 32px;">
+                <a href="tracker.html" class="btn btn-primary btn-lg">
+                    Go to Daily Tracker →
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .roadmap-overview {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .overview-stat {
+            text-align: center;
+        }
+
+        .overview-value {
+            display: block;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-green);
+        }
+
+        .overview-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .overview-progress {
+            flex: 1;
+        }
+
+        .roadmap-weeks {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .roadmap-week {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .roadmap-week.completed {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .roadmap-week.current {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .week-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .week-header:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .week-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .week-number {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .roadmap-week.completed .week-number {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .roadmap-week.current .week-number {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .week-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .week-focus {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .week-progress-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .week-status {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .week-status.completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .week-status.current {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .week-status.upcoming {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+        }
+
+        .week-toggle {
+            font-size: 20px;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .week-content {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .week-content.open {
+            display: block;
+        }
+
+        .week-section {
+            margin-top: 20px;
+        }
+
+        .week-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .week-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .week-task {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .week-task:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .week-task.done .task-checkbox {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .week-task.done .task-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-type {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .task-type.learn {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .task-type.practice {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+        }
+
+        .task-type.interview {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        /* Resource Cards Styling */
+        .resources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+        }
+
+        .resource-category {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .category-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .platform-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .platform-badge.youtube {
+            background: rgba(255, 0, 0, 0.15);
+            color: #ff0000;
+        }
+
+        .platform-badge.leetcode {
+            background: rgba(255, 161, 22, 0.15);
+            color: #ffa116;
+        }
+
+        .resource-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .resource-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .resource-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-primary);
+            transform: translateX(4px);
+        }
+
+        .resource-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .youtube-icon {
+            background: rgba(255, 0, 0, 0.15);
+            color: #ff0000;
+        }
+
+        .leetcode-icon {
+            background: rgba(255, 161, 22, 0.15);
+            color: #ffa116;
+        }
+
+        .resource-info {
+            flex: 1;
+        }
+
+        .resource-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .resource-platform {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .resource-arrow {
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: transform 0.2s;
+        }
+
+        .resource-card:hover .resource-arrow {
+            transform: translateX(4px);
+            color: var(--accent-primary);
+        }
+
+        /* Inline Resources within Weeks */
+        .resources-inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        .resource-column {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .resource-platform-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .platform-logo {
+            width: 20px;
+            height: 20px;
+        }
+
+        .resource-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .resource-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(4px);
+        }
+
+        .resource-link-icon {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .resource-link span:nth-child(2) {
+            flex: 1;
+        }
+
+        .resource-external {
+            font-size: 14px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .resource-link:hover .resource-external {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .resources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .resources-inline {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script>
+        // Role-Based Learning Resources
+        const RESOURCES_MAP = {
+            'frontend': {
+                youtube: [
+                    { title: 'HTML & CSS Full Course - Beginner to Pro', url: 'https://www.youtube.com/watch?v=G3e-cpL7ofc', platform: 'YouTube' },
+                    { title: 'JavaScript Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=W6NZfCO5SIk', platform: 'YouTube' },
+                    { title: 'React JS Full Course 2024', url: 'https://www.youtube.com/watch?v=SqcY0GlETPk', platform: 'YouTube' },
+                    { title: 'Responsive Web Design Tutorial', url: 'https://www.youtube.com/watch?v=srvUrASNj0s', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
+                    { title: 'Valid Parentheses (Easy)', url: 'https://leetcode.com/problems/valid-parentheses/', platform: 'LeetCode' },
+                    { title: 'Merge Two Sorted Lists (Easy)', url: 'https://leetcode.com/problems/merge-two-sorted-lists/', platform: 'LeetCode' },
+                    { title: 'Best Time to Buy and Sell Stock (Easy)', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/', platform: 'LeetCode' }
+                ]
+            },
+            'backend': {
+                youtube: [
+                    { title: 'Node.js Full Course for Beginners', url: 'https://www.youtube.com/watch?v=f2EqECiTBL8', platform: 'YouTube' },
+                    { title: 'REST API Tutorial', url: 'https://www.youtube.com/watch?v=-MTSQjw5DrM', platform: 'YouTube' },
+                    { title: 'SQL Tutorial - Full Database Course', url: 'https://www.youtube.com/watch?v=HXV3zeQKqGY', platform: 'YouTube' },
+                    { title: 'System Design Interview Basics', url: 'https://www.youtube.com/watch?v=UzLMhqg3_Wc', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Reverse Linked List (Easy)', url: 'https://leetcode.com/problems/reverse-linked-list/', platform: 'LeetCode' },
+                    { title: 'Binary Tree Level Order Traversal (Medium)', url: 'https://leetcode.com/problems/binary-tree-level-order-traversal/', platform: 'LeetCode' },
+                    { title: 'LRU Cache (Medium)', url: 'https://leetcode.com/problems/lru-cache/', platform: 'LeetCode' },
+                    { title: 'Design HashMap (Easy)', url: 'https://leetcode.com/problems/design-hashmap/', platform: 'LeetCode' }
+                ]
+            },
+            'fullstack': {
+                youtube: [
+                    { title: 'Full Stack Web Development Course', url: 'https://www.youtube.com/watch?v=nu_pCVPKzTk', platform: 'YouTube' },
+                    { title: 'MERN Stack Tutorial', url: 'https://www.youtube.com/watch?v=7CqJlxBYj-M', platform: 'YouTube' },
+                    { title: 'Next.js 14 Full Course', url: 'https://www.youtube.com/watch?v=wm5gMKuwSYk', platform: 'YouTube' },
+                    { title: 'Database Design Tutorial', url: 'https://www.youtube.com/watch?v=ztHopE5Wnpc', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Climbing Stairs (Easy)', url: 'https://leetcode.com/problems/climbing-stairs/', platform: 'LeetCode' },
+                    { title: 'Maximum Subarray (Medium)', url: 'https://leetcode.com/problems/maximum-subarray/', platform: 'LeetCode' },
+                    { title: 'Product of Array Except Self (Medium)', url: 'https://leetcode.com/problems/product-of-array-except-self/', platform: 'LeetCode' },
+                    { title: 'Longest Substring Without Repeating Characters (Medium)', url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/', platform: 'LeetCode' }
+                ]
+            },
+            'sde': {
+                youtube: [
+                    { title: 'Data Structures and Algorithms Full Course', url: 'https://www.youtube.com/watch?v=8hly31xKli0', platform: 'YouTube' },
+                    { title: 'System Design Interview Preparation', url: 'https://www.youtube.com/watch?v=bUHFg8CZFws', platform: 'YouTube' },
+                    { title: 'Object Oriented Programming Concepts', url: 'https://www.youtube.com/watch?v=pTB0EiLXUC8', platform: 'YouTube' },
+                    { title: 'Git and GitHub for Beginners', url: 'https://www.youtube.com/watch?v=RGOj5yH7evk', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
+                    { title: 'Add Two Numbers (Medium)', url: 'https://leetcode.com/problems/add-two-numbers/', platform: 'LeetCode' },
+                    { title: 'Longest Palindromic Substring (Medium)', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode' },
+                    { title: 'Merge K Sorted Lists (Hard)', url: 'https://leetcode.com/problems/merge-k-sorted-lists/', platform: 'LeetCode' }
+                ]
+            },
+            'data-analyst': {
+                youtube: [
+                    { title: 'SQL for Data Analysis - Full Course', url: 'https://www.youtube.com/watch?v=7mz73uXD9DA', platform: 'YouTube' },
+                    { title: 'Python for Data Analysis Tutorial', url: 'https://www.youtube.com/watch?v=GPVsHOlRBBI', platform: 'YouTube' },
+                    { title: 'Excel Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=Vl0H-qTclOg', platform: 'YouTube' },
+                    { title: 'Tableau Full Course', url: 'https://www.youtube.com/watch?v=aHaOIvR00So', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Combine Two Tables (Easy)', url: 'https://leetcode.com/problems/combine-two-tables/', platform: 'LeetCode' },
+                    { title: 'Second Highest Salary (Medium)', url: 'https://leetcode.com/problems/second-highest-salary/', platform: 'LeetCode' },
+                    { title: 'Nth Highest Salary (Medium)', url: 'https://leetcode.com/problems/nth-highest-salary/', platform: 'LeetCode' },
+                    { title: 'Department Top Three Salaries (Hard)', url: 'https://leetcode.com/problems/department-top-three-salaries/', platform: 'LeetCode' }
+                ]
+            },
+            'data-scientist': {
+                youtube: [
+                    { title: 'Machine Learning Full Course', url: 'https://www.youtube.com/watch?v=GwIo3gDZCVQ', platform: 'YouTube' },
+                    { title: 'Python for Data Science', url: 'https://www.youtube.com/watch?v=LHBE6Q9XlzI', platform: 'YouTube' },
+                    { title: 'Statistics for Data Science', url: 'https://www.youtube.com/watch?v=xxpc-HPKN28', platform: 'YouTube' },
+                    { title: 'Deep Learning Specialization', url: 'https://www.youtube.com/watch?v=CS4cs9xVecg', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Valid Sudoku (Medium)', url: 'https://leetcode.com/problems/valid-sudoku/', platform: 'LeetCode' },
+                    { title: 'Rotate Image (Medium)', url: 'https://leetcode.com/problems/rotate-image/', platform: 'LeetCode' },
+                    { title: 'Word Search (Medium)', url: 'https://leetcode.com/problems/word-search/', platform: 'LeetCode' },
+                    { title: 'Median of Two Sorted Arrays (Hard)', url: 'https://leetcode.com/problems/median-of-two-sorted-arrays/', platform: 'LeetCode' }
+                ]
+            },
+            'ml-engineer': {
+                youtube: [
+                    { title: 'Machine Learning Engineering Course', url: 'https://www.youtube.com/watch?v=JLTYNPoK7nw', platform: 'YouTube' },
+                    { title: 'TensorFlow 2.0 Complete Course', url: 'https://www.youtube.com/watch?v=tPYj3fFJGjk', platform: 'YouTube' },
+                    { title: 'MLOps Tutorial', url: 'https://www.youtube.com/watch?v=NGWujT4kYEE', platform: 'YouTube' },
+                    { title: 'PyTorch for Deep Learning', url: 'https://www.youtube.com/watch?v=c36lUUr864M', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Implement Trie (Medium)', url: 'https://leetcode.com/problems/implement-trie-prefix-tree/', platform: 'LeetCode' },
+                    { title: 'Word Search II (Hard)', url: 'https://leetcode.com/problems/word-search-ii/', platform: 'LeetCode' },
+                    { title: 'Serialize and Deserialize Binary Tree (Hard)', url: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/', platform: 'LeetCode' },
+                    { title: 'Design Search Autocomplete System (Hard)', url: 'https://leetcode.com/problems/design-search-autocomplete-system/', platform: 'LeetCode' }
+                ]
+            },
+            'devops': {
+                youtube: [
+                    { title: 'DevOps Full Course', url: 'https://www.youtube.com/watch?v=hQcFE0RD0cQ', platform: 'YouTube' },
+                    { title: 'Docker Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=fqMOX6JJhGo', platform: 'YouTube' },
+                    { title: 'Kubernetes Course', url: 'https://www.youtube.com/watch?v=X48VuDVv0do', platform: 'YouTube' },
+                    { title: 'CI/CD Pipeline Tutorial', url: 'https://www.youtube.com/watch?v=scEDHsr3APg', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Valid Parentheses (Easy)', url: 'https://leetcode.com/problems/valid-parentheses/', platform: 'LeetCode' },
+                    { title: 'Min Stack (Medium)', url: 'https://leetcode.com/problems/min-stack/', platform: 'LeetCode' },
+                    { title: 'Evaluate Reverse Polish Notation (Medium)', url: 'https://leetcode.com/problems/evaluate-reverse-polish-notation/', platform: 'LeetCode' },
+                    { title: 'Basic Calculator (Hard)', url: 'https://leetcode.com/problems/basic-calculator/', platform: 'LeetCode' }
+                ]
+            },
+            'product': {
+                youtube: [
+                    { title: 'Product Management Full Course', url: 'https://www.youtube.com/watch?v=2zfRBfJzjgM', platform: 'YouTube' },
+                    { title: 'Agile Product Management', url: 'https://www.youtube.com/watch?v=502ILHjX9EE', platform: 'YouTube' },
+                    { title: 'User Research Methods', url: 'https://www.youtube.com/watch?v=WpzmOH0hrEM', platform: 'YouTube' },
+                    { title: 'Product Strategy Framework', url: 'https://www.youtube.com/watch?v=5WVXCy1Q88o', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
+                    { title: 'Valid Anagram (Easy)', url: 'https://leetcode.com/problems/valid-anagram/', platform: 'LeetCode' },
+                    { title: 'Group Anagrams (Medium)', url: 'https://leetcode.com/problems/group-anagrams/', platform: 'LeetCode' },
+                    { title: 'Top K Frequent Elements (Medium)', url: 'https://leetcode.com/problems/top-k-frequent-elements/', platform: 'LeetCode' }
+                ]
+            },
+            'designer': {
+                youtube: [
+                    { title: 'UI/UX Design Tutorial', url: 'https://www.youtube.com/watch?v=c9Wg6Cb_YlU', platform: 'YouTube' },
+                    { title: 'Figma Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=FTFaQWZBqQ8', platform: 'YouTube' },
+                    { title: 'Design Systems Crash Course', url: 'https://www.youtube.com/watch?v=wc5krC28ynQ', platform: 'YouTube' },
+                    { title: 'User Experience Design Fundamentals', url: 'https://www.youtube.com/watch?v=uL2ZB7XXIgg', platform: 'YouTube' }
+                ],
+                leetcode: [
+                    { title: 'Valid Palindrome (Easy)', url: 'https://leetcode.com/problems/valid-palindrome/', platform: 'LeetCode' },
+                    { title: 'Longest Palindromic Substring (Medium)', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode' },
+                    { title: 'Palindrome Partitioning (Medium)', url: 'https://leetcode.com/problems/palindrome-partitioning/', platform: 'LeetCode' },
+                    { title: 'Regular Expression Matching (Hard)', url: 'https://leetcode.com/problems/regular-expression-matching/', platform: 'LeetCode' }
+                ]
+            }
+        };
+
+        const ROADMAP_DATA = [
+            {
+                week: 1,
+                title: 'Foundations & DSA Basics',
+                focus: 'Arrays, Strings, Time Complexity',
+                status: 'completed',
+                tasks: [
+                    { text: 'Learn Big O Notation', type: 'learn', done: true },
+                    { text: 'Array manipulation problems (10)', type: 'practice', done: true },
+                    { text: 'String algorithms basics', type: 'learn', done: true },
+                    { text: 'Two Sum, Three Sum problems', type: 'practice', done: true }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'Big O Notation Explained', url: 'https://www.youtube.com/watch?v=Mo4vesaut8g' },
+                        { title: 'Array Data Structure Tutorial', url: 'https://www.youtube.com/watch?v=55l-aZ7_F24' },
+                        { title: 'String Algorithms Basics', url: 'https://www.youtube.com/watch?v=Wdjr6uoZ0e0' },
+                        { title: 'Time Complexity Analysis', url: 'https://www.youtube.com/watch?v=D6xkbGLQesk' }
+                    ],
+                    leetcode: [
+                        { title: 'Two Sum', url: 'https://leetcode.com/problems/two-sum/' },
+                        { title: 'Best Time to Buy and Sell Stock', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/' },
+                        { title: 'Contains Duplicate', url: 'https://leetcode.com/problems/contains-duplicate/' },
+                        { title: 'Valid Anagram', url: 'https://leetcode.com/problems/valid-anagram/' },
+                        { title: 'Product of Array Except Self', url: 'https://leetcode.com/problems/product-of-array-except-self/' }
+                    ]
+                }
+            },
+            {
+                week: 2,
+                title: 'Data Structures Deep Dive',
+                focus: 'Linked Lists, Stacks, Queues',
+                status: 'completed',
+                tasks: [
+                    { text: 'Linked List implementation', type: 'learn', done: true },
+                    { text: 'Stack & Queue problems (8)', type: 'practice', done: true },
+                    { text: 'Mock Interview #1', type: 'interview', done: true },
+                    { text: 'Review interview feedback', type: 'learn', done: true }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'Linked List Data Structure', url: 'https://www.youtube.com/watch?v=Hj_rA0dhr2I' },
+                        { title: 'Stack and Queue Explained', url: 'https://www.youtube.com/watch?v=wjI1WNcIntg' },
+                        { title: 'Linked List Interview Problems', url: 'https://www.youtube.com/watch?v=Nd0XDY-jVHs' },
+                        { title: 'Stack Applications Tutorial', url: 'https://www.youtube.com/watch?v=I5lq6sCuABE' }
+                    ],
+                    leetcode: [
+                        { title: 'Reverse Linked List', url: 'https://leetcode.com/problems/reverse-linked-list/' },
+                        { title: 'Valid Parentheses', url: 'https://leetcode.com/problems/valid-parentheses/' },
+                        { title: 'Merge Two Sorted Lists', url: 'https://leetcode.com/problems/merge-two-sorted-lists/' },
+                        { title: 'Linked List Cycle', url: 'https://leetcode.com/problems/linked-list-cycle/' },
+                        { title: 'Min Stack', url: 'https://leetcode.com/problems/min-stack/' }
+                    ]
+                }
+            },
+            {
+                week: 3,
+                title: 'Trees & Graphs',
+                focus: 'Binary Trees, BST, Graph Traversal',
+                status: 'current',
+                tasks: [
+                    { text: 'Binary Tree traversals', type: 'learn', done: true },
+                    { text: 'BST operations practice', type: 'practice', done: true },
+                    { text: 'Graph BFS/DFS algorithms', type: 'learn', done: false },
+                    { text: 'Graph problems (6)', type: 'practice', done: false },
+                    { text: 'Mock Interview #2', type: 'interview', done: false }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'Binary Tree Algorithms', url: 'https://www.youtube.com/watch?v=fAAZixBzIAI' },
+                        { title: 'Graph Algorithms (BFS/DFS)', url: 'https://www.youtube.com/watch?v=tWVWeAqZ0WU' },
+                        { title: 'Binary Search Tree Operations', url: 'https://www.youtube.com/watch?v=cySVml6e_Fc' },
+                        { title: 'Graph Theory Tutorial', url: 'https://www.youtube.com/watch?v=09_LlHjoEiY' }
+                    ],
+                    leetcode: [
+                        { title: 'Binary Tree Inorder Traversal', url: 'https://leetcode.com/problems/binary-tree-inorder-traversal/' },
+                        { title: 'Number of Islands', url: 'https://leetcode.com/problems/number-of-islands/' },
+                        { title: 'Maximum Depth of Binary Tree', url: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/' },
+                        { title: 'Validate Binary Search Tree', url: 'https://leetcode.com/problems/validate-binary-search-tree/' },
+                        { title: 'Clone Graph', url: 'https://leetcode.com/problems/clone-graph/' }
+                    ]
+                }
+            },
+            {
+                week: 4,
+                title: 'System Design Basics',
+                focus: 'Scalability, Databases, Caching',
+                status: 'upcoming',
+                tasks: [
+                    { text: 'System design fundamentals', type: 'learn', done: false },
+                    { text: 'Database design patterns', type: 'learn', done: false },
+                    { text: 'Design URL shortener', type: 'practice', done: false },
+                    { text: 'Design Twitter feed', type: 'practice', done: false }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'System Design Interview Guide', url: 'https://www.youtube.com/watch?v=UzLMhqg3_Wc' },
+                        { title: 'Database Design Tutorial', url: 'https://www.youtube.com/watch?v=ztHopE5Wnpc' },
+                        { title: 'Scalability Fundamentals', url: 'https://www.youtube.com/watch?v=-W9F__D3oY4' },
+                        { title: 'Caching Strategies Explained', url: 'https://www.youtube.com/watch?v=U3RkDLtS7uY' },
+                        { title: 'Load Balancing Concepts', url: 'https://www.youtube.com/watch?v=K0Ta65OqQkY' }
+                    ],
+                    leetcode: [
+                        { title: 'Design HashMap', url: 'https://leetcode.com/problems/design-hashmap/' },
+                        { title: 'LRU Cache', url: 'https://leetcode.com/problems/lru-cache/' },
+                        { title: 'Design Twitter', url: 'https://leetcode.com/problems/design-twitter/' },
+                        { title: 'Design URL Shortener', url: 'https://leetcode.com/problems/design-tinyurl/' }
+                    ]
+                }
+            },
+            {
+                week: 5,
+                title: 'Advanced Topics',
+                focus: 'Dynamic Programming, Design Patterns',
+                status: 'upcoming',
+                tasks: [
+                    { text: 'DP concepts and patterns', type: 'learn', done: false },
+                    { text: 'DP problems (10)', type: 'practice', done: false },
+                    { text: 'Common design patterns', type: 'learn', done: false },
+                    { text: 'Mock Interview #3', type: 'interview', done: false }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'Dynamic Programming Tutorial', url: 'https://www.youtube.com/watch?v=oBt53YbR9Kk' },
+                        { title: 'Design Patterns Explained', url: 'https://www.youtube.com/watch?v=tv-_1er1mWI' },
+                        { title: 'DP Patterns and Strategies', url: 'https://www.youtube.com/watch?v=YBSt1jYwVfU' },
+                        { title: 'Common Design Patterns in Software', url: 'https://www.youtube.com/watch?v=BWprw8UHIzA' },
+                        { title: 'Memoization vs Tabulation', url: 'https://www.youtube.com/watch?v=P8Xa2BitN3I' }
+                    ],
+                    leetcode: [
+                        { title: 'Climbing Stairs', url: 'https://leetcode.com/problems/climbing-stairs/' },
+                        { title: 'Longest Palindromic Substring', url: 'https://leetcode.com/problems/longest-palindromic-substring/' },
+                        { title: 'Coin Change', url: 'https://leetcode.com/problems/coin-change/' },
+                        { title: 'House Robber', url: 'https://leetcode.com/problems/house-robber/' },
+                        { title: 'Longest Increasing Subsequence', url: 'https://leetcode.com/problems/longest-increasing-subsequence/' }
+                    ]
+                }
+            },
+            {
+                week: 6,
+                title: 'Interview Preparation',
+                focus: 'Mock Interviews, Behavioral Prep',
+                status: 'upcoming',
+                tasks: [
+                    { text: 'Behavioral interview prep', type: 'learn', done: false },
+                    { text: 'STAR method practice', type: 'practice', done: false },
+                    { text: 'Full mock interview', type: 'interview', done: false },
+                    { text: 'Resume final review', type: 'learn', done: false }
+                ],
+                resources: {
+                    youtube: [
+                        { title: 'Behavioral Interview Questions', url: 'https://www.youtube.com/watch?v=PJKYqLP6MRE' },
+                        { title: 'STAR Method Interview Technique', url: 'https://www.youtube.com/watch?v=0Z9mOnOXWFQ' },
+                        { title: 'How to Answer "Tell Me About Yourself"', url: 'https://www.youtube.com/watch?v=es7XtrloDIQ' },
+                        { title: 'Resume Writing Tips for Tech', url: 'https://www.youtube.com/watch?v=BYUy1yvjHxE' },
+                        { title: 'Mock Interview Walkthrough', url: 'https://www.youtube.com/watch?v=1qw5ITr3k9E' }
+                    ],
+                    leetcode: [
+                        { title: 'Top Interview Questions', url: 'https://leetcode.com/problem-list/top-interview-questions/' },
+                        { title: 'Mock Interview Practice', url: 'https://leetcode.com/interview/' },
+                        { title: 'Blind 75 Must Do', url: 'https://leetcode.com/discuss/general-discussion/460599/blind-75-leetcode-questions' },
+                        { title: 'Amazon Interview Questions', url: 'https://leetcode.com/company/amazon/' }
+                    ]
+                }
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('roadmap-weeks');
+
+            container.innerHTML = ROADMAP_DATA.map((week, idx) => {
+                const tasksDone = week.tasks.filter(t => t.done).length;
+                const progress = Math.round((tasksDone / week.tasks.length) * 100);
+
+                return `
+                    <div class="roadmap-week ${week.status}">
+                        <div class="week-header" onclick="toggleWeek(${idx})">
+                            <div class="week-info">
+                                <div class="week-number">${week.status === 'completed' ? '✓' : week.week}</div>
+                                <div>
+                                    <div class="week-title">Week ${week.week}: ${week.title}</div>
+                                    <div class="week-focus">${week.focus}</div>
+                                </div>
+                            </div>
+                            <div class="week-progress-info">
+                                <span class="week-status ${week.status}">
+                                    ${week.status === 'completed' ? 'Completed' : week.status === 'current' ? 'In Progress' : 'Upcoming'}
+                                </span>
+                                <span class="week-toggle" id="toggle-${idx}">▼</span>
+                            </div>
+                        </div>
+                        <div class="week-content ${week.status === 'current' ? 'open' : ''}" id="content-${idx}">
+                            <div class="week-section">
+                                <div class="week-section-title">📋 Tasks (${tasksDone}/${week.tasks.length})</div>
+                                <div class="week-tasks">
+                                    ${week.tasks.map((task, tidx) => `
+                                        <div class="week-task ${task.done ? 'done' : ''}" onclick="toggleTask(${idx}, ${tidx})">
+                                            <div class="task-checkbox">${task.done ? '✓' : ''}</div>
+                                            <span class="task-text">${task.text}</span>
+                                            <span class="task-type ${task.type}">${task.type}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                            ${week.resources ? `
+                                <div class="week-section">
+                                    <div class="week-section-title">📚 Learning Resources</div>
+                                    <div class="resources-inline">
+                                        <div class="resource-column">
+                                            <div class="resource-platform-header">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 159 110'%3E%3Cpath fill='%23FF0000' d='M154 17.5c-1.82-6.73-7.07-12-13.8-13.8-9.04-3.49-96.6-5.2-122 0.1-6.73 1.82-12 7.07-13.8 13.8-4.08 17.9-4.39 56.6 0.1 74.9 1.82 6.73 7.07 12 13.8 13.8 17.9 4.12 103 4.7 122 0 6.73-1.82 12-7.07 13.8-13.8 4.35-19.5 4.66-55.8-0.1-75z'/%3E%3Cpath fill='%23FFF' d='M105 55L64.2 79.5V30.5L105 55z'/%3E%3C/svg%3E" alt="YouTube" class="platform-logo" />
+                                                <span>YouTube</span>
+                                            </div>
+                                            ${week.resources.youtube.map(resource => `
+                                                <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="resource-link">
+                                                    <span class="resource-link-icon">▶</span>
+                                                    <span>${resource.title}</span>
+                                                    <span class="resource-external">↗</span>
+                                                </a>
+                                            `).join('')}
+                                        </div>
+                                        <div class="resource-column">
+                                            <div class="resource-platform-header">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FFA116' d='M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z'/%3E%3C/svg%3E" alt="LeetCode" class="platform-logo" />
+                                                <span>LeetCode</span>
+                                            </div>
+                                            ${week.resources.leetcode.map(resource => `
+                                                <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="resource-link">
+                                                    <span class="resource-link-icon">{}</span>
+                                                    <span>${resource.title}</span>
+                                                    <span class="resource-external">↗</span>
+                                                </a>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+
+
+
+        function toggleWeek(idx) {
+            const content = document.getElementById(`content-${idx}`);
+            const toggle = document.getElementById(`toggle-${idx}`);
+
+            content.classList.toggle('open');
+            toggle.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
+        }
+
+        function toggleTask(weekIdx, taskIdx) {
+            ROADMAP_DATA[weekIdx].tasks[taskIdx].done = !ROADMAP_DATA[weekIdx].tasks[taskIdx].done;
+            // Re-render would go here in a real app
+            location.reload();
+        }
+    </script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>

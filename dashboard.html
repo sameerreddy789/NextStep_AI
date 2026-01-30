@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | CareerPilot AI</title>
+    <meta name="description" content="Your AI Career Co-Pilot Dashboard">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar (populated by sidebar.js) -->
+        <aside class="sidebar"></aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div>
+                    <h1 class="page-title">Welcome back, <span id="user-greeting-name">User</span>! 👋</h1>
+                    <p class="page-subtitle">Track your progress and stay on course</p>
+                </div>
+                <div class="header-actions">
+                    <a href="interview.html" class="btn btn-primary">
+                        + Take Interview
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-row">
+                <div class="stat-card-new green">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Skills Covered</span>
+                        <span class="stat-card-icon">↗</span>
+                    </div>
+                    <div class="stat-card-value" id="skills-covered">8</div>
+                    <div class="stat-card-change positive">
+                        <span>↑</span> Increased from last week
+                    </div>
+                </div>
+
+                <div class="stat-card-new">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Interviews Taken</span>
+                        <span class="stat-card-icon">↗</span>
+                    </div>
+                    <div class="stat-card-value" id="interviews-taken">3</div>
+                    <div class="stat-card-change positive">
+                        <span>↑</span> Good progress
+                    </div>
+                </div>
+
+                <div class="stat-card-new">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Avg. Score</span>
+                        <span class="stat-card-icon">↗</span>
+                    </div>
+                    <div class="stat-card-value" id="avg-score">72%</div>
+                    <div class="stat-card-change positive">
+                        <span>↑</span> Getting better
+                    </div>
+                </div>
+
+                <div class="stat-card-new">
+                    <div class="stat-card-header">
+                        <span class="stat-card-title">Day Streak</span>
+                        <span class="stat-card-icon">🔥</span>
+                    </div>
+                    <div class="stat-card-value" id="day-streak">5</div>
+                    <div class="stat-card-change">Keep it up!</div>
+                </div>
+            </div>
+
+            <!-- Grid Layout -->
+            <div class="dashboard-grid">
+                <!-- Weekly Progress Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Weekly Progress</h3>
+                    </div>
+                    <div class="chart-container">
+                        <div class="bar-chart">
+                            <div class="bar-item">
+                                <div class="bar" style="height: 45%;" data-value="45%"></div>
+                                <span>S</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 60%;" data-value="60%"></div>
+                                <span>M</span>
+                            </div>
+                            <div class="bar-item active">
+                                <div class="bar" style="height: 75%;" data-value="75%"></div>
+                                <span>T</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 55%;" data-value="55%"></div>
+                                <span>W</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 80%;" data-value="80%"></div>
+                                <span>T</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 65%;" data-value="65%"></div>
+                                <span>F</span>
+                            </div>
+                            <div class="bar-item">
+                                <div class="bar" style="height: 40%;" data-value="40%"></div>
+                                <span>S</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Readiness -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Job Readiness</h3>
+                    </div>
+                    <div class="readiness-chart">
+                        <div class="circle-progress" id="readiness-circle">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="bg" cx="50" cy="50" r="40"></circle>
+                                <circle class="progress" cx="50" cy="50" r="40" id="progress-circle"></circle>
+                            </svg>
+                            <div class="circle-value">
+                                <span id="readiness-value">58</span>%
+                            </div>
+                        </div>
+                        <div class="readiness-legend">
+                            <div class="legend-item">
+                                <span class="legend-dot green"></span>
+                                <span>Completed</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot yellow"></span>
+                                <span>In Progress</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-dot gray"></span>
+                                <span>Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Tasks -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Learning Tasks</h3>
+                        <a href="roadmap.html" class="card-action">View All</a>
+                    </div>
+                    <div class="task-list" id="task-list">
+                        <!-- Tasks injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Career Gap Explanation (Only for Career Gap users) -->
+                <div class="card" id="career-gap-section" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">🔄 Career Gap Guidance</h3>
+                    </div>
+                    <div style="padding: 12px;">
+                        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                            Returning to work after a career gap is challenging but achievable. Here's your personalized
+                            guidance:
+                        </p>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <div class="task-icon purple">📚</div>
+                                <div class="task-content">
+                                    <div class="task-title">Update Your Skills</div>
+                                    <div class="task-due">Focus on latest technologies in your field</div>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-icon blue">💼</div>
+                                <div class="task-content">
+                                    <div class="task-title">Build Portfolio Projects</div>
+                                    <div class="task-due">Showcase recent work to employers</div>
+                                </div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-icon green">🤝</div>
+                                <div class="task-content">
+                                    <div class="task-title">Network Actively</div>
+                                    <div class="task-due">Reconnect with industry professionals</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skill Gaps -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Priority Skills</h3>
+                        <a href="skill-gap.html" class="card-action">View All</a>
+                    </div>
+                    <div class="skill-gap-mini" id="skill-gaps">
+                        <!-- Skill gaps injected by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        .user-avatar-lg {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card-new {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            transition: var(--transition-fast);
+        }
+
+        .stat-card-new:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-card-new.green {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-card-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .stat-card-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .stat-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-card-new.green .stat-card-value {
+            color: var(--accent-green);
+        }
+
+        .stat-card-change {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .stat-card-change.positive {
+            color: var(--accent-green);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container {
+            padding: 20px 0;
+        }
+
+        .bar-chart {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 180px;
+            padding: 0 10px;
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .bar-item .bar {
+            width: 24px;
+            background: rgba(16, 185, 129, 0.3);
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .bar-item.active .bar {
+            background: linear-gradient(180deg, var(--accent-green), var(--accent-green-dark));
+        }
+
+        .bar-item:hover .bar {
+            background: linear-gradient(180deg, var(--accent-green), var(--accent-green-dark));
+        }
+
+        .bar-item span {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .readiness-chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .circle-progress {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            margin-bottom: 24px;
+        }
+
+        .circle-progress svg {
+            transform: rotate(-90deg);
+        }
+
+        .circle-progress circle {
+            fill: none;
+            stroke-width: 8;
+        }
+
+        .circle-progress .bg {
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .circle-progress .progress {
+            stroke: var(--accent-green);
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 105;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .circle-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .circle-value span {
+            color: var(--accent-green);
+        }
+
+        .readiness-legend {
+            display: flex;
+            gap: 24px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.green {
+            background: var(--accent-green);
+        }
+
+        .legend-dot.yellow {
+            background: var(--accent-gold);
+        }
+
+        .legend-dot.gray {
+            background: var(--text-muted);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            transition: var(--transition-fast);
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .task-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .task-icon.blue {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .task-icon.purple {
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        .task-icon.green {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .task-icon.gold {
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        .task-content {
+            flex: 1;
+        }
+
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .task-due {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .task-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .task-status.pending {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-gold);
+        }
+
+        .task-status.progress {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+
+        .task-status.done {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+
+        .skill-gap-mini {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .skill-mini-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        .skill-mini-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .skill-mini-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .skill-mini-priority {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .skill-mini-priority.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--accent-gold);
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check authentication
+            const userProfile = localStorage.getItem('userProfile');
+            const userType = localStorage.getItem('userType');
+
+            if (!userProfile) {
+                // Not logged in, redirect to auth
+                alert('Please login first');
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            const profile = JSON.parse(userProfile);
+            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            const resumeData = JSON.parse(localStorage.getItem('careerPilot_resume') || '{}');
+
+            // Display personalized greeting
+            const userName = profile.name || userData.name || 'User';
+            const firstName = userName.split(' ')[0];
+            document.getElementById('user-greeting-name').textContent = firstName;
+
+            // Display role-based features
+            if (userType === 'careerGap') {
+                // Show career gap section for career gap users
+                document.getElementById('career-gap-section').style.display = 'block';
+            }
+
+            // Update readiness
+            if (resumeData.readiness) {
+                document.getElementById('readiness-value').textContent = resumeData.readiness;
+                const offset = 251.2 - (251.2 * resumeData.readiness / 100);
+                document.getElementById('progress-circle').style.strokeDashoffset = offset;
+            }
+
+            // Render tasks based on user type
+            let tasks = [];
+            if (userType === 'student') {
+                tasks = [
+                    { icon: '📚', title: 'Learn System Design basics', due: 'Today', status: 'progress', color: 'blue' },
+                    { icon: '💻', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', color: 'purple' },
+                    { icon: '🎤', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', color: 'green' },
+                    { icon: '📖', title: 'Complete college project', due: 'This week', status: 'progress', color: 'gold' }
+                ];
+            } else if (userType === 'careerGap') {
+                tasks = [
+                    { icon: '🔄', title: 'Update resume with recent skills', due: 'Today', status: 'progress', color: 'blue' },
+                    { icon: '💼', title: 'Build portfolio project', due: 'This week', status: 'pending', color: 'purple' },
+                    { icon: '🤝', title: 'Network on LinkedIn', due: 'Tomorrow', status: 'pending', color: 'green' },
+                    { icon: '📚', title: 'Learn latest frameworks', due: 'In 3 days', status: 'progress', color: 'gold' }
+                ];
+            } else {
+                // Default tasks
+                tasks = [
+                    { icon: '📚', title: 'Learn System Design basics', due: 'Today', status: 'progress', color: 'blue' },
+                    { icon: '💻', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', color: 'purple' },
+                    { icon: '🎤', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', color: 'green' },
+                    { icon: '📖', title: 'Review React concepts', due: 'Completed', status: 'done', color: 'gold' }
+                ];
+            }
+
+            document.getElementById('task-list').innerHTML = tasks.map(t => `
+                <div class="task-item">
+                    <div class="task-icon ${t.color}">${t.icon}</div>
+                    <div class="task-content">
+                        <div class="task-title">${t.title}</div>
+                        <div class="task-due">${t.due}</div>
+                    </div>
+                    <span class="task-status ${t.status}">${t.status === 'done' ? 'Done' : t.status === 'progress' ? 'In Progress' : 'Pending'}</span>
+                </div>
+            `).join('');
+
+            // Render skill gaps
+            const skillGaps = [
+                { name: 'System Design', priority: 'High' },
+                { name: 'Kubernetes', priority: 'High' },
+                { name: 'CI/CD', priority: 'Medium' }
+            ];
+
+            document.getElementById('skill-gaps').innerHTML = skillGaps.map(s => `
+                <div class="skill-mini-item">
+                    <div class="skill-mini-icon">✗</div>
+                    <div class="skill-mini-name">${s.name}</div>
+                    <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
+                </div>
+            `).join('');
+        });
+
+        // Logout function (can be called from sidebar)
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('userType');
+                localStorage.removeItem('userProfile');
+                localStorage.removeItem('careerPilot_user');
+                localStorage.removeItem('careerPilot_resume');
+                window.location.href = 'auth.html';
+            }
+        }
+
+        // Make logout available globally
+        window.logout = logout;
+    </script>
+    <script src="js/sidebar.js"></script>
+</body>
+
+</html>
