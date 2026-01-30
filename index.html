@@ -30,8 +30,10 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
+    <section class="hero" style="position: relative; overflow: hidden;">
+        <!-- Shader Background -->
+        <div id="infinite-plane-bg" style="position: absolute; inset: 0; z-index: 0;"></div>
+        <div class="container" style="position: relative; z-index: 1;">
             <div class="hero-content">
                 <div class="hero-badge">
                     <span>🤖</span>
@@ -267,6 +269,7 @@
             observer.observe(el);
         });
     </script>
+    <script src="js/infinite-plane.js"></script>
 </body>
 
 </html>
