@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Analysis | CareerPilot AI</title>
+    <title>Resume Analysis | NextStep AI</title>
     <meta name="description" content="Upload your resume for AI-powered skill analysis">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -609,7 +609,7 @@
 
         // Load user data
         document.addEventListener('DOMContentLoaded', () => {
-            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const userType = localStorage.getItem('userType');
 
             // Show ATS tooltip only for freshers/students, not for career gap users
@@ -623,7 +623,7 @@
             }
 
             // Check if already analyzed
-            const resumeData = localStorage.getItem('careerPilot_resume');
+            const resumeData = localStorage.getItem('nextStep_resume');
             if (resumeData) {
                 showResults(JSON.parse(resumeData));
             }
@@ -682,7 +682,7 @@
 
         function showResults(data) {
             // Save to localStorage
-            localStorage.setItem('careerPilot_resume', JSON.stringify(data));
+            localStorage.setItem('nextStep_resume', JSON.stringify(data));
 
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('analyzing-section').classList.add('hidden');
@@ -775,7 +775,7 @@
         // Re-upload resume function
         function reUploadResume() {
             // Clear existing resume data
-            localStorage.removeItem('careerPilot_resume');
+            localStorage.removeItem('nextStep_resume');
 
             // Hide results and show upload section
             document.getElementById('results-section').classList.add('hidden');

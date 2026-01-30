@@ -6,7 +6,7 @@
 const SIDEBAR_CONFIG = {
     logo: {
         icon: '🚀',
-        text: 'CareerPilot',
+        text: 'NextStep AI',
         href: 'index.html'
     },
     mainNav: [
@@ -31,7 +31,7 @@ function getCurrentPage() {
 
 function generateSidebar() {
     const currentPage = getCurrentPage();
-    const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+    const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
 
     const userName = userData.name || 'User';
     const userInitial = userName.charAt(0).toUpperCase();

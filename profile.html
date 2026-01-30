@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | CareerPilot AI</title>
+    <title>My Profile | NextStep AI</title>
     <meta name="description" content="Your profile and settings">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -518,8 +518,8 @@
             }
 
             const profile = JSON.parse(userProfile);
-            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
-            const profileData = JSON.parse(localStorage.getItem('careerPilot_profile') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const profileData = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
 
             // Set defaults from user signup
             if (userData.name) {
@@ -590,7 +590,7 @@
             userData.email = document.getElementById('edit-email').value;
             userData.experienceLevel = document.getElementById('edit-experience').value;
 
-            localStorage.setItem('careerPilot_user', JSON.stringify(userData));
+            localStorage.setItem('nextStep_user', JSON.stringify(userData));
 
             // Update view
             document.getElementById('view-firstname').textContent = firstname;
@@ -631,7 +631,7 @@
             profileData.country = document.getElementById('edit-country').value;
             profileData.city = document.getElementById('edit-city').value;
             profileData.postal = document.getElementById('edit-postal').value;
-            localStorage.setItem('careerPilot_profile', JSON.stringify(profileData));
+            localStorage.setItem('nextStep_profile', JSON.stringify(profileData));
 
             document.getElementById('view-country').textContent = profileData.country;
             document.getElementById('view-city').textContent = profileData.city;
@@ -680,9 +680,9 @@
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('userType');
                 localStorage.removeItem('userProfile');
-                localStorage.removeItem('careerPilot_user');
-                localStorage.removeItem('careerPilot_resume');
-                localStorage.removeItem('careerPilot_profile');
+                localStorage.removeItem('nextStep_user');
+                localStorage.removeItem('nextStep_resume');
+                localStorage.removeItem('nextStep_profile');
                 window.location.href = 'auth.html';
             }
         }

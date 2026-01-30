@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Interview | CareerPilot AI</title>
+    <title>AI Interview | NextStep AI</title>
     <meta name="description" content="Take adaptive AI-powered mock interviews">
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -284,7 +284,7 @@
 
         // Load user data
         document.addEventListener('DOMContentLoaded', () => {
-            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             if (userData.name) {
                 document.getElementById('user-name').textContent = userData.name;
                 document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
@@ -406,7 +406,7 @@
                 answers: answers,
                 completedAt: new Date().toISOString()
             };
-            localStorage.setItem('careerPilot_interview', JSON.stringify(interviewData));
+            localStorage.setItem('nextStep_interview', JSON.stringify(interviewData));
 
             document.getElementById('interview-section').classList.add('hidden');
             document.getElementById('complete-section').classList.remove('hidden');
