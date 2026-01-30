@@ -4,36 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Career Co-Pilot | Your Path to Career Success</title>
+    <title>NextStep AI | Your Path to Career Success</title>
     <meta name="description"
         content="AI-powered career guidance with resume analysis, mock interviews, and personalized learning roadmaps">
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/pill-nav.css">
+    <link rel="stylesheet" href="css/stepper.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <!-- GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <a href="index.html" class="nav-logo">
-                <span class="nav-logo-icon">🚀</span>
-                <span class="nav-logo-text">NextStep AI</span>
-            </a>
-            <div class="nav-links">
-                <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="#who-its-for" class="nav-link">Who It's For</a>
-                <a href="auth.html" class="nav-link">Login</a>
-                <a href="auth.html" class="nav-cta">Get Started</a>
-            </div>
-        </div>
-    </nav>
+    <!-- Pill Navigation -->
+    <div id="pill-nav-container"></div>
+
+    <!-- Shader Background (Fixed, behind everything) -->
+    <div id="infinite-plane-bg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
 
     <!-- Hero Section -->
-    <section class="hero" style="position: relative; overflow: hidden;">
-        <!-- Shader Background -->
-        <div id="infinite-plane-bg" style="position: absolute; inset: 0; z-index: 0;"></div>
-        <div class="container" style="position: relative; z-index: 1;">
+    <section class="hero" style="background: transparent !important;">
+        <div class="container">
             <div class="hero-content">
                 <div class="hero-badge">
                     <span>🤖</span>
@@ -95,64 +87,18 @@
         </div>
     </section>
 
-    <!-- Journey Display Cards -->
-    <section class="section" style="background: linear-gradient(180deg, rgba(99, 102, 241, 0.05), transparent);">
+    <!-- How It Works - Stepper UI -->
+    <section class="section" id="how-it-works"
+        style="background: linear-gradient(180deg, rgba(99, 102, 241, 0.05), transparent);">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">Your Journey</div>
-                <h2 class="section-title">See Your Progress Unfold</h2>
-                <p class="section-subtitle">Hover over the cards to explore each step of your career transformation</p>
+                <div class="section-badge">How It Works</div>
+                <h2 class="section-title">Your Path to Success</h2>
+                <p class="section-subtitle">Navigate through each step to see how we transform your career</p>
             </div>
 
-            <div class="display-cards-container">
-                <!-- Card 1 - Resume Analysis -->
-                <div class="display-card">
-                    <div class="display-card-header">
-                        <span class="display-card-icon">📄</span>
-                        <span class="display-card-title">Resume Analysis</span>
-                    </div>
-                    <p class="display-card-desc">AI extracts skills & identifies gaps</p>
-                    <p class="display-card-date">Step 1 • 2 min scan</p>
-                </div>
-
-                <!-- Card 2 - AI Interview -->
-                <div class="display-card green">
-                    <div class="display-card-header">
-                        <span class="display-card-icon">🎤</span>
-                        <span class="display-card-title">Mock Interview</span>
-                    </div>
-                    <p class="display-card-desc">Adaptive questions that challenge you</p>
-                    <p class="display-card-date">Step 2 • 15-30 min session</p>
-                </div>
-
-                <!-- Card 3 - Personalized Roadmap -->
-                <div class="display-card purple">
-                    <div class="display-card-header">
-                        <span class="display-card-icon">🗺️</span>
-                        <span class="display-card-title">Your Roadmap</span>
-                    </div>
-                    <p class="display-card-desc">Week-by-week learning plan</p>
-                    <p class="display-card-date">Step 3 • Personalized for you</p>
-                </div>
-            </div>
-
-            <!-- Flow badges below -->
-            <div
-                style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; align-items: center; font-size: 14px; color: var(--text-secondary); margin-top: 20px;">
-                <span class="badge badge-primary">📄 Resume</span>
-                <span>→</span>
-                <span class="badge badge-primary">📊 Skill Gap</span>
-                <span>→</span>
-                <span class="badge badge-primary">🎤 Interview</span>
-                <span>→</span>
-                <span class="badge badge-green">📈 Feedback</span>
-                <span>→</span>
-                <span class="badge badge-green">🗺️ Roadmap</span>
-                <span>→</span>
-                <span class="badge badge-gold">📚 Practice</span>
-                <span>→</span>
-                <span class="badge badge-gold">🔄 Re-Interview</span>
-            </div>
+            <!-- Stepper Component -->
+            <div id="stepper-container"></div>
         </div>
     </section>
 
@@ -228,16 +174,6 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="cta-box glow-border-animated">
-            <h2 class="cta-title">Ready to Accelerate Your Career?</h2>
-            <p class="cta-subtitle">Join thousands of learners who landed their dream jobs</p>
-            <a href="auth.html" class="btn btn-primary btn-lg glow-btn">
-                🚀 Get Started Free
-            </a>
-        </div>
-    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -269,6 +205,8 @@
             observer.observe(el);
         });
     </script>
+    <script src="js/pill-nav.js"></script>
+    <script src="js/stepper.js"></script>
     <script src="js/infinite-plane.js"></script>
 </body>
 

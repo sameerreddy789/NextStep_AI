@@ -1677,6 +1677,86 @@ img {
     color: var(--accent-gold);
 }
 
+.display-card.blue .display-card-icon {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.display-card.blue .display-card-title {
+    color: var(--accent-blue);
+}
+
+.display-card.cyan .display-card-icon {
+    background: rgba(6, 182, 212, 0.3);
+}
+
+.display-card.cyan .display-card-title {
+    color: var(--accent-cyan);
+}
+
+/* Card 4 positioning */
+.display-card:nth-child(4) {
+    transform: skewY(-8deg) translateX(144px) translateY(120px);
+    filter: grayscale(100%);
+    z-index: 4;
+}
+
+.display-card:nth-child(4)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 18, 0.5);
+    border-radius: inherit;
+    transition: opacity 0.5s ease;
+}
+
+.display-card:nth-child(4):hover {
+    transform: skewY(-8deg) translateX(144px) translateY(80px);
+    filter: grayscale(0%);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.display-card:nth-child(4):hover::before {
+    opacity: 0;
+}
+
+/* Card 5 positioning */
+.display-card:nth-child(5) {
+    transform: skewY(-8deg) translateX(192px) translateY(160px);
+    filter: grayscale(100%);
+    z-index: 5;
+}
+
+.display-card:nth-child(5)::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 18, 0.5);
+    border-radius: inherit;
+    transition: opacity 0.5s ease;
+}
+
+.display-card:nth-child(5):hover {
+    transform: skewY(-8deg) translateX(192px) translateY(120px);
+    filter: grayscale(0%);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.display-card:nth-child(5):hover::before {
+    opacity: 0;
+}
+
+/* Card 6 - Front (newest) */
+.display-card:nth-child(6) {
+    transform: skewY(-8deg) translateX(240px) translateY(200px);
+    z-index: 6;
+}
+
+.display-card:nth-child(6):hover {
+    transform: skewY(-8deg) translateX(240px) translateY(160px);
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(30, 30, 58, 0.95);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .display-card {

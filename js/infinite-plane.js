@@ -21,9 +21,8 @@ class InfinitePlaneBg {
     init() {
         // Create canvas
         this.canvas = document.createElement('canvas');
-        this.canvas.style.cssText = 'display:block;width:100%;height:100%;position:absolute;top:0;left:0;';
-        this.container.style.position = 'relative';
-        this.container.insertBefore(this.canvas, this.container.firstChild);
+        this.canvas.style.cssText = 'display:block;width:100vw;height:100vh;position:fixed;top:0;left:0;';
+        this.container.appendChild(this.canvas);
 
         // Get WebGL2 context
         this.gl = this.canvas.getContext('webgl2');
@@ -96,7 +95,7 @@ void main() {
     vec3 rd = normalize(vec3(uv, 1.0));
 
     float d = rayMarch(ro, rd);
-    vec3 color = vec3(0.02, 0.02, 0.05); // Dark background
+    vec3 color = vec3(0.05, 0.03, 0.12); // Dark purple background
 
     if (d < 20.0) {
         vec3 p = ro + rd * d;
@@ -104,15 +103,16 @@ void main() {
         vec3 lightDir = normalize(vec3(1.0, 1.0, -1.0));
         float diff = max(dot(n, lightDir), 0.0);
 
-        // Moving checkered pattern with brand colors
-        float check = mod(floor(p.x) + floor(p.z - u_time * u_speed), 2.0);
-        vec3 mat = mix(vec3(0.05, 0.05, 0.12), vec3(0.15, 0.12, 0.25), check);
+        // Moving checkered pattern with brighter purple/blue colors (30% larger tiles)
+        float scale = 0.77; // 1/1.3 = ~0.77 for 30% larger tiles
+        float check = mod(floor(p.x * scale) + floor((p.z - u_time * u_speed) * scale), 2.0);
+        vec3 mat = mix(vec3(0.15, 0.08, 0.35), vec3(0.35, 0.25, 0.55), check);
 
-        color = mat * (diff * 0.8 + 0.2);
+        color = mat * (diff * 1.2 + 0.4);
         
-        // Add fog for depth
-        float fog = 1.0 - exp(-d * 0.1);
-        color = mix(color, vec3(0.02, 0.02, 0.05), fog);
+        // Lighter fog for depth
+        float fog = 1.0 - exp(-d * 0.08);
+        color = mix(color, vec3(0.08, 0.05, 0.18), fog);
     }
 
     fragColor = vec4(color, 1.0);
