@@ -3,8 +3,8 @@
  * Manages skill data in localStorage with CRUD operations
  */
 
-const STORAGE_KEY = 'skillTree_skills';
-const USER_KEY = 'skillTree_user';
+const STORAGE_KEY = 'nextStep_skills';
+const USER_KEY = 'nextStep_user';
 
 // Default skills for demo
 const DEFAULT_SKILLS = [

@@ -136,15 +136,7 @@
             };
 
             localStorage.setItem("userType", userType);
-            localStorage.setItem("userProfile", JSON.stringify(profile));
-
-            // Also store in old format for compatibility
-            localStorage.setItem("nextStep_user", JSON.stringify({
-                name: profile.name,
-                email: profile.email,
-                targetRole: profile.targetRole,
-                experienceLevel: userType === "student" ? "student" : "experienced"
-            }));
+            localStorage.setItem("nextStep_user", JSON.stringify(profile));
 
             alert("Account created successfully!");
             window.location.href = "dashboard.html";
@@ -154,7 +146,7 @@
             e.preventDefault();
             const email = document.getElementById("login-email").value;
             const password = document.getElementById("login-password").value;
-            const stored = JSON.parse(localStorage.getItem("userProfile"));
+            const stored = JSON.parse(localStorage.getItem("nextStep_user"));
 
             if (!stored) {
                 alert("No account found. Please sign up first.");
@@ -186,14 +178,7 @@
             };
 
             localStorage.setItem("userType", userType);
-            localStorage.setItem("userProfile", JSON.stringify(userData));
-
-            localStorage.setItem("careerPilot_user", JSON.stringify({
-                name: userData.name,
-                email: userData.email,
-                targetRole: userData.targetRole,
-                experienceLevel: userType === "student" ? "student" : "experienced"
-            }));
+            localStorage.setItem("nextStep_user", JSON.stringify(userData));
 
             window.location.href = "dashboard.html";
         }

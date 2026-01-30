@@ -574,22 +574,21 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Check authentication
-            const userProfile = localStorage.getItem('userProfile');
+            const userDataString = localStorage.getItem('nextStep_user');
             const userType = localStorage.getItem('userType');
 
-            if (!userProfile) {
+            if (!userDataString) {
                 // Not logged in, redirect to auth
                 alert('Please login first');
                 window.location.href = 'auth.html';
                 return;
             }
 
-            const profile = JSON.parse(userProfile);
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const userData = JSON.parse(userDataString || '{}');
             const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
 
             // Display personalized greeting
-            const userName = profile.name || userData.name || 'User';
+            const userName = userData.name || 'User';
             const firstName = userName.split(' ')[0];
             document.getElementById('user-greeting-name').textContent = firstName;
 
@@ -663,9 +662,9 @@
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 localStorage.removeItem('userType');
-                localStorage.removeItem('userProfile');
                 localStorage.removeItem('nextStep_user');
                 localStorage.removeItem('nextStep_resume');
+                localStorage.removeItem('nextStep_skills');
                 window.location.href = 'auth.html';
             }
         }

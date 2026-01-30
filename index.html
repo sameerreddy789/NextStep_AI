@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/pill-nav.css">
     <link rel="stylesheet" href="css/stepper.css">
+    <link rel="stylesheet" href="css/orbital-timeline.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <!-- GSAP for animations -->
@@ -50,42 +51,7 @@
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section class="section" id="how-it-works">
-        <div class="container">
-            <div class="section-header">
-                <div class="section-badge">How It Works</div>
-                <h2 class="section-title">Three Steps to Career Success</h2>
-                <p class="section-subtitle">Our AI guides you through a continuous improvement loop</p>
-            </div>
 
-            <div class="steps-grid">
-                <div class="step-card fade-in gradient-border-hover">
-                    <div class="step-number">1</div>
-                    <div class="step-icon">📄</div>
-                    <h3 class="step-title">Upload Resume</h3>
-                    <p class="step-desc">AI extracts your skills, projects, and experience to understand your current
-                        profile</p>
-                </div>
-
-                <div class="step-card fade-in gradient-border-hover" style="animation-delay: 0.1s">
-                    <div class="step-number">2</div>
-                    <div class="step-icon">🎤</div>
-                    <h3 class="step-title">Take AI Interview</h3>
-                    <p class="step-desc">Adaptive technical and behavioral questions that evaluate your real
-                        capabilities</p>
-                </div>
-
-                <div class="step-card fade-in gradient-border-hover" style="animation-delay: 0.2s">
-                    <div class="step-number">3</div>
-                    <div class="step-icon">🗺️</div>
-                    <h3 class="step-title">Get Your Roadmap</h3>
-                    <p class="step-desc">Personalized week-by-week learning plan to close skill gaps and ace interviews
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- How It Works - Stepper UI -->
     <section class="section" id="how-it-works"
@@ -140,37 +106,10 @@
             <div class="section-header">
                 <div class="section-badge">Features</div>
                 <h2 class="section-title">Everything You Need</h2>
+                <p class="section-subtitle">A holistic view of your career evolution</p>
             </div>
 
-            <div class="skills-grid">
-                <div class="card gradient-border-hover">
-                    <div style="font-size: 32px; margin-bottom: 16px;">📊</div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Skill Gap Analysis</h3>
-                    <p class="text-muted" style="font-size: 14px;">Compare your skills against job requirements. See
-                        what's missing and what to prioritize.</p>
-                </div>
-
-                <div class="card gradient-border-hover">
-                    <div style="font-size: 32px; margin-bottom: 16px;">🎯</div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Adaptive Interviews</h3>
-                    <p class="text-muted" style="font-size: 14px;">AI adjusts difficulty based on your answers. Get
-                        evaluated on technical clarity and confidence.</p>
-                </div>
-
-                <div class="card gradient-border-hover">
-                    <div style="font-size: 32px; margin-bottom: 16px;">📈</div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Progress Tracking</h3>
-                    <p class="text-muted" style="font-size: 14px;">Track streaks, completed tasks, and improvement over
-                        time with visual dashboards.</p>
-                </div>
-
-                <div class="card gradient-border-hover">
-                    <div style="font-size: 32px; margin-bottom: 16px;">🔄</div>
-                    <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Continuous Loop</h3>
-                    <p class="text-muted" style="font-size: 14px;">Re-assess weekly. Your roadmap updates based on new
-                        performance data.</p>
-                </div>
-            </div>
+            <div id="orbital-timeline-container"></div>
         </div>
     </section>
 
@@ -207,6 +146,7 @@
     </script>
     <script src="js/pill-nav.js"></script>
     <script src="js/stepper.js"></script>
+    <script src="js/orbital-timeline.js"></script>
     <script src="js/infinite-plane.js"></script>
 </body>
 

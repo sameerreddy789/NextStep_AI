@@ -690,7 +690,7 @@
 
             // Get user's target role
             const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
-            const userData = JSON.parse(localStorage.getItem('careerPilot_user') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
 
             // Calculate ATS Score

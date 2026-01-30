@@ -40,9 +40,12 @@ class PillNav {
 
         container.innerHTML = `
             <nav class="pill-nav" style="--base: ${baseColor}; --pill-bg: ${pillColor}; --hover-text: ${hoveredPillTextColor}; --pill-text: ${pillTextColor};">
-                <a class="pill-logo" href="${items[0]?.href || '/'}" aria-label="Home">
-                    ${logo.includes('.') ? `<img src="${logo}" alt="${logoAlt}">` : `<span class="logo-emoji">${logo}</span>`}
-                </a>
+                <div class="nav-branding">
+                    <a class="pill-logo" href="${items[0]?.href || '/'}" aria-label="Home">
+                        ${logo.includes('.') ? `<img src="${logo}" alt="${logoAlt}">` : `<span class="logo-emoji">${logo}</span>`}
+                    </a>
+                    <span class="nav-brand-name">NextStep AI</span>
+                </div>
 
                 <div class="pill-nav-items desktop-only">
                     <ul class="pill-list" role="menubar">
