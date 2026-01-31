@@ -45,10 +45,16 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 - **Career Gap Mode** — Specialized guidance for returning professionals
 - **Skill Tracking** — Monitor growth across different skill categories
 
+### � Onboarding Wizard
+- **Multi-step Flow** — Guided setup for personalized experience
+- **Career Goal Setting** — Define your path (Student, Professional, etc.)
+- **Interactive Resume Upload** — Drag & drop interface
+- **Progress Tracking** — Save and resume capability
+
 ### 🔐 Authentication
-- **Email/Password Sign Up** — Secure account creation
-- **Google OAuth** — Quick sign-in with Google
-- **Profile Customization** — Set your target role and preferences
+- **Firebase Auth** — Secure Email/Password & Google Sign-In
+- **Cloud Persistence** — User profiles stored in Firestore
+- **Smart Redirection** — New users guided to onboarding
 
 ---
 
@@ -59,7 +65,8 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 | **HTML5** | Structure and semantics |
 | **CSS3** | Styling with modern design patterns |
 | **Vanilla JavaScript** | Core functionality and interactivity |
-| **LocalStorage** | Client-side data persistence |
+| **Firebase Auth** | User authentication & Identity |
+| **Cloud Firestore** | NoSQL database for user data |
 | **GSAP** | Smooth animations and transitions |
 | **Inter Font** | Modern, clean typography |
 
@@ -70,7 +77,8 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 ```
 NextStep-AI/
 ├── index.html          # Landing page with hero section
-├── auth.html           # Authentication (signup/login)
+├── auth.html           # Authentication (Login/Signup)
+├── onboarding.html     # Multi-step Onboarding Wizard
 ├── dashboard.html      # User dashboard with stats
 ├── resume.html         # Resume upload and analysis
 ├── interview.html      # AI mock interview system
@@ -81,11 +89,15 @@ NextStep-AI/
 ├── feedback.html       # Interview feedback display
 ├── css/
 │   ├── styles.css      # Main stylesheet
+│   ├── onboarding.css  # Onboarding wizard styles
 │   ├── pill-nav.css    # Navigation styles
 │   ├── stepper.css     # Stepper component
 │   └── orbital-timeline.css
 └── js/
-    ├── store.js        # Data management (localStorage)
+    ├── firebase-config.js # Firebase configuration
+    ├── auth-modern.js  # Auth logic
+    ├── onboarding.js   # Onboarding logic
+    ├── store.js        # Data management
     ├── sidebar.js      # Sidebar component
     ├── pill-nav.js     # Navigation component
     ├── stepper.js      # Stepper UI
@@ -99,7 +111,7 @@ NextStep-AI/
 
 ### Prerequisites
 - A modern web browser (Chrome, Firefox, Edge, Safari)
-- No server or build tools required!
+- No build tools required! (Uses ES Modules)
 
 ### Installation
 
@@ -115,18 +127,17 @@ NextStep-AI/
 
 3. **Open in browser**
    - Simply open `index.html` in your browser
-   - Or use Live Server extension in VS Code for hot reloading
+   - **Recommended:** Use VS Code "Live Server" to handle ES Modules gracefully
 
 ---
 
 ## 🎮 How to Use
 
-1. **Sign Up** — Create an account as a Student/Fresher or Career Gap user
-2. **Upload Resume** — Let AI analyze your skills and experience
-3. **View Skill Gaps** — See what skills you need to develop
-4. **Take Mock Interviews** — Practice with AI-powered interview questions
-5. **Follow Roadmap** — Complete your personalized 6-week learning plan
-6. **Track Progress** — Monitor your improvement on the dashboard
+1. **Sign Up** — Create accounts with Email or Google
+2. **Complete Onboarding** — Tell us about your goals and upload your resume
+3. **View Dashboard** — See your personalized readiness score
+4. **Take Mock Interviews** — Practice with AI-powered questions
+5. **Follow Roadmap** — Complete your learning plan
 
 ---
 
@@ -153,8 +164,6 @@ NextStep-AI/
 
 ## 🔮 Future Roadmap
 
-- [ ] Firebase/Supabase backend integration
-- [ ] Real AI interview responses with GPT
 - [ ] Video interview analysis
 - [ ] Company-specific interview prep
 - [ ] Peer mock interviews
