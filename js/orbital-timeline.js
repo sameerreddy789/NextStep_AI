@@ -168,8 +168,12 @@ class OrbitalTimeline {
 
     positionNodes() {
         const total = this.options.data.length;
+        const nodeWidth = 40; // Width of node-circle
+
         this.options.data.forEach((item, index) => {
             const el = this.nodeElements[item.id];
+            if (!el) return;
+
             // Start from top (270 degrees / -90 degrees) and distribute evenly
             const angleOffset = -90; // Start from top
             const angle = angleOffset + (index / total) * 360 + this.rotationAngle;
@@ -179,8 +183,10 @@ class OrbitalTimeline {
             const x = this.options.radius * Math.cos(radian);
             const y = this.options.radius * Math.sin(radian);
 
-            // Apply transform - nodes are already centered via CSS
+            // Apply transform - node center is already handled via CSS
             el.style.transform = `translate(${x}px, ${y}px)`;
+            el.style.left = '0';
+            el.style.top = '0';
 
             // Keep all nodes at full opacity when static, dim others when one is expanded
             if (this.expandedId) {

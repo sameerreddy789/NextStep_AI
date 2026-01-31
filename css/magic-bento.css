@@ -1,0 +1,123 @@
+/* ===== Magic Bento Styles ===== */
+/* Border glow, spotlight, and particle effects */
+
+:root {
+    --glow-color: 132, 0, 255;
+    --purple-glow: rgba(132, 0, 255, 0.2);
+    --border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Base card styles for magic effect */
+.magic-card {
+    position: relative;
+    overflow: hidden;
+    --glow-x: 50%;
+    --glow-y: 50%;
+    --glow-intensity: 0;
+    --glow-radius: 200px;
+}
+
+/* Border glow effect - follows cursor */
+.magic-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.9)) 0%,
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.5)) 25%,
+            rgba(var(--glow-color), calc(var(--glow-intensity) * 0.2)) 50%,
+            transparent 70%);
+    border-radius: inherit;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+/* Hover enhancement */
+.magic-card:hover {
+    box-shadow:
+        0 4px 30px rgba(99, 102, 241, 0.2),
+        0 0 40px rgba(132, 0, 255, 0.1);
+}
+
+/* Global spotlight overlay */
+.magic-spotlight {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle,
+            rgba(var(--glow-color), 0.12) 0%,
+            rgba(var(--glow-color), 0.06) 20%,
+            rgba(var(--glow-color), 0.03) 35%,
+            rgba(var(--glow-color), 0.01) 50%,
+            transparent 65%);
+    z-index: 100;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+    transition: opacity 0.3s ease;
+}
+
+/* Particle styles */
+.magic-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: rgba(var(--glow-color), 0.8);
+    box-shadow: 0 0 8px rgba(var(--glow-color), 0.6);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Click ripple */
+.magic-ripple {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Apply to stepper panel */
+.step-panel {
+    --glow-color: 99, 102, 241;
+}
+
+/* Apply to orbital nodes */
+.orbital-node .node-card {
+    --glow-color: 132, 0, 255;
+}
+
+/* Hero section cards */
+.hero-cta .btn {
+    position: relative;
+    overflow: hidden;
+    --glow-x: 50%;
+    --glow-y: 50%;
+    --glow-intensity: 0;
+    --glow-radius: 150px;
+}
+
+.hero-cta .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+            rgba(255, 255, 255, calc(var(--glow-intensity) * 0.2)) 0%,
+            transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+}

@@ -73,23 +73,33 @@
     height: 400px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Nodes Container - centered in the scene */
+.nodes-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
 }
 
 /* Nodes */
 .orbital-node {
     position: absolute;
-    top: 50%;
-    left: 50%;
     cursor: pointer;
     transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* Center the node on its calculated position */
-    margin-left: -20px;
-    /* Half of node-circle width (40px / 2) */
-    margin-top: -20px;
-    /* Half of node-circle height (40px / 2) */
+    width: 0;
+    height: 0;
+    overflow: visible;
+    pointer-events: none;
 }
 
 .node-circle {
@@ -103,6 +113,10 @@
     justify-content: center;
     transition: all 0.3s ease;
     z-index: 2;
+    margin-top: -20px;
+    /* Center circle vertically on origin */
+    flex-shrink: 0;
+    pointer-events: auto;
 }
 
 .node-glow {
@@ -112,6 +126,7 @@
     background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     border-radius: 50%;
     transform: scale(calc(1 + var(--energy) / 200));
+    pointer-events: none;
 }
 
 .node-label {
@@ -123,6 +138,7 @@
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
     transition: all 0.3s ease;
+    pointer-events: none;
 }
 
 /* Node States */
