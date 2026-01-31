@@ -10,7 +10,7 @@
 /* Base card styles for magic effect */
 .magic-card {
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden removed to prevent clipping of absolute children */
     --glow-x: 50%;
     --glow-y: 50%;
     --glow-intensity: 0;
