@@ -4,185 +4,181 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up | NextStep AI</title>
-    <meta name="description" content="Create your account and start your AI-powered career journey">
-    <link rel="stylesheet" href="css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+    <title>Authentication | NextStep AI</title>
+    <link rel="stylesheet" href="css/auth-modern.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-    <div class="auth-page">
-        <div class="auth-card fade-in">
-            <div class="auth-header">
-                <div class="auth-logo">🚀</div>
-                <h1 class="auth-title">Welcome to NextStep AI</h1>
-                <p class="auth-subtitle">Your AI-powered career co-pilot</p>
+    <div class="auth-container">
+        <!-- Left Side: Auth Form -->
+        <div class="auth-sidebar">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h1 class="auth-title" id="auth-title">Welcome back</h1>
+                    <p class="auth-subtitle" id="auth-subtitle">Sign in to your account to continue</p>
+                </div>
+
+                <div class="card-content">
+                    <!-- Login View -->
+                    <div id="login-view">
+                        <form id="form-login">
+                            <div class="form-group">
+                                <label class="form-label" for="login-email">Email</label>
+                                <div class="input-wrapper">
+                                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2" />
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                                    </svg>
+                                    <input type="email" id="login-email" class="form-input"
+                                        placeholder="name@example.com" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="login-password">Password</label>
+                                <div class="input-wrapper">
+                                    <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    <input type="password" id="login-password" class="form-input"
+                                        placeholder="Enter your password" required>
+                                    <button type="button" class="toggle-password"
+                                        onclick="togglePassword('login-password', this)">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                            <circle cx="12" cy="12" r="3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Sign In</button>
+                        </form>
+
+                        <div class="divider"><span>Or continue with</span></div>
+
+                        <button class="btn btn-outline" onclick="handleGoogleAuth()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="#4285F4"
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                <path fill="#34A853"
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                <path fill="#FBBC05"
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                <path fill="#EA4335"
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                            </svg>
+                            Continue with Google
+                        </button>
+
+                        <div class="footer-link">
+                            Don't have an account? <a href="#" onclick="toggleView('signup')">Sign up</a>
+                        </div>
+                    </div>
+
+                    <!-- Signup View -->
+                    <div id="signup-view" class="hidden">
+                        <!-- Step 1: Profile Selection -->
+                        <div id="signup-step-1">
+                            <div class="profile-selector">
+                                <div class="profile-card" id="card-student" onclick="selectProfile('student')">
+                                    <div class="profile-icon" style="background: #eff6ff; color: #3b82f6;">🎓</div>
+                                    <div class="profile-info">
+                                        <h3>Student / Fresher</h3>
+                                        <p>Currently studying or recently graduated</p>
+                                    </div>
+                                </div>
+                                <div class="profile-card" id="card-careerGap" onclick="selectProfile('careerGap')">
+                                    <div class="profile-icon" style="background: #f3e8ff; color: #7c3aed;">💼</div>
+                                    <div class="profile-info">
+                                        <h3>Career Gap / Professional</h3>
+                                        <p>Returning to work or switching careers</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="profile-continue-btn" class="btn btn-primary" disabled
+                                onclick="nextSignupStep()">Continue</button>
+                            <div class="footer-link">
+                                Already have an account? <a href="#" onclick="toggleView('login')">Sign in</a>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Details Form -->
+                        <div id="signup-step-2" class="hidden">
+                            <form id="form-signup">
+                                <div class="form-group">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" id="signup-name" class="form-input" placeholder="John Doe"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="signup-email" class="form-input"
+                                        placeholder="name@example.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <div class="input-wrapper">
+                                        <input type="password" id="signup-password" class="form-input"
+                                            placeholder="Create password" required>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Fields -->
+                                <div id="student-fields" class="hidden form-group">
+                                    <label class="form-label">Degree</label>
+                                    <input type="text" class="form-input" placeholder="e.g. B.Tech CS">
+                                </div>
+
+                                <div id="career-gap-fields" class="hidden form-group">
+                                    <label class="form-label">Last Job Role</label>
+                                    <input type="text" class="form-input" placeholder="e.g. Software Engineer">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Target Role</label>
+                                    <select id="signup-role" class="form-input">
+                                        <option value="sde">Software Developer</option>
+                                        <option value="frontend">Frontend Developer</option>
+                                        <option value="backend">Backend Developer</option>
+                                    </select>
+                                </div>
+
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button type="button" class="btn btn-outline"
+                                        onclick="prevSignupStep()">Back</button>
+                                    <button type="submit" class="btn btn-primary">Create Account</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="auth-tabs">
-                <button class="auth-tab active" onclick="showTab('signup')">Sign Up</button>
-                <button class="auth-tab" onclick="showTab('login')">Login</button>
-            </div>
+        <!-- Right Side: Hero Gradient -->
+        <div class="auth-hero">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
 
-            <!-- Sign Up Form -->
-            <form id="signup-form" onsubmit="handleSignup(event)">
-                <div class="form-group">
-                    <label class="form-label">I am a...</label>
-                    <select class="form-select" id="user-type" required onchange="updateSignupForm()">
-                        <option value="">Select your profile</option>
-                        <option value="student">Student / Fresher</option>
-                        <option value="careerGap">Career Gap / Returning Professional</option>
-                    </select>
-                </div>
-
-                <div id="common-fields" class="hidden">
-                    <div class="form-group">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" id="signup-name" class="form-input" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" id="signup-email" class="form-input" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" id="signup-password" class="form-input" required>
-                    </div>
-                </div>
-
-                <div id="student-fields" class="hidden">
-                    <input type="text" id="college-name" class="form-input" placeholder="College Name">
-                    <input type="text" id="degree" class="form-input" placeholder="Degree">
-                    <input type="number" id="graduation-year" class="form-input" placeholder="Graduation Year">
-                    <select class="form-select" id="student-target-role">
-                        <option value="">Select your target role</option>
-                        <option value="sde">Software Developer</option>
-                        <option value="frontend">Frontend Developer</option>
-                        <option value="backend">Backend Developer</option>
-                    </select>
-                </div>
-
-                <div id="career-gap-fields" class="hidden">
-                    <input type="text" id="last-job-role" class="form-input" placeholder="Last Job Role">
-                    <input type="number" id="years-experience" class="form-input" placeholder="Years of Experience">
-                    <input type="number" id="gap-duration" class="form-input" placeholder="Career Gap (months)">
-                    <select class="form-select" id="career-gap-target-role">
-                        <option value="">Select your target role</option>
-                        <option value="sde">Software Developer</option>
-                        <option value="frontend">Frontend Developer</option>
-                        <option value="backend">Backend Developer</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="signup-btn" disabled>Create Account</button>
-            </form>
-
-            <!-- Login Form -->
-            <form id="login-form" class="hidden" onsubmit="handleLogin(event)">
-                <input type="email" id="login-email" class="form-input" placeholder="Email" required>
-                <input type="password" id="login-password" class="form-input" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-
-            <div class="oauth-divider"><span>or continue with</span></div>
-
-            <button class="oauth-btn" onclick="handleOAuth()">Continue with Google</button>
-
-            <div class="auth-footer">
-                <a href="index.html">← Back to Home</a>
+            <div class="hero-content">
+                <div class="hero-icon">🚀</div>
+                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Join NextStep AI</h2>
+                <p style="opacity: 0.8; font-size: 1.1rem; line-height: 1.6;">
+                    Build your career with AI-powered guidance, resume analysis, and mock interviews.
+                </p>
             </div>
         </div>
     </div>
 
-    <script>
-        function showTab(tab) {
-            document.getElementById("signup-form").classList.toggle("hidden", tab !== "signup");
-            document.getElementById("login-form").classList.toggle("hidden", tab !== "login");
-        }
-
-        function updateSignupForm() {
-            const userType = document.getElementById("user-type").value;
-            document.getElementById("common-fields").classList.remove("hidden");
-            document.getElementById("student-fields").classList.toggle("hidden", userType !== "student");
-            document.getElementById("career-gap-fields").classList.toggle("hidden", userType !== "careerGap");
-            document.getElementById("signup-btn").disabled = !userType;
-        }
-
-        function handleSignup(e) {
-            e.preventDefault();
-
-            const userType = document.getElementById("user-type").value;
-            const name = document.getElementById("signup-name").value;
-            const email = document.getElementById("signup-email").value;
-            const password = document.getElementById("signup-password").value;
-
-            let targetRole = "";
-
-            if (userType === "student") {
-                targetRole = document.getElementById("student-target-role").value;
-            } else if (userType === "careerGap") {
-                targetRole = document.getElementById("career-gap-target-role").value;
-            }
-
-            const profile = {
-                name: name,
-                email: email,
-                password: password,
-                targetRole: targetRole,
-                createdAt: new Date().toISOString()
-            };
-
-            localStorage.setItem("userType", userType);
-            localStorage.setItem("nextStep_user", JSON.stringify(profile));
-
-            alert("Account created successfully!");
-            window.location.href = "dashboard.html";
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById("login-email").value;
-            const password = document.getElementById("login-password").value;
-            const stored = JSON.parse(localStorage.getItem("nextStep_user"));
-
-            if (!stored) {
-                alert("No account found. Please sign up first.");
-                return;
-            }
-
-            if (stored.email === email && stored.password === password) {
-                alert("Login successful!");
-                window.location.href = "dashboard.html";
-            } else {
-                alert("Invalid credentials");
-            }
-        }
-
-        function handleOAuth() {
-            let userType = prompt("Are you a Student or Career Gap user? Type: student or careerGap");
-
-            if (userType !== "student" && userType !== "careerGap") {
-                alert("Invalid selection. Please try again.");
-                return;
-            }
-
-            const userData = {
-                name: "Google User",
-                email: "googleuser@example.com",
-                password: "oauth",
-                targetRole: "sde",
-                createdAt: new Date().toISOString()
-            };
-
-            localStorage.setItem("userType", userType);
-            localStorage.setItem("nextStep_user", JSON.stringify(userData));
-
-            window.location.href = "dashboard.html";
-        }
-    </script>
+    <script type="module" src="js/auth-modern.js"></script>
 </body>
 
 </html>
