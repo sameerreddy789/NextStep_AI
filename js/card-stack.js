@@ -58,7 +58,16 @@ class CardStack {
     init() {
         this.render();
         this.setupInteractions();
-        this.updateCards(true); // Initial immediate position
+
+        // Position them immediately using manual styles to ensure layout
+        this.updateCards(true);
+
+        // Allow browser to breathe then ensure GSAP takes over
+        requestAnimationFrame(() => {
+            // We don't need to force immediate again if first one worked, 
+            // but let's schedule the first transition
+            setTimeout(() => this.updateCards(false), 200);
+        });
 
         if (this.options.autoAdvance) {
             this.startAutoAdvance();
@@ -211,7 +220,9 @@ class CardStack {
             const visible = abs <= maxOffset;
 
             if (!visible) {
-                gsap.to(el, { opacity: 0, scale: 0.8, duration: 0.4, visibility: 'hidden' });
+                el.style.opacity = '0';
+                el.style.visibility = 'hidden';
+                gsap.set(el, { opacity: 0, scale: 0.8 });
                 return;
             }
 
@@ -227,20 +238,37 @@ class CardStack {
 
             el.classList.toggle('is-active', isActive);
 
-            gsap.to(el, {
+            const props = {
                 visibility: 'visible',
                 opacity: 1,
                 x: x,
+                xPercent: -50,
                 y: y + lift,
                 z: z,
                 rotateZ: rotateZ,
                 rotateX: rotateX,
                 scale: scale,
                 zIndex: zIndex,
-                duration: immediate ? 0 : 0.6,
-                ease: this.options.ease,
+                force3D: true,
                 overwrite: true
-            });
+            };
+
+            if (immediate) {
+                // Manual fallback for instant reliablity
+                el.style.zIndex = zIndex;
+                el.style.opacity = '1';
+                el.style.visibility = 'visible';
+                el.style.transform = `translate3d(${x}px, ${y + lift}px, ${z}px) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) scale(${scale}) translateX(-50%)`;
+
+                // Sync GSAP so it knows where we are
+                gsap.set(el, props);
+            } else {
+                gsap.to(el, {
+                    ...props,
+                    duration: 0.6,
+                    ease: this.options.ease
+                });
+            }
         });
     }
 
@@ -266,7 +294,14 @@ class CardStack {
 }
 
 // Auto-initialize with career paths
-document.addEventListener('DOMContentLoaded', () => {
+const initCardStack = () => {
+    // Check if GSAP is loaded
+    if (typeof gsap === 'undefined') {
+        console.warn('GSAP not loaded yet, retrying...');
+        setTimeout(initCardStack, 100);
+        return;
+    }
+
     const stackItems = [
         {
             title: "1. AI Resume Analysis",
@@ -295,7 +330,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
-    if (document.getElementById('card-stack-container')) {
+    const container = document.getElementById('card-stack-container');
+    if (container) {
         new CardStack({
             containerSelector: '#card-stack-container',
             items: stackItems,
@@ -303,4 +339,11 @@ document.addEventListener('DOMContentLoaded', () => {
             intervalMs: 3500
         });
     }
-});
+};
+
+// Start ASAP
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCardStack);
+} else {
+    initCardStack();
+}

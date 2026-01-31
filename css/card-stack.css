@@ -17,6 +17,15 @@
     justify-content: center;
     perspective: 1100px;
     outline: none;
+    overflow: visible;
+}
+
+.cards-wrapper {
+    position: absolute;
+    bottom: 40px;
+    left: 0;
+    transform-style: preserve-3d;
+    width: 100%;
 }
 
 /* Background spotlight effect */
@@ -49,13 +58,16 @@
 .card-stack-item {
     position: absolute;
     bottom: 0;
+    left: 50%;
     border-radius: 1.5rem;
     border: 4px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    will-change: transform, opacity;
+    /* will-change: transform, opacity; - Removing to avoid potential rendering glitches */
     transform-style: preserve-3d;
     background: #1a1a2e;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .card-stack-item.is-active {

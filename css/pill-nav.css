@@ -57,6 +57,10 @@
     display: flex;
     align-items: center;
     height: 100%;
+    flex: 1;
+    /* Take remaining space */
+    margin-left: 4rem;
+    /* Spacing from logo */
 }
 
 .pill-logo {
@@ -88,7 +92,10 @@
     list-style: none;
     display: flex;
     align-items: stretch;
-    gap: var(--pill-gap);
+    justify-content: space-between;
+    /* Distribute items */
+    width: 100%;
+    /* Use full available width */
     margin: 0;
     padding: 4px;
     height: 100%;
