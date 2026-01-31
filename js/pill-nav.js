@@ -235,8 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
             items: [
                 { label: 'Home', href: 'index.html' },
                 { label: 'How It Works', href: '#how-it-works' },
-                { label: 'Who It\'s For', href: '#who-its-for' },
-                { label: 'Login', href: 'auth.html' },
+                { label: 'Features', href: '#features' },
                 { label: 'Get Started', href: 'auth.html' }
             ],
             activeHref: 'index.html',
