@@ -267,33 +267,31 @@ class CardStack {
 
 // Auto-initialize with career paths
 document.addEventListener('DOMContentLoaded', () => {
-    const stackItems = [
-        {
-            title: "1. AI Resume Analysis",
+    {
+        title: "1. AI Resume Analysis",
             description: "Instant feedback on your resume with real-time score and ATS optimization tips.",
-            imageSrc: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?q=80&w=800&auto=format&fit=crop"
-        },
-        {
-            title: "2. Master Interviews",
+                imageSrc: "assets/images/card-1.png"
+    },
+    {
+        title: "2. Master Interviews",
             description: "Practice with our role-specific AI interviewer and conquer your nerves with direct feedback.",
-            imageSrc: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=800&auto=format&fit=crop"
-        },
-        {
-            title: "3. Skill Gap Identification",
+                imageSrc: "assets/images/card-2.png"
+    },
+    {
+        title: "3. Skill Gap Identification",
             description: "We reveal what you're missing for your dream job and how to bridge that gap.",
-            imageSrc: "https://images.unsplash.com/photo-1454165833767-027ffae7041b?q=80&w=800&auto=format&fit=crop"
-        },
-        {
-            title: "4. Custom Learning Roadmap",
+                imageSrc: "assets/images/card-3.png"
+    },
+    {
+        title: "4. Custom Learning Roadmap",
             description: "Tailored path of curated resources to help you level up where it matters most.",
-            imageSrc: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
-        },
-        {
-            title: "5. Land Your Dream Job",
+                imageSrc: "assets/images/card-4.png"
+    },
+    {
+        title: "5. Land Your Dream Job",
             description: "Final polish, tracking your progress, and getting hired with confidence.",
-            imageSrc: "https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=800&auto=format&fit=crop"
-        }
-    ];
+                imageSrc: "assets/images/card-5.png"
+    }
 
     if (document.getElementById('card-stack-container')) {
         new CardStack({
