@@ -267,31 +267,33 @@ class CardStack {
 
 // Auto-initialize with career paths
 document.addEventListener('DOMContentLoaded', () => {
-    {
-        title: "1. AI Resume Analysis",
+    const stackItems = [
+        {
+            title: "1. AI Resume Analysis",
             description: "Instant feedback on your resume with real-time score and ATS optimization tips.",
-                imageSrc: "assets/images/card-1.png"
-    },
-    {
-        title: "2. Master Interviews",
+            imageSrc: "assets/images/card-1.png"
+        },
+        {
+            title: "2. Master Interviews",
             description: "Practice with our role-specific AI interviewer and conquer your nerves with direct feedback.",
-                imageSrc: "assets/images/card-2.png"
-    },
-    {
-        title: "3. Skill Gap Identification",
+            imageSrc: "assets/images/card-2.png"
+        },
+        {
+            title: "3. Skill Gap Identification",
             description: "We reveal what you're missing for your dream job and how to bridge that gap.",
-                imageSrc: "assets/images/card-3.png"
-    },
-    {
-        title: "4. Custom Learning Roadmap",
+            imageSrc: "assets/images/card-3.png"
+        },
+        {
+            title: "4. Custom Learning Roadmap",
             description: "Tailored path of curated resources to help you level up where it matters most.",
-                imageSrc: "assets/images/card-4.png"
-    },
-    {
-        title: "5. Land Your Dream Job",
+            imageSrc: "assets/images/card-4.png"
+        },
+        {
+            title: "5. Land Your Dream Job",
             description: "Final polish, tracking your progress, and getting hired with confidence.",
-                imageSrc: "assets/images/card-5.png"
-    }
+            imageSrc: "assets/images/card-5.png"
+        }
+    ];
 
     if (document.getElementById('card-stack-container')) {
         new CardStack({
