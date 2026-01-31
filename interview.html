@@ -25,88 +25,122 @@
                     <p class="page-subtitle">Choose your interview mode and test your skills</p>
                 </div>
 
-                <div class="interview-modes">
-                    <div class="mode-card" onclick="startInterview('technical')">
-                        <div class="mode-icon">💻</div>
-                        <h3 class="mode-title">Technical Interview</h3>
-                        <p class="mode-desc">DSA, system design, and coding questions tailored to your target role</p>
-                        <div class="mode-meta">
-                            <span class="badge badge-primary">8-10 Questions</span>
+                <div class="interview-modes" style="display: block; text-align: center;">
+                    <div class="mode-card" style="max-width: 600px; margin: 0 auto; cursor: default;">
+                        <div class="mode-icon">🧠</div>
+                        <h3 class="mode-title">Adaptive AI Interview</h3>
+                        <p class="mode-desc">
+                            A comprehensive evaluation tailored to your role.
+                            Includes <strong>Coding Challenges</strong> (with code editor) and
+                            <strong>Behavioral Questions</strong> (with speech analysis).
+                        </p>
+                        <div class="mode-meta" style="justify-content: center; margin-bottom: 24px;">
+                            <span class="badge badge-gold">Mixed Format</span>
                             <span>~30 mins</span>
                         </div>
-                    </div>
-
-                    <div class="mode-card" onclick="startInterview('behavioral')">
-                        <div class="mode-icon">🗣️</div>
-                        <h3 class="mode-title">Behavioral Interview</h3>
-                        <p class="mode-desc">STAR method questions about teamwork, leadership, and problem-solving</p>
-                        <div class="mode-meta">
-                            <span class="badge badge-green">6-8 Questions</span>
-                            <span>~20 mins</span>
-                        </div>
-                    </div>
-
-                    <div class="mode-card" onclick="startInterview('mixed')">
-                        <div class="mode-icon">🎯</div>
-                        <h3 class="mode-title">Mixed Interview</h3>
-                        <p class="mode-desc">Comprehensive evaluation with both technical and behavioral questions</p>
-                        <div class="mode-meta">
-                            <span class="badge badge-gold">12-15 Questions</span>
-                            <span>~45 mins</span>
-                        </div>
+                        <button class="btn btn-primary btn-lg" onclick="startInterview('mixed')">
+                            Start AI Interview →
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Interview In Progress -->
             <div id="interview-section" class="hidden">
-                <div class="interview-header">
-                    <div>
-                        <span class="badge badge-primary" id="interview-mode-badge">Technical Interview</span>
-                        <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
-                            Question <span id="current-q">1</span> of <span id="total-q">10</span>
+                <div class="interview-grid">
+                    <!-- Left: Question & Input -->
+                    <div class="interview-main">
+                        <div class="interview-header">
+                            <div>
+                                <span class="badge badge-primary" id="interview-mode-badge">Technical Interview</span>
+                                <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
+                                    Question <span id="current-q">1</span> of <span id="total-q">10</span>
+                                </div>
+                            </div>
+                            <div class="interview-timer">
+                                <span>⏱️</span>
+                                <span id="timer">02:00</span>
+                            </div>
+                        </div>
+
+                        <div class="interview-progress">
+                            <div class="progress-bar" style="height: 6px;">
+                                <div class="progress-fill" id="interview-progress" style="width: 10%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-category" id="question-category">Data Structures</div>
+                            <h2 class="question-text" id="question-text">
+                                Explain the difference between a stack and a queue. When would you use each?
+                            </h2>
+                        </div>
+
+                        <div class="answer-section">
+                            <div class="answer-header">
+                                <label style="font-size: 14px; font-weight: 500;" id="answer-label">Your Answer</label>
+                                <div class="answer-tools">
+                                    <span id="code-lang-badge" class="badge badge-secondary hidden"
+                                        style="font-size: 11px;">JavaScript</span>
+                                    <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
+                                        <span class="mic-icon">🎤</span>
+                                        <span id="mic-status">Start Speaking</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Text/Speech Input -->
+                            <div id="text-input-container">
+                                <textarea class="answer-input" id="answer-input"
+                                    placeholder="Type your answer here or use the microphone... Be clear and structured in your response."></textarea>
+                            </div>
+
+                            <!-- Code Editor Input -->
+                            <div id="code-input-container" class="hidden">
+                                <div class="code-editor" id="code-editor">
+                                    <textarea class="code-area" id="code-area" spellcheck="false"
+                                        placeholder="// Write your solution here..."></textarea>
+                                </div>
+                            </div>
+
+                            <div class="answer-tips">
+                                <span>💡 Tips:</span>
+                                <span>Be specific</span>
+                                <span>Use examples</span>
+                                <span>Structure your answer</span>
+                            </div>
+                        </div>
+
+                        <div class="interview-actions">
+                            <button class="btn btn-secondary" onclick="skipQuestion()">
+                                Skip Question
+                            </button>
+                            <button class="btn btn-primary" onclick="submitAnswer()">
+                                Submit Answer →
+                            </button>
                         </div>
                     </div>
-                    <div class="interview-timer">
-                        <span>⏱️</span>
-                        <span id="timer">02:00</span>
+
+                    <!-- Right: Video Feed -->
+                    <div class="interview-sidebar">
+                        <div class="video-container">
+                            <video id="webcam-feed" autoplay playsinline muted></video>
+                            <div class="video-overlay">
+                                <div class="rec-indicator" id="rec-indicator">
+                                    <div class="rec-dot"></div> REC
+                                </div>
+                                <div class="video-label">Your Camera</div>
+                            </div>
+                        </div>
+
+                        <div class="ai-interviewer">
+                            <div class="ai-avatar">
+                                <div class="ai-pulse"></div>
+                                🤖
+                            </div>
+                            <div class="ai-status">AI is listening...</div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="interview-progress">
-                    <div class="progress-bar" style="height: 6px;">
-                        <div class="progress-fill" id="interview-progress" style="width: 10%;"></div>
-                    </div>
-                </div>
-
-                <div class="question-card">
-                    <div class="question-category" id="question-category">Data Structures</div>
-                    <h2 class="question-text" id="question-text">
-                        Explain the difference between a stack and a queue. When would you use each?
-                    </h2>
-                </div>
-
-                <div class="answer-section">
-                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 8px;">Your
-                        Answer</label>
-                    <textarea class="answer-input" id="answer-input"
-                        placeholder="Type your answer here... Be clear and structured in your response."></textarea>
-
-                    <div class="answer-tips">
-                        <span>💡 Tips:</span>
-                        <span>Be specific</span>
-                        <span>Use examples</span>
-                        <span>Structure your answer</span>
-                    </div>
-                </div>
-
-                <div class="interview-actions">
-                    <button class="btn btn-secondary" onclick="skipQuestion()">
-                        Skip Question
-                    </button>
-                    <button class="btn btn-primary" onclick="submitAnswer()">
-                        Submit Answer →
-                    </button>
                 </div>
             </div>
 
@@ -236,47 +270,219 @@
             color: var(--accent-gold);
         }
 
+        .interview-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .interview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .interview-sidebar {
+                order: -1;
+            }
+        }
+
+        .answer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .mic-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .mic-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mic-btn.recording {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.5);
+            color: var(--accent-red);
+            animation: pulse-red 2s infinite;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: black;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        #webcam-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            /* Mirror effect */
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rec-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .rec-indicator.active {
+            opacity: 1;
+        }
+
+        .rec-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+
+        .video-label {
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            border-radius: 6px;
+            font-size: 11px;
+            color: white;
+        }
+
+        .ai-interviewer {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 16px;
+            position: relative;
+        }
+
+        .ai-pulse {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            opacity: 0;
+        }
+
+        .ai-status {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        @keyframes pulse-red {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
         .interview-actions {
             display: flex;
             justify-content: space-between;
             gap: 16px;
+        }
+
+        .answer-tools {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .code-editor {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid #333;
+            font-family: 'Fira Code', monospace;
+            min-height: 200px;
+        }
+
+        .code-area {
+            width: 100%;
+            height: 200px;
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            outline: none;
         }
     </style>
 
     <script>
         // Interview questions by mode
         const QUESTIONS = {
-            technical: [
-                { category: 'Data Structures', text: 'Explain the difference between a stack and a queue. When would you use each?' },
-                { category: 'Algorithms', text: 'How would you find the middle element of a linked list in one pass?' },
-                { category: 'System Design', text: 'How would you design a URL shortening service like bit.ly?' },
-                { category: 'JavaScript', text: 'Explain closures in JavaScript with an example.' },
-                { category: 'Databases', text: 'What is the difference between SQL and NoSQL databases? When would you choose one over the other?' },
-                { category: 'APIs', text: 'Explain REST API principles. What makes an API RESTful?' },
-                { category: 'Problem Solving', text: 'Given an array of integers, find two numbers that add up to a target sum.' },
-                { category: 'System Design', text: 'How would you handle rate limiting in a high-traffic API?' }
-            ],
-            behavioral: [
-                { category: 'Teamwork', text: 'Tell me about a time you had a conflict with a team member. How did you resolve it?' },
-                { category: 'Leadership', text: 'Describe a situation where you had to lead a project. What was the outcome?' },
-                { category: 'Problem Solving', text: 'Tell me about a challenging problem you faced and how you solved it.' },
-                { category: 'Learning', text: 'How do you stay updated with new technologies and industry trends?' },
-                { category: 'Failure', text: 'Tell me about a time you failed. What did you learn from it?' },
-                { category: 'Communication', text: 'Describe a situation where you had to explain a complex technical concept to a non-technical person.' }
-            ],
             mixed: [
-                { category: 'Technical', text: 'Explain the concept of Big O notation and why it matters.' },
-                { category: 'Behavioral', text: 'Tell me about a time you had to meet a tight deadline.' },
-                { category: 'Technical', text: 'What is the difference between synchronous and asynchronous programming?' },
-                { category: 'Behavioral', text: 'How do you prioritize tasks when you have multiple deadlines?' },
-                { category: 'Technical', text: 'Explain how HTTP caching works.' },
-                { category: 'Behavioral', text: 'Describe your ideal work environment.' },
-                { category: 'Technical', text: 'What are microservices? What are their pros and cons?' },
-                { category: 'Behavioral', text: 'Tell me about a project you are most proud of.' }
+                { type: 'code', category: 'Data Structures', text: 'Implement a function to check if a string is a palindrome.' },
+                { type: 'text', category: 'Behavioral', text: 'Tell me about a time you had a conflict with a team member. How did you resolve it?' },
+                { type: 'code', category: 'Algorithms', text: 'Write a function to find the first non-repeating character in a string.' },
+                { type: 'text', category: 'System Design', text: 'How would you design a URL shortening service like bit.ly? Explain the key components.' },
+                { type: 'code', category: 'JavaScript', text: 'Write a function that flattens a nested array of any depth.' },
+                { type: 'text', category: 'Leadership', text: 'Describe a situation where you had to lead a project under tight deadlines.' },
+                { type: 'code', category: 'Problem Solving', text: 'Given an array of integers, find two numbers that add up to a specific target.' },
+                { type: 'text', category: 'Databases', text: 'Explain the difference between SQL and NoSQL databases. When would you choose one over the other?' }
             ]
         };
 
-        let currentMode = '';
+        let currentMode = 'mixed';
         let currentQuestionIndex = 0;
         let answers = [];
         let timerInterval = null;
@@ -307,12 +513,48 @@
             document.getElementById('mode-selection').classList.add('hidden');
             document.getElementById('interview-section').classList.remove('hidden');
 
-            const modeNames = { technical: 'Technical Interview', behavioral: 'Behavioral Interview', mixed: 'Mixed Interview' };
-            document.getElementById('interview-mode-badge').textContent = modeNames[mode];
+            document.getElementById('interview-mode-badge').textContent = 'Adaptive Interview';
             document.getElementById('total-q').textContent = QUESTIONS[mode].length;
 
             showQuestion();
             startTimer();
+
+            // Initialize Media
+            window.interviewMedia.initCamera('webcam-feed').then(success => {
+                if (success) {
+                    console.log("Camera initialized");
+                } else {
+                    console.warn("Could not access camera.");
+                }
+            });
+
+            window.interviewMedia.initSpeech((final, interim) => {
+                const textArea = document.getElementById('answer-input');
+                // Only for text mode
+                if (!document.getElementById('text-input-container').classList.contains('hidden')) {
+                    if (final) {
+                        textArea.value += (textArea.value ? ' ' : '') + final;
+                        textArea.scrollTop = textArea.scrollHeight;
+                    }
+                }
+            });
+        }
+
+        function toggleSpeech() {
+            const isRecording = window.interviewMedia.toggleListening();
+            const btn = document.getElementById('mic-btn');
+            const status = document.getElementById('mic-status');
+            const recIndicator = document.getElementById('rec-indicator');
+
+            if (isRecording) {
+                btn.classList.add('recording');
+                status.textContent = 'Listening...';
+                recIndicator.classList.add('active');
+            } else {
+                btn.classList.remove('recording');
+                status.textContent = 'Start Speaking';
+                recIndicator.classList.remove('active');
+            }
         }
 
         function showQuestion() {
@@ -322,52 +564,52 @@
             document.getElementById('current-q').textContent = currentQuestionIndex + 1;
             document.getElementById('question-category').textContent = q.category;
             document.getElementById('question-text').textContent = q.text;
-            document.getElementById('answer-input').value = '';
+
+            // UI Toggle based on type
+            const textContainer = document.getElementById('text-input-container');
+            const codeContainer = document.getElementById('code-input-container');
+            const micBtn = document.getElementById('mic-btn');
+            const codeBadge = document.getElementById('code-lang-badge');
+
+            if (q.type === 'code') {
+                // Code Mode
+                textContainer.classList.add('hidden');
+                codeContainer.classList.remove('hidden');
+                micBtn.classList.add('hidden');
+                codeBadge.classList.remove('hidden');
+                document.getElementById('code-area').value = ''; // Clear code
+            } else {
+                // Text/Speech Mode
+                textContainer.classList.remove('hidden');
+                codeContainer.classList.add('hidden');
+                micBtn.classList.remove('hidden');
+                codeBadge.classList.add('hidden');
+                document.getElementById('answer-input').value = ''; // Clear text
+            }
+
             document.getElementById('interview-progress').style.width =
                 ((currentQuestionIndex + 1) / questions.length * 100) + '%';
 
-            timeLeft = 120;
+            timeLeft = q.type === 'code' ? 300 : 120; // More time for code
             updateTimerDisplay();
         }
 
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-
-                if (timeLeft <= 0) {
-                    submitAnswer();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const mins = Math.floor(timeLeft / 60);
-            const secs = timeLeft % 60;
-            document.getElementById('timer').textContent =
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-
-            // Change color when low
-            const timer = document.querySelector('.interview-timer');
-            if (timeLeft <= 30) {
-                timer.style.background = 'rgba(239, 68, 68, 0.15)';
-                timer.style.color = 'var(--accent-red)';
-            } else {
-                timer.style.background = 'rgba(245, 158, 11, 0.15)';
-                timer.style.color = 'var(--accent-gold)';
-            }
-        }
-
         function submitAnswer() {
-            const answer = document.getElementById('answer-input').value;
             const questions = QUESTIONS[currentMode];
+            const q = questions[currentQuestionIndex];
 
+            let answer = '';
+            if (q.type === 'code') {
+                answer = document.getElementById('code-area').value;
+            } else {
+                answer = document.getElementById('answer-input').value;
+            }
             answers.push({
-                question: questions[currentQuestionIndex],
+                question: q.text,
+                category: q.category,
+                type: q.type,
                 answer: answer,
-                timeSpent: 120 - timeLeft
+                timeSpent: 120 - timeLeft // Approximate
             });
 
             currentQuestionIndex++;
@@ -400,6 +642,10 @@
         function completeInterview() {
             clearInterval(timerInterval);
 
+            // Stop media
+            window.interviewMedia.stopCamera();
+            window.interviewMedia.stopListening();
+
             // Save interview results
             const interviewData = {
                 mode: currentMode,
@@ -412,6 +658,7 @@
             document.getElementById('complete-section').classList.remove('hidden');
         }
     </script>
+    <script src="js/interview-media.js"></script>
     <script src="js/sidebar.js"></script>
 </body>
 

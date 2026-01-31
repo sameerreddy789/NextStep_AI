@@ -5,6 +5,7 @@
 
 const STORAGE_KEY = 'nextStep_skills';
 const USER_KEY = 'nextStep_user';
+const TASKS_KEY = 'nextStep_tasks';
 
 // Default skills for demo
 const DEFAULT_SKILLS = [
@@ -98,6 +99,14 @@ const DEFAULT_USER = {
     joinDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
 };
 
+// Default tasks
+const DEFAULT_TASKS = [
+    { id: 't1', title: 'Learn System Design basics', due: 'Today', status: 'progress', icon: '📚', color: 'blue', completed: false },
+    { id: 't2', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', icon: '💻', color: 'purple', completed: false },
+    { id: 't3', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', icon: '🎤', color: 'green', completed: false },
+    { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true }
+];
+
 // Categories definition
 const CATEGORIES = {
     programming: { name: 'Programming', icon: '💻', color: '#60a5fa' },
@@ -143,6 +152,19 @@ function getUser() {
 
 function saveUser(user) {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+function getTasks() {
+    const stored = localStorage.getItem(TASKS_KEY);
+    if (!stored) {
+        localStorage.setItem(TASKS_KEY, JSON.stringify(DEFAULT_TASKS));
+        return DEFAULT_TASKS;
+    }
+    return JSON.parse(stored);
+}
+
+function saveTasks(tasks) {
+    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
 }
 
 // ============ Skill CRUD ============
@@ -217,7 +239,26 @@ function logProgress(skillId, amount = 10) {
     });
 
     saveSkills(skills);
+    saveSkills(skills);
     return skill;
+}
+
+// ============ Task CRUD ============
+
+function getTodayTasks() {
+    return getTasks();
+}
+
+function toggleTask(id) {
+    const tasks = getTasks();
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.completed = !task.completed;
+        task.status = task.completed ? 'done' : 'progress';
+        saveTasks(tasks);
+        return task;
+    }
+    return null;
 }
 
 // ============ Analytics ============
@@ -307,5 +348,7 @@ window.SkillStore = {
     getUser,
     saveUser,
     CATEGORIES,
-    GROWTH_STAGES
+    GROWTH_STAGES,
+    getTasks,
+    toggleTask
 };

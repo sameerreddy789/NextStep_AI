@@ -152,61 +152,63 @@
                 <!-- Upcoming Tasks -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Learning Tasks</h3>
-                        <a href="roadmap.html" class="card-action">View All</a>
+                        <div class="card-header">
+                            <h3 class="card-title">My Tasks</h3>
+                            <a href="roadmap.html" class="card-action">View All</a>
+                        </div>
+                        <div class="task-list" id="task-list">
+                            <!-- Tasks injected by JS -->
+                        </div>
                     </div>
-                    <div class="task-list" id="task-list">
-                        <!-- Tasks injected by JS -->
-                    </div>
-                </div>
 
-                <!-- Career Gap Explanation (Only for Career Gap users) -->
-                <div class="card" id="career-gap-section" style="display: none;">
-                    <div class="card-header">
-                        <h3 class="card-title">🔄 Career Gap Guidance</h3>
-                    </div>
-                    <div style="padding: 12px;">
-                        <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
-                            Returning to work after a career gap is challenging but achievable. Here's your personalized
-                            guidance:
-                        </p>
-                        <div class="task-list">
-                            <div class="task-item">
-                                <div class="task-icon purple">📚</div>
-                                <div class="task-content">
-                                    <div class="task-title">Update Your Skills</div>
-                                    <div class="task-due">Focus on latest technologies in your field</div>
+                    <!-- Career Gap Explanation (Only for Career Gap users) -->
+                    <div class="card" id="career-gap-section" style="display: none;">
+                        <div class="card-header">
+                            <h3 class="card-title">Today's Focus</h3>
+                        </div>
+                        <div style="padding: 12px;">
+                            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
+                                Returning to work after a career gap is challenging but achievable. Here's your
+                                personalized
+                                guidance:
+                            </p>
+                            <div class="task-list">
+                                <div class="task-item">
+                                    <div class="task-icon purple">📚</div>
+                                    <div class="task-content">
+                                        <div class="task-title">Update Your Skills</div>
+                                        <div class="task-due">Focus on latest technologies in your field</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="task-item">
-                                <div class="task-icon blue">💼</div>
-                                <div class="task-content">
-                                    <div class="task-title">Build Portfolio Projects</div>
-                                    <div class="task-due">Showcase recent work to employers</div>
+                                <div class="task-item">
+                                    <div class="task-icon blue">💼</div>
+                                    <div class="task-content">
+                                        <div class="task-title">Build Portfolio Projects</div>
+                                        <div class="task-due">Showcase recent work to employers</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="task-item">
-                                <div class="task-icon green">🤝</div>
-                                <div class="task-content">
-                                    <div class="task-title">Network Actively</div>
-                                    <div class="task-due">Reconnect with industry professionals</div>
+                                <div class="task-item">
+                                    <div class="task-icon green">🤝</div>
+                                    <div class="task-content">
+                                        <div class="task-title">Network Actively</div>
+                                        <div class="task-due">Reconnect with industry professionals</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Skill Gaps -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Priority Skills</h3>
-                        <a href="skill-gap.html" class="card-action">View All</a>
-                    </div>
-                    <div class="skill-gap-mini" id="skill-gaps">
-                        <!-- Skill gaps injected by JS -->
+                    <!-- Skill Gaps -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Priority Skills</h3>
+                            <a href="skill-gap.html" class="card-action">View All</a>
+                        </div>
+                        <div class="skill-gap-mini" id="skill-gaps">
+                            <!-- Skill gaps injected by JS -->
+                        </div>
                     </div>
                 </div>
-            </div>
         </main>
     </div>
 
@@ -605,42 +607,40 @@
                 document.getElementById('progress-circle').style.strokeDashoffset = offset;
             }
 
-            // Render tasks based on user type
-            let tasks = [];
-            if (userType === 'student') {
-                tasks = [
-                    { icon: '📚', title: 'Learn System Design basics', due: 'Today', status: 'progress', color: 'blue' },
-                    { icon: '💻', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', color: 'purple' },
-                    { icon: '🎤', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', color: 'green' },
-                    { icon: '📖', title: 'Complete college project', due: 'This week', status: 'progress', color: 'gold' }
-                ];
-            } else if (userType === 'careerGap') {
-                tasks = [
-                    { icon: '🔄', title: 'Update resume with recent skills', due: 'Today', status: 'progress', color: 'blue' },
-                    { icon: '💼', title: 'Build portfolio project', due: 'This week', status: 'pending', color: 'purple' },
-                    { icon: '🤝', title: 'Network on LinkedIn', due: 'Tomorrow', status: 'pending', color: 'green' },
-                    { icon: '📚', title: 'Learn latest frameworks', due: 'In 3 days', status: 'progress', color: 'gold' }
-                ];
-            } else {
-                // Default tasks
-                tasks = [
-                    { icon: '📚', title: 'Learn System Design basics', due: 'Today', status: 'progress', color: 'blue' },
-                    { icon: '💻', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', color: 'purple' },
-                    { icon: '🎤', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', color: 'green' },
-                    { icon: '📖', title: 'Review React concepts', due: 'Completed', status: 'done', color: 'gold' }
-                ];
+            // Render interactive tasks
+            function renderTasks() {
+                const tasks = window.SkillStore.getTasks();
+                document.getElementById('task-list').innerHTML = tasks.map(t => `
+                    <div class="task-item" onclick="toggleTask('${t.id}')" style="cursor: pointer; opacity: ${t.completed ? '0.6' : '1'}">
+                        <div class="task-icon ${t.color}">${t.icon}</div>
+                        <div class="task-content">
+                            <div class="task-title" style="text-decoration: ${t.completed ? 'line-through' : 'none'}">${t.title}</div>
+                            <div class="task-due">${t.due}</div>
+                        </div>
+                        <div class="task-check-circle" style="
+                            width: 20px; 
+                            height: 20px; 
+                            border: 2px solid ${t.completed ? 'var(--accent-green)' : 'var(--border-color)'}; 
+                            border-radius: 50%; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center;
+                            background: ${t.completed ? 'var(--accent-green)' : 'transparent'}
+                        ">
+                            ${t.completed ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
+                        </div>
+                    </div>
+                `).join('');
             }
 
-            document.getElementById('task-list').innerHTML = tasks.map(t => `
-                <div class="task-item">
-                    <div class="task-icon ${t.color}">${t.icon}</div>
-                    <div class="task-content">
-                        <div class="task-title">${t.title}</div>
-                        <div class="task-due">${t.due}</div>
-                    </div>
-                    <span class="task-status ${t.status}">${t.status === 'done' ? 'Done' : t.status === 'progress' ? 'In Progress' : 'Pending'}</span>
-                </div>
-            `).join('');
+            // Initial render
+            renderTasks();
+
+            // Toggle function
+            window.toggleTask = function (id) {
+                window.SkillStore.toggleTask(id);
+                renderTasks();
+            };
 
             // Render skill gaps
             const skillGaps = [

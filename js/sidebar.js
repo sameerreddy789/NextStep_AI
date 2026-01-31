@@ -14,9 +14,7 @@ const SIDEBAR_CONFIG = {
         { icon: '📄', text: 'Resume', href: 'resume.html' },
         { icon: '🎯', text: 'Skill Gap', href: 'skill-gap.html' },
         { icon: '🎤', text: 'Interview', href: 'interview.html' },
-        { icon: '📈', text: 'Feedback', href: 'feedback.html' },
-        { icon: '🗺️', text: 'Roadmap', href: 'roadmap.html' },
-        { icon: '✅', text: 'Tracker', href: 'tracker.html' }
+        { icon: '️', text: 'Roadmap', href: 'roadmap.html' }
     ],
     accountNav: [
         { icon: '👤', text: 'My Profile', href: 'profile.html' }
