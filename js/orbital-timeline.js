@@ -60,24 +60,8 @@ class OrbitalTimeline {
                             
                             <!-- Detail Card (Initially hidden) -->
                             <div class="node-card">
-                                <div class="card-header">
-                                    <span class="badge ${item.status}">${item.status.toUpperCase()}</span>
-                                    <span class="date">${item.date}</span>
-                                </div>
                                 <h3 class="card-title">${item.title}</h3>
                                 <p class="card-desc">${item.content}</p>
-
-                                ${item.relatedIds.length > 0 ? `
-                                    <div class="card-connections">
-                                        <h4>CONNECTED NODES</h4>
-                                        <div class="connection-list">
-                                            ${item.relatedIds.map(relId => {
-            const rel = this.options.data.find(d => d.id === relId);
-            return `<button class="rel-btn" data-rel="${relId}">${rel ? rel.title : 'Node'} →</button>`;
-        }).join('')}
-                                        </div>
-                                    </div>
-                                ` : ''}
                             </div>
                         </div>
                     `).join('')}
