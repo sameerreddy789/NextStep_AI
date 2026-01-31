@@ -160,13 +160,13 @@ class Stepper {
             }
         });
 
-        // Update connectors
+        // Update connectors - use height for vertical layout
         document.querySelectorAll('.step-connector').forEach((connector, i) => {
             const fill = connector.querySelector('.step-connector-fill');
             if (i + 1 < this.currentStep || this.isCompleted) {
-                fill.style.width = '100%';
+                fill.style.height = '100%';
             } else {
-                fill.style.width = '0';
+                fill.style.height = '0';
             }
         });
 

@@ -8,8 +8,8 @@ class OrbitalTimeline {
         this.options = {
             containerSelector: options.containerSelector || '#orbital-timeline-container',
             data: options.data || [],
-            autoRotate: options.autoRotate !== undefined ? options.autoRotate : true,
-            rotationSpeed: options.rotationSpeed || 0.3,
+            autoRotate: options.autoRotate !== undefined ? options.autoRotate : false,
+            rotationSpeed: options.rotationSpeed || 0,
             radius: options.radius || 200,
             accentColor: options.accentColor || '#6366f1',
             ...options
@@ -66,16 +66,6 @@ class OrbitalTimeline {
                                 </div>
                                 <h3 class="card-title">${item.title}</h3>
                                 <p class="card-desc">${item.content}</p>
-                                
-                                <div class="card-energy">
-                                    <div class="energy-label">
-                                        <span>⚡ Energy Level</span>
-                                        <span>${item.energy}%</span>
-                                    </div>
-                                    <div class="energy-bar">
-                                        <div class="energy-fill" style="width: ${item.energy}%"></div>
-                                    </div>
-                                </div>
 
                                 ${item.relatedIds.length > 0 ? `
                                     <div class="card-connections">
@@ -196,30 +186,82 @@ class OrbitalTimeline {
         const total = this.options.data.length;
         this.options.data.forEach((item, index) => {
             const el = this.nodeElements[item.id];
-            const angle = ((index / total) * 360 + this.rotationAngle) % 360;
+            // Start from top (270 degrees / -90 degrees) and distribute evenly
+            const angleOffset = -90; // Start from top
+            const angle = angleOffset + (index / total) * 360 + this.rotationAngle;
             const radian = (angle * Math.PI) / 180;
 
+            // Calculate position on the circle perimeter
             const x = this.options.radius * Math.cos(radian);
             const y = this.options.radius * Math.sin(radian);
 
-            // Z-index simulating depth
-            const zIndex = 100 + Math.round(50 * Math.cos(radian));
-            const opacity = 0.4 + 0.6 * ((1 + Math.sin(radian)) / 2);
-
+            // Apply transform - nodes are already centered via CSS
             el.style.transform = `translate(${x}px, ${y}px)`;
-            el.style.zIndex = (item.id === this.expandedId) ? 1000 : zIndex;
-            el.style.opacity = (item.id === this.expandedId) ? 1 : opacity;
+
+            // Keep all nodes at full opacity when static, dim others when one is expanded
+            if (this.expandedId) {
+                el.style.zIndex = (item.id === this.expandedId) ? 1000 : 10;
+                el.style.opacity = (item.id === this.expandedId) ? 1 : 0.5;
+            } else {
+                el.style.zIndex = 100;
+                el.style.opacity = 1;
+            }
         });
     }
 }
 
-// Initial Data
+// NextStep AI Features Data
 const timelineData = [
-    { id: 1, title: "Planning", date: "Jan 2024", content: "Project planning and requirements gathering phase.", status: "completed", icon: "Calendar", relatedIds: [2], energy: 100 },
-    { id: 2, title: "Design", date: "Feb 2024", content: "UI/UX design and system architecture.", status: "completed", icon: "FileText", relatedIds: [1, 3], energy: 90 },
-    { id: 3, title: "Development", date: "Mar 2024", content: "Core features implementation and testing.", status: "in-progress", icon: "Code", relatedIds: [2, 4], energy: 60 },
-    { id: 4, title: "Testing", date: "Apr 2024", content: "User testing and bug fixes.", status: "pending", icon: "User", relatedIds: [3, 5], energy: 30 },
-    { id: 5, title: "Release", date: "May 2024", content: "Final deployment and release.", status: "pending", icon: "Clock", relatedIds: [4], energy: 10 }
+    {
+        id: 1,
+        title: "Resume",
+        date: "Step 1",
+        content: "Upload your resume and get AI-powered skill extraction, ATS compatibility scoring, and personalized improvement suggestions.",
+        status: "completed",
+        icon: "FileText",
+        relatedIds: [2, 3],
+        energy: 100
+    },
+    {
+        id: 2,
+        title: "Interview",
+        date: "Step 2",
+        content: "Practice with adaptive AI mock interviews. Choose technical, behavioral, or mixed modes tailored to your target role.",
+        status: "in-progress",
+        icon: "User",
+        relatedIds: [1, 3, 4],
+        energy: 75
+    },
+    {
+        id: 3,
+        title: "Skill Gap",
+        date: "Step 3",
+        content: "Identify missing critical skills for your dream job. Get prioritized recommendations based on market demand.",
+        status: "in-progress",
+        icon: "Code",
+        relatedIds: [1, 2, 4],
+        energy: 60
+    },
+    {
+        id: 4,
+        title: "Roadmap",
+        date: "Step 4",
+        content: "Follow a personalized 6-week learning plan with curated YouTube tutorials and LeetCode problems.",
+        status: "pending",
+        icon: "Calendar",
+        relatedIds: [3, 5],
+        energy: 40
+    },
+    {
+        id: 5,
+        title: "Progress",
+        date: "Ongoing",
+        content: "Track your daily activities, maintain streaks, and monitor your Job Readiness Score as you improve.",
+        status: "pending",
+        icon: "Clock",
+        relatedIds: [4],
+        energy: 20
+    }
 ];
 
 // Initialize

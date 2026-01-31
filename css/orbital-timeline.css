@@ -6,7 +6,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #000;
+    background: transparent;
     overflow: hidden;
     position: relative;
     color: #fff;
@@ -78,18 +78,25 @@
 /* Nodes */
 .orbital-node {
     position: absolute;
+    top: 50%;
+    left: 50%;
     cursor: pointer;
     transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* Center the node on its calculated position */
+    margin-left: -20px;
+    /* Half of node-circle width (40px / 2) */
+    margin-top: -20px;
+    /* Half of node-circle height (40px / 2) */
 }
 
 .node-circle {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #000;
+    background: rgba(22, 22, 42, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.4);
     display: flex;
     align-items: center;
