@@ -107,6 +107,32 @@ body {
     margin-bottom: 20px;
 }
 
+/* Scrollable role grid for Step 2 */
+#role-grid {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Custom scrollbar styling */
+#role-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+#role-grid::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+    border-radius: 4px;
+}
+
+#role-grid::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 4px;
+}
+
+#role-grid::-webkit-scrollbar-thumb:hover {
+    background: #6d28d9;
+}
+
 .option-card {
     background: rgba(255, 255, 255, 0.03);
     border: 2px solid var(--border);

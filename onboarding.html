@@ -17,7 +17,7 @@
             <div class="progress-bar-bg">
                 <div class="progress-bar-fill" id="progress-bar"></div>
             </div>
-            <div class="step-indicator" id="step-indicator">Step 1 of 6</div>
+            <div class="step-indicator" id="step-indicator">Step 1 of 5</div>
         </div>
 
         <!-- Wizard Card -->
@@ -50,70 +50,119 @@
             <!-- STEP 2: Target Role -->
             <div class="step-content hidden" id="step-2">
                 <h1 class="step-title">What role are you preparing for?</h1>
-                <div class="options-grid">
-                    <button class="option-card" onclick="selectOption('targetRole', 'Software Engineer')">
+                <div class="options-grid" id="role-grid">
+                    <button class="option-card" onclick="selectOption('targetRole', 'Frontend Developer')">
+                        <span class="icon">🎨</span>
+                        <span class="label">Frontend Developer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Backend Developer')">
+                        <span class="icon">⚙️</span>
+                        <span class="label">Backend Developer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Full Stack Developer')">
                         <span class="icon">💻</span>
-                        <span class="label">Software Engineer</span>
+                        <span class="label">Full Stack Developer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Mobile Developer')">
+                        <span class="icon">📱</span>
+                        <span class="label">Mobile Developer</span>
                     </button>
                     <button class="option-card" onclick="selectOption('targetRole', 'Data Analyst')">
                         <span class="icon">📊</span>
                         <span class="label">Data Analyst</span>
                     </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Data Scientist')">
+                        <span class="icon">🔬</span>
+                        <span class="label">Data Scientist</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'ML Engineer')">
+                        <span class="icon">🤖</span>
+                        <span class="label">ML Engineer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'DevOps Engineer')">
+                        <span class="icon">🔧</span>
+                        <span class="label">DevOps Engineer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Cloud Engineer')">
+                        <span class="icon">☁️</span>
+                        <span class="label">Cloud Engineer</span>
+                    </button>
                     <button class="option-card" onclick="selectOption('targetRole', 'Product Manager')">
                         <span class="icon">🚀</span>
                         <span class="label">Product Manager</span>
                     </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'UI/UX Designer')">
+                        <span class="icon">🎯</span>
+                        <span class="label">UI/UX Designer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'QA Engineer')">
+                        <span class="icon">🧪</span>
+                        <span class="label">QA Engineer</span>
+                    </button>
                 </div>
+
                 <div class="input-group">
                     <label>Or type a custom role:</label>
                     <input type="text" id="custom-role-input" placeholder="e.g. UX Designer">
                 </div>
             </div>
 
-            <!-- STEP 3: Experience Level -->
+            <!-- STEP 3: Job Readiness Timeline -->
             <div class="step-content hidden" id="step-3">
-                <h1 class="step-title">What's your experience level?</h1>
-                <div class="options-stack">
-                    <button class="option-row" onclick="selectOption('experienceLevel', 'Beginner')">
-                        <span class="icon">👶</span>
-                        <div class="text">
-                            <strong>Beginner</strong>
-                            <span>I'm just starting out</span>
-                        </div>
+                <h1 class="step-title">When do you want to be job-ready?</h1>
+                <p class="step-subtitle">This helps us create a personalized timeline for you.</p>
+                <div class="options-grid">
+                    <button class="option-card" onclick="selectOption('jobReadyTimeline', '1-3 months')">
+                        <span class="icon">🚀</span>
+                        <span class="label">1-3 months</span>
                     </button>
-                    <button class="option-row" onclick="selectOption('experienceLevel', 'Intermediate')">
-                        <span class="icon">👨‍💻</span>
-                        <div class="text">
-                            <strong>Intermediate</strong>
-                            <span>I have some projects/experience</span>
-                        </div>
+                    <button class="option-card" onclick="selectOption('jobReadyTimeline', '3-6 months')">
+                        <span class="icon">📅</span>
+                        <span class="label">3-6 months</span>
                     </button>
-                    <button class="option-row" onclick="selectOption('experienceLevel', 'Advanced')">
-                        <span class="icon">🦸‍♂️</span>
-                        <div class="text">
-                            <strong>Advanced</strong>
-                            <span>I'm looking to master specific skills</span>
-                        </div>
+                    <button class="option-card" onclick="selectOption('jobReadyTimeline', '6-12 months')">
+                        <span class="icon">⏳</span>
+                        <span class="label">6-12 months</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('jobReadyTimeline', '12+ months')">
+                        <span class="icon">🎯</span>
+                        <span class="label">12+ months</span>
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 4: Language Preference -->
+            <!-- STEP 4: Preparation Style -->
             <div class="step-content hidden" id="step-4">
-                <h1 class="step-title">Preferred learning language?</h1>
-                <p class="step-subtitle">Select all that apply.</p>
-                <div class="options-grid" id="lang-grid">
-                    <button class="option-card multi-select" data-value="English">
-                        <span class="icon">🇺🇸</span>
-                        <span class="label">English</span>
+                <h1 class="step-title">Which describes your current preparation style?</h1>
+                <p class="step-subtitle">Be honest - we'll help you improve!</p>
+                <div class="options-stack">
+                    <button class="option-row" onclick="selectOption('preparationStyle', 'Random and unplanned')">
+                        <span class="icon">🎲</span>
+                        <div class="text">
+                            <strong>Random and unplanned</strong>
+                            <span>I learn whatever interests me at the moment</span>
+                        </div>
                     </button>
-                    <button class="option-card multi-select" data-value="Hindi">
-                        <span class="icon">🇮🇳</span>
-                        <span class="label">Hindi</span>
+                    <button class="option-row" onclick="selectOption('preparationStyle', 'Somewhat structured')">
+                        <span class="icon">📝</span>
+                        <div class="text">
+                            <strong>Somewhat structured</strong>
+                            <span>I have a rough plan but often deviate</span>
+                        </div>
                     </button>
-                    <button class="option-card multi-select" data-value="Telugu">
-                        <span class="icon">🏞️</span>
-                        <span class="label">Telugu</span>
+                    <button class="option-row" onclick="selectOption('preparationStyle', 'Very structured')">
+                        <span class="icon">📊</span>
+                        <div class="text">
+                            <strong>Very structured</strong>
+                            <span>I follow a detailed plan and track progress</span>
+                        </div>
+                    </button>
+                    <button class="option-row" onclick="selectOption('preparationStyle', 'Just starting')">
+                        <span class="icon">🌱</span>
+                        <div class="text">
+                            <strong>Just starting</strong>
+                            <span>I'm new to structured learning</span>
+                        </div>
                     </button>
                 </div>
             </div>
@@ -134,25 +183,7 @@
                 </div>
             </div>
 
-            <!-- STEP 6: Availability -->
-            <div class="step-content hidden" id="step-6">
-                <h1 class="step-title">How much time can you spend daily?</h1>
-                <p class="step-subtitle">This helps us plan your schedule (Optional).</p>
-                <div class="options-grid">
-                    <button class="option-card" onclick="selectOption('dailyTime', '30 mins')">
-                        <span class="icon">⏱️</span>
-                        <span class="label">30 mins</span>
-                    </button>
-                    <button class="option-card" onclick="selectOption('dailyTime', '1 hour')">
-                        <span class="icon">⏰</span>
-                        <span class="label">1 hour</span>
-                    </button>
-                    <button class="option-card" onclick="selectOption('dailyTime', '2+ hours')">
-                        <span class="icon">🔥</span>
-                        <span class="label">2+ hours</span>
-                    </button>
-                </div>
-            </div>
+
 
             <!-- Navigation Buttons -->
             <div class="wizard-actions">

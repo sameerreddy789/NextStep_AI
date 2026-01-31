@@ -5,14 +5,13 @@ import { doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebase
 
 // State
 let currentStep = 1;
-const totalSteps = 6;
+const totalSteps = 5;
 let userData = {
     careerGoal: null,
     targetRole: null,
-    experienceLevel: null,
-    preferredLanguage: [],
-    resumeStatus: 'pending',
-    dailyTime: null
+    jobReadyTimeline: null,
+    preparationStyle: null,
+    resumeStatus: 'pending'
 };
 
 // DOM Elements
@@ -58,20 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.addEventListener('change', handleFileUpload);
     removeFileBtn.addEventListener('click', removeFile);
 
-    // Multi-select for languages
-    document.querySelectorAll('.multi-select').forEach(card => {
-        card.addEventListener('click', function () {
-            const val = this.dataset.value;
-            this.classList.toggle('selected');
 
-            if (this.classList.contains('selected')) {
-                if (!userData.preferredLanguage.includes(val)) userData.preferredLanguage.push(val);
-            } else {
-                userData.preferredLanguage = userData.preferredLanguage.filter(l => l !== val);
-            }
-            validateStep();
-        });
-    });
 
     updateUI();
 });
@@ -141,10 +127,9 @@ function validateStep() {
     switch (currentStep) {
         case 1: isValid = !!userData.careerGoal; break;
         case 2: isValid = !!userData.targetRole; break;
-        case 3: isValid = !!userData.experienceLevel; break;
-        case 4: isValid = userData.preferredLanguage.length > 0; break;
+        case 3: isValid = !!userData.jobReadyTimeline; break;
+        case 4: isValid = !!userData.preparationStyle; break;
         case 5: isValid = userData.resumeStatus === 'uploaded'; break; // Resume Mandatory
-        case 6: isValid = true; break; // Optional time commitment
     }
 
     btnNext.disabled = !isValid;
