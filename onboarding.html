@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding | NextStep AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/onboarding.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="onboarding-container">
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+            <div class="step-indicator" id="step-indicator">Step 1 of 6</div>
+        </div>
+
+        <!-- Wizard Card -->
+        <div class="wizard-card">
+
+            <!-- STEP 1: Career Goal -->
+            <div class="step-content" id="step-1">
+                <h1 class="step-title">What best describes your current goal?</h1>
+                <p class="step-subtitle">We'll tailor your experience based on your background.</p>
+                <div class="options-grid">
+                    <button class="option-card" onclick="selectOption('careerGoal', 'Student')">
+                        <span class="icon">🎓</span>
+                        <span class="label">Student</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('careerGoal', 'Fresher')">
+                        <span class="icon">🌱</span>
+                        <span class="label">Fresher</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('careerGoal', 'Career Switcher')">
+                        <span class="icon">🔄</span>
+                        <span class="label">Career Switcher</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('careerGoal', 'Working Professional')">
+                        <span class="icon">💼</span>
+                        <span class="label">Working Professional</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Target Role -->
+            <div class="step-content hidden" id="step-2">
+                <h1 class="step-title">What role are you preparing for?</h1>
+                <div class="options-grid">
+                    <button class="option-card" onclick="selectOption('targetRole', 'Software Engineer')">
+                        <span class="icon">💻</span>
+                        <span class="label">Software Engineer</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Data Analyst')">
+                        <span class="icon">📊</span>
+                        <span class="label">Data Analyst</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('targetRole', 'Product Manager')">
+                        <span class="icon">🚀</span>
+                        <span class="label">Product Manager</span>
+                    </button>
+                </div>
+                <div class="input-group">
+                    <label>Or type a custom role:</label>
+                    <input type="text" id="custom-role-input" placeholder="e.g. UX Designer">
+                </div>
+            </div>
+
+            <!-- STEP 3: Experience Level -->
+            <div class="step-content hidden" id="step-3">
+                <h1 class="step-title">What's your experience level?</h1>
+                <div class="options-stack">
+                    <button class="option-row" onclick="selectOption('experienceLevel', 'Beginner')">
+                        <span class="icon">👶</span>
+                        <div class="text">
+                            <strong>Beginner</strong>
+                            <span>I'm just starting out</span>
+                        </div>
+                    </button>
+                    <button class="option-row" onclick="selectOption('experienceLevel', 'Intermediate')">
+                        <span class="icon">👨‍💻</span>
+                        <div class="text">
+                            <strong>Intermediate</strong>
+                            <span>I have some projects/experience</span>
+                        </div>
+                    </button>
+                    <button class="option-row" onclick="selectOption('experienceLevel', 'Advanced')">
+                        <span class="icon">🦸‍♂️</span>
+                        <div class="text">
+                            <strong>Advanced</strong>
+                            <span>I'm looking to master specific skills</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4: Language Preference -->
+            <div class="step-content hidden" id="step-4">
+                <h1 class="step-title">Preferred learning language?</h1>
+                <p class="step-subtitle">Select all that apply.</p>
+                <div class="options-grid" id="lang-grid">
+                    <button class="option-card multi-select" data-value="English">
+                        <span class="icon">🇺🇸</span>
+                        <span class="label">English</span>
+                    </button>
+                    <button class="option-card multi-select" data-value="Hindi">
+                        <span class="icon">🇮🇳</span>
+                        <span class="label">Hindi</span>
+                    </button>
+                    <button class="option-card multi-select" data-value="Telugu">
+                        <span class="icon">🏞️</span>
+                        <span class="label">Telugu</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 5: Resume Upload -->
+            <div class="step-content hidden" id="step-5">
+                <h1 class="step-title">Upload your Resume</h1>
+                <p class="step-subtitle">This is mandatory to generate your roadmap.</p>
+
+                <div class="upload-zone" id="upload-zone">
+                    <span class="upload-icon">📄</span>
+                    <p>Click to browse or drag & drop PDF/DOC</p>
+                    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" hidden>
+                </div>
+                <div id="file-preview" class="hidden">
+                    <span id="file-name">filename.pdf</span>
+                    <button id="remove-file">✕</button>
+                </div>
+            </div>
+
+            <!-- STEP 6: Availability -->
+            <div class="step-content hidden" id="step-6">
+                <h1 class="step-title">How much time can you spend daily?</h1>
+                <p class="step-subtitle">This helps us plan your schedule (Optional).</p>
+                <div class="options-grid">
+                    <button class="option-card" onclick="selectOption('dailyTime', '30 mins')">
+                        <span class="icon">⏱️</span>
+                        <span class="label">30 mins</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('dailyTime', '1 hour')">
+                        <span class="icon">⏰</span>
+                        <span class="label">1 hour</span>
+                    </button>
+                    <button class="option-card" onclick="selectOption('dailyTime', '2+ hours')">
+                        <span class="icon">🔥</span>
+                        <span class="label">2+ hours</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="wizard-actions">
+                <button id="btn-back" class="btn btn-secondary hidden">Back</button>
+                <button id="btn-next" class="btn btn-primary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Config -->
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/onboarding.js"></script>
+</body>
+
+</html>
