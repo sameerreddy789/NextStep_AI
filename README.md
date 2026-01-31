@@ -21,11 +21,12 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 - **Experience & Project Analysis** — Extracts and evaluates your work experience and projects
 
 ### 🎤 Adaptive AI Interviews
-- **Multiple Interview Modes:**
-  - **Technical Interview** — DSA, system design, and coding questions
-  - **Behavioral Interview** — STAR method questions for soft skills
-  - **Mixed Interview** — Comprehensive evaluation combining both
-- **Timed Responses** — 2-minute timer per question with visual feedback
+- **Adaptive/Adaptive Logic** — Intelligently mixes Technical (Code) and Behavioral (Speech) questions
+- **Dynamic Response Tools**:
+  - **Code Editor** — Monaco-style editor for coding questions
+  - **Speech-to-Text** — Real-time transcription for behavioral questions
+- **Live Proctoring Simulation** — Webcam feed for realistic interview pressure
+- **Timed Responses** — Adaptive timers (longer for code, shorter for speech)
 - **Progress Tracking** — Track your performance across sessions
 
 ### 🗺️ Personalized Learning Roadmap
@@ -43,7 +44,8 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 ### 👤 User Profiles
 - **Student/Fresher Mode** — Tailored for placement preparation
 - **Career Gap Mode** — Specialized guidance for returning professionals
-- **Skill Tracking** — Monitor growth across different skill categories
+- **Career Gap Mode** — Specialized guidance for returning professionals
+- **Activity Heatmap** — Github-style visualization of your daily learning progress
 
 ### � Onboarding Wizard
 - **Multi-step Flow** — Guided setup for personalized experience
@@ -84,7 +86,6 @@ NextStep-AI/
 ├── interview.html      # AI mock interview system
 ├── skill-gap.html      # Skill gap analysis
 ├── roadmap.html        # Personalized learning roadmap
-├── tracker.html        # Daily activity tracker
 ├── profile.html        # User profile management
 ├── feedback.html       # Interview feedback display
 ├── css/
