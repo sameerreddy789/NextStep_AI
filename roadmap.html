@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="js/route-guard.js"></script>
 </head>
 
 <body>
@@ -47,8 +48,8 @@
 
             <!-- CTA -->
             <div style="text-align: center; margin-top: 32px;">
-                <a href="tracker.html" class="btn btn-primary btn-lg">
-                    Go to Daily Tracker →
+                <a href="dashboard.html" class="btn btn-primary btn-lg">
+                    Go to Dashboard →
                 </a>
             </div>
         </main>
@@ -488,6 +489,13 @@
 
     <script>
         // Role-Based Learning Resources
+
+        // Mark roadmap as generated
+        localStorage.setItem('nextStep_roadmapCompleted', 'true');
+
+        // Also update Firestore if user is logged in (Async, best effort)
+        // Note: Ideally we import firebase here, but for strict local flow guard, localStorage is key.
+
         const RESOURCES_MAP = {
             'frontend': {
                 youtube: [

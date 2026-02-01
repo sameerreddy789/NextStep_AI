@@ -47,10 +47,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists() && docSnap.data().onboardingCompleted) {
+        if (docSnap.exists() && docSnap.data().roadmapGenerated) { // Changed from onboardingCompleted
             window.location.href = "dashboard.html";
         } else {
-            window.location.href = "onboarding.html";
+            // Modified: All users go to resume upload first if strict flow is required
+            // Route guard on resume.html isn't strictly pushing *forward* yet, 
+            // but let's send them to the start of the funnel.
+            window.location.href = "resume.html";
         }
     }
 
@@ -100,11 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
             await setDoc(doc(db, "users", user.uid), {
                 email: email,
                 createdAt: new Date().toISOString(),
-                onboardingCompleted: false
+                onboardingCompleted: false,
+                roadmapGenerated: false
             });
 
-            // 3. Redirect to Onboarding
-            window.location.href = "onboarding.html";
+            // 3. Redirect to Resume Upload
+            window.location.href = "resume.html";
 
         } catch (error) {
             console.error(error);
@@ -131,15 +135,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: user.email,
                     name: user.displayName,
                     createdAt: new Date().toISOString(),
-                    onboardingCompleted: false
+                    onboardingCompleted: false, // Legacy flag
+                    roadmapGenerated: false
                 });
-                window.location.href = "onboarding.html";
+                window.location.href = "resume.html";
             } else {
                 // Existing user -> Check status
-                if (docSnap.data().onboardingCompleted) {
+                if (docSnap.data().roadmapGenerated) {
                     window.location.href = "dashboard.html";
                 } else {
-                    window.location.href = "onboarding.html";
+                    window.location.href = "resume.html";
                 }
             }
 

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="js/route-guard.js"></script>
 </head>
 
 <body>
@@ -150,8 +151,8 @@
                 <h2 style="font-size: 32px; margin-bottom: 12px;">Interview Complete!</h2>
                 <p class="text-muted" style="margin-bottom: 32px;">Great job! Your responses are being analyzed by AI.
                 </p>
-                <a href="feedback.html" class="btn btn-primary btn-lg">
-                    View Your Feedback →
+                <a href="skill-gap.html" class="btn btn-primary btn-lg">
+                    View Skill Analysis →
                 </a>
             </div>
         </main>
@@ -656,6 +657,10 @@
 
             document.getElementById('interview-section').classList.add('hidden');
             document.getElementById('complete-section').classList.remove('hidden');
+
+            // Auto redirect after a few seconds or let them click
+            // For now, let's keep the manual click but update the link
+
         }
     </script>
     <script src="js/interview-media.js"></script>
