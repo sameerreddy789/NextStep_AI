@@ -5,6 +5,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
 // Your web app's Firebase configuration
+// NOTE: For static HTML deployment, Firebase API keys are safe to expose client-side.
+// Security is enforced through Firebase Security Rules in the Firebase Console.
+// Ensure you have properly configured:
+// 1. Firestore Security Rules (restrict read/write to authenticated users)
+// 2. Authentication rules (domain restrictions, email verification)
+// 3. Storage rules (if using Firebase Storage)
 const firebaseConfig = {
     apiKey: "AIzaSyBx72z8rNYCfONq2A-Gat_kh8UUNWIQUZM",
     authDomain: "nextstep-ai-c721a.firebaseapp.com",
