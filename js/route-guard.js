@@ -27,7 +27,7 @@
     const hasInterview = !!state.interview;
     const hasRoadmap = state.roadmap;
 
-    console.log('RouteGuard Check:', { Page: CURRENT_PAGE, State: state });
+    // console.log('RouteGuard Check:', { Page: CURRENT_PAGE, State: state }); // DEBUG: Uncomment for development
 
     // Helper function to show popup and redirect
     function showBlockedPopup(title, message, redirectUrl) {

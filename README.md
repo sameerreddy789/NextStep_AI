@@ -47,7 +47,6 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 ### 👤 User Profiles
 - **Student/Fresher Mode** — Tailored for placement preparation
 - **Career Gap Mode** — Specialized guidance for returning professionals
-- **Career Gap Mode** — Specialized guidance for returning professionals
 - **Activity Heatmap** — Github-style visualization of your daily learning progress
 
 ### � Onboarding Wizard
@@ -108,6 +107,22 @@ NextStep-AI/
     ├── orbital-timeline.js
     └── infinite-plane.js
 ```
+
+---
+
+## 📊 Visual Documentation
+
+### System Architecture
+![Architecture Diagram](architecture-diagram.png)
+*Complete system architecture showing client layer, application flow, and backend services*
+
+### User Journey Flow
+![User Flow](user-flow-diagram.png)
+*Sequential user journey from landing to dashboard (16:9 format)*
+
+### UI Wireframes
+![UI Wireframes](ui-wireframes.png)
+*Key screen wireframes: Landing, Dashboard, Interview, and Roadmap pages*
 
 ---
 
