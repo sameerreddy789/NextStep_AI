@@ -703,6 +703,96 @@ class ReadinessCalculator {
 }
 ```
 
+### Roadmap Completion Popup (NEW)
+
+**Responsibilities**:
+- Detect when all roadmap tasks are completed
+- Display congratulatory popup modal with completion statistics
+- Provide access to job/internship application sites
+- Suggest related skills for continued learning
+
+**Implementation**:
+
+```javascript
+// In roadmap.html
+const RELATED_SKILLS = {
+  'sde': [
+    { name: 'Cloud Architecture (AWS/GCP)', desc: 'Design scalable cloud solutions' },
+    { name: 'Microservices & API Design', desc: 'Build modular, maintainable systems' },
+    { name: 'DevOps & CI/CD', desc: 'Automate deployment pipelines' },
+    { name: 'Mobile Development', desc: 'Expand to iOS/Android apps' },
+    { name: 'AI/ML Integration', desc: 'Add intelligent features to apps' }
+  ],
+  // ... similar arrays for other roles: frontend, backend, fullstack, 
+  // data-analyst, data-scientist, ml-engineer, devops, product, designer
+};
+
+const JOB_SITES = {
+  general: [
+    { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/', icon: '💼' },
+    { name: 'Indeed', url: 'https://www.indeed.com/', icon: '🔍' },
+    { name: 'Glassdoor', url: 'https://www.glassdoor.com/Job/', icon: '🏢' }
+  ],
+  tech: [
+    { name: 'AngelList Talent', url: 'https://angel.co/jobs', icon: '🚀' },
+    { name: 'Wellfound (Startups)', url: 'https://wellfound.com/', icon: '⭐' },
+    { name: 'Hired', url: 'https://hired.com/', icon: '💎' }
+  ],
+  internships: [
+    { name: 'Internshala', url: 'https://internshala.com/', icon: '🎓' },
+    { name: 'LinkedIn Internships', url: 'https://www.linkedin.com/jobs/internship-jobs/', icon: '📚' }
+  ],
+  remote: [
+    { name: 'Remote.co', url: 'https://remote.co/remote-jobs/', icon: '🌍' },
+    { name: 'We Work Remotely', url: 'https://weworkremotely.com/', icon: '🏠' }
+  ]
+};
+
+function checkAllTasksComplete() {
+  const allTasks = ROADMAP_DATA.flatMap(week => week.tasks);
+  return allTasks.every(task => task.done);
+}
+
+function showCompletionPopup() {
+  const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+  const role = userData.targetRole || 'sde';
+  const relatedSkills = RELATED_SKILLS[role] || RELATED_SKILLS['sde'];
+  
+  // Create modal with:
+  // 1. Congratulations message personalized by role
+  // 2. Stats grid (weeks completed, tasks finished, job readiness)
+  // 3. Two action buttons: "Find Jobs" and "Explore Skills"
+  // 4. Side panels for job links and skill suggestions
+}
+```
+
+**UI Components**:
+
+1. **Completion Modal**: 
+   - Centered overlay with dark backdrop
+   - Celebration emoji animation (🎉)
+   - Graduate-style gradient title
+   - Stats grid showing completion metrics
+   - Two CTA buttons with icons
+
+2. **Jobs Side Panel**:
+   - Slides in from right
+   - Categorized job site links (Tech, Internships, Remote, General)
+   - Each link opens in new tab
+   - Hover effects for visual feedback
+
+3. **Skills Side Panel**:
+   - Slides in from right  
+   - 5 role-specific skill cards
+   - Each card shows skill name and brief description
+   - Tip box at bottom encouraging continued learning
+
+**Styling**:
+- Uses NextStep AI design system CSS variables
+- Glassmorphism effects on modal and panels
+- Smooth animations (fadeIn, slideUp, bounce)
+- Responsive design for mobile devices
+
 #### AI Provider Abstraction
 
 The AI Extractor uses a provider interface to abstract the underlying AI service:
