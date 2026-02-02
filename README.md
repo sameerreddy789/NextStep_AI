@@ -34,6 +34,9 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 - **Role-Specific Resources** — Curated YouTube tutorials and LeetCode problems for your target role
 - **Task Management** — Interactive checklist with learn, practice, and interview tasks
 - **Progress Visualization** — Track completion and stay motivated
+- **🎉 Completion Celebration** — Congratulatory popup when you finish all tasks with:
+  - **Job Application Links** — Direct access to LinkedIn, Indeed, AngelList, Internshala, and remote job boards
+  - **Related Skills Suggestions** — Role-specific skill recommendations to level up further
 
 ### 📊 Comprehensive Dashboard
 - **Job Readiness Score** — Real-time assessment of your interview readiness
@@ -139,6 +142,7 @@ NextStep-AI/
 3. **View Dashboard** — See your personalized readiness score
 4. **Take Mock Interviews** — Practice with AI-powered questions
 5. **Follow Roadmap** — Complete your learning plan
+6. **Celebrate & Apply** — Finish roadmap, get job links, explore advanced skills
 
 ---
 
