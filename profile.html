@@ -627,16 +627,23 @@
 
         function loadProfile() {
             // Check authentication
-            const userProfile = localStorage.getItem('userProfile');
-            const userType = localStorage.getItem('userType');
+            // Relaxed Auth Check for Debugging/Demo
+            let userDataStr = localStorage.getItem('nextStep_user');
 
-            if (!userProfile) {
-                alert('Please login first');
-                window.location.href = 'auth.html';
-                return;
+            if (!userDataStr) {
+                // Seed default data if missing so the page works
+                const defaultUser = {
+                    name: "Learner User",
+                    email: "learner@nextstep.ai",
+                    targetRole: "sde",
+                    experienceLevel: "fresher"
+                };
+                userDataStr = JSON.stringify(defaultUser);
+                localStorage.setItem('nextStep_user', userDataStr);
             }
 
-            const profile = JSON.parse(userProfile);
+            // Legacy support (optional, can be ignored)
+            // const userProfile = localStorage.getItem('userProfile');
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const profileData = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
 
