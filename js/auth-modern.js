@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            alert("Login Failed: " + error.message);
+            FirebaseErrorHandler.handleFirebaseError(error, 'Login failed');
             btn.disabled = false;
             btn.textContent = "Sign In";
         }
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            alert("Signup Failed: " + error.message);
+            FirebaseErrorHandler.handleFirebaseError(error, 'Signup failed');
             btn.disabled = false;
             btn.textContent = "Create Account";
         }
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            alert("Google Sign In Error: " + error.message);
+            FirebaseErrorHandler.handleFirebaseError(error, 'Google sign-in failed');
         }
     };
 });
