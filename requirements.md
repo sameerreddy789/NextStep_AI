@@ -300,3 +300,23 @@ These features exist in the platform but are specified separately.
 6. THE User_Profile object SHALL follow a standardized schema accessible via store.js utilities
 7. WHEN a user navigates from resume.html to other features, THE System SHALL preserve extraction state
 8. THE System SHALL display consistent UI components (cards, buttons, notifications) using the global styles.css design system
+
+### Requirement 16: Roadmap Completion Celebration (NEW)
+
+**User Story:** As a NextStep AI user, I want to see a congratulatory popup when I complete my roadmap, with options to apply for jobs or explore related skills, so I can take the next step in my career journey.
+
+#### Acceptance Criteria
+
+1. WHEN all roadmap tasks are marked as complete, THE System SHALL display a congratulatory popup modal
+2. THE popup SHALL display completion statistics: weeks completed, total tasks finished, and "100% Job Ready" indicator
+3. THE popup SHALL include a personalized message based on the user's target role (e.g., "You've mastered all the required skills for Software Developer!")
+4. THE popup SHALL provide two primary action buttons:
+   - "Find Internships & Jobs" — Opens a side panel with categorized job site links
+   - "Explore Related Skills" — Opens a side panel with role-specific skill recommendations
+5. THE job sites panel SHALL include links organized by category: Tech Jobs (AngelList, Wellfound, Hired), Internships (Internshala, LinkedIn), Remote (Remote.co, FlexJobs), General (LinkedIn, Indeed, Glassdoor)
+6. THE related skills panel SHALL display 5 domain-specific skills to learn next, based on the user's target role
+7. THE related skills data SHALL cover all supported roles: SDE, Frontend, Backend, Full Stack, Data Analyst, Data Scientist, ML Engineer, DevOps, Product Manager, UI/UX Designer
+8. THE popup and panels SHALL use NextStep AI's design system (CSS variables, glassmorphism, smooth animations)
+9. THE System SHALL allow users to close the popup and return to the roadmap page
+10. THE popup SHALL re-appear on page load if all tasks remain complete, allowing users to access job links and skills at any time
+
