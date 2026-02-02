@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <script src="js/route-guard.js"></script>
+    <!-- <script src="js/route-guard.js"></script> -->
 </head>
 
 <body>
@@ -897,6 +897,627 @@
             // Re-render would go here in a real app
             location.reload();
         }
+
+        // =============================================
+        // Roadmap Completion Feature
+        // =============================================
+
+        // Related Skills Data by Domain
+        const RELATED_SKILLS = {
+            'sde': [
+                { name: 'Cloud Architecture (AWS/GCP)', desc: 'Design scalable cloud solutions' },
+                { name: 'Microservices & API Design', desc: 'Build modular, maintainable systems' },
+                { name: 'DevOps & CI/CD', desc: 'Automate deployment pipelines' },
+                { name: 'Mobile Development', desc: 'Expand to iOS/Android apps' },
+                { name: 'AI/ML Integration', desc: 'Add intelligent features to apps' }
+            ],
+            'frontend': [
+                { name: 'React Native / Flutter', desc: 'Build cross-platform mobile apps' },
+                { name: 'Three.js / WebGL', desc: 'Create immersive 3D experiences' },
+                { name: 'Motion Design & GSAP', desc: 'Advanced animations' },
+                { name: 'Accessibility (WCAG)', desc: 'Build inclusive interfaces' },
+                { name: 'Performance Optimization', desc: 'Core Web Vitals mastery' }
+            ],
+            'backend': [
+                { name: 'GraphQL & gRPC', desc: 'Modern API protocols' },
+                { name: 'Message Queues (Kafka, RabbitMQ)', desc: 'Event-driven architecture' },
+                { name: 'Kubernetes & Docker', desc: 'Container orchestration' },
+                { name: 'Database Optimization', desc: 'Query tuning & indexing' },
+                { name: 'Security & Auth (OAuth, JWT)', desc: 'Secure your applications' }
+            ],
+            'fullstack': [
+                { name: 'Serverless (AWS Lambda)', desc: 'Build without servers' },
+                { name: 'Real-time Apps (WebSockets)', desc: 'Live collaboration features' },
+                { name: 'Testing & TDD', desc: 'Write reliable code' },
+                { name: 'Performance Monitoring', desc: 'APM tools & observability' },
+                { name: 'Progressive Web Apps', desc: 'Offline-first applications' }
+            ],
+            'data-analyst': [
+                { name: 'Power BI / Looker', desc: 'Enterprise BI tools' },
+                { name: 'Statistical Modeling', desc: 'Advanced analytics' },
+                { name: 'ETL Pipelines', desc: 'Data transformation' },
+                { name: 'Python Automation', desc: 'Automate data workflows' },
+                { name: 'A/B Testing', desc: 'Experimentation frameworks' }
+            ],
+            'data-scientist': [
+                { name: 'Deep Learning (PyTorch)', desc: 'Neural network expertise' },
+                { name: 'NLP & LLMs', desc: 'Language model applications' },
+                { name: 'Computer Vision', desc: 'Image & video analysis' },
+                { name: 'MLOps', desc: 'Deploy models at scale' },
+                { name: 'Feature Engineering', desc: 'Create predictive features' }
+            ],
+            'ml-engineer': [
+                { name: 'Model Optimization', desc: 'Quantization & pruning' },
+                { name: 'Edge AI & TinyML', desc: 'On-device inference' },
+                { name: 'Distributed Training', desc: 'Multi-GPU scaling' },
+                { name: 'AutoML & Hyperparameter Tuning', desc: 'Automated optimization' },
+                { name: 'Responsible AI', desc: 'Fairness & explainability' }
+            ],
+            'devops': [
+                { name: 'Infrastructure as Code', desc: 'Terraform & Pulumi' },
+                { name: 'Service Mesh (Istio)', desc: 'Advanced networking' },
+                { name: 'GitOps', desc: 'ArgoCD & Flux workflows' },
+                { name: 'Chaos Engineering', desc: 'Resilience testing' },
+                { name: 'Security (DevSecOps)', desc: 'Shift-left security' }
+            ],
+            'product': [
+                { name: 'Data-Driven PM', desc: 'Analytics for decisions' },
+                { name: 'Growth Hacking', desc: 'Viral loops & retention' },
+                { name: 'Technical Writing', desc: 'PRDs & documentation' },
+                { name: 'Stakeholder Management', desc: 'Cross-functional leadership' },
+                { name: 'AI Product Strategy', desc: 'AI-first product thinking' }
+            ],
+            'designer': [
+                { name: 'Motion Design (After Effects)', desc: 'Animated prototypes' },
+                { name: 'Design Tokens & Systems', desc: 'Scalable design' },
+                { name: 'AR/VR Design', desc: 'Immersive experiences' },
+                { name: 'User Research Methods', desc: 'Deep user insights' },
+                { name: 'Front-end Basics (CSS)', desc: 'Developer collaboration' }
+            ]
+        };
+
+        // Job/Internship Sites Data
+        const JOB_SITES = {
+            general: [
+                { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/', icon: '💼' },
+                { name: 'Indeed', url: 'https://www.indeed.com/', icon: '🔍' },
+                { name: 'Glassdoor', url: 'https://www.glassdoor.com/Job/', icon: '🏢' }
+            ],
+            tech: [
+                { name: 'AngelList Talent', url: 'https://angel.co/jobs', icon: '🚀' },
+                { name: 'Wellfound (Startups)', url: 'https://wellfound.com/', icon: '⭐' },
+                { name: 'Hired', url: 'https://hired.com/', icon: '💎' }
+            ],
+            internships: [
+                { name: 'Internshala', url: 'https://internshala.com/', icon: '🎓' },
+                { name: 'LinkedIn Internships', url: 'https://www.linkedin.com/jobs/internship-jobs/', icon: '📚' },
+                { name: 'LetsIntern', url: 'https://www.letsintern.com/', icon: '🌱' }
+            ],
+            remote: [
+                { name: 'Remote.co', url: 'https://remote.co/remote-jobs/', icon: '🌍' },
+                { name: 'We Work Remotely', url: 'https://weworkremotely.com/', icon: '🏠' },
+                { name: 'FlexJobs', url: 'https://www.flexjobs.com/', icon: '⏰' }
+            ]
+        };
+
+        // Check if all tasks are complete
+        function checkAllTasksComplete() {
+            const allTasks = ROADMAP_DATA.flatMap(week => week.tasks);
+            return allTasks.every(task => task.done);
+        }
+
+        // Show completion popup
+        function showCompletionPopup() {
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const role = userData.targetRole || 'sde';
+            const relatedSkills = RELATED_SKILLS[role] || RELATED_SKILLS['sde'];
+
+            const roleNames = {
+                'sde': 'Software Developer',
+                'frontend': 'Frontend Developer',
+                'backend': 'Backend Developer',
+                'fullstack': 'Full Stack Developer',
+                'data-analyst': 'Data Analyst',
+                'data-scientist': 'Data Scientist',
+                'ml-engineer': 'ML Engineer',
+                'devops': 'DevOps Engineer',
+                'product': 'Product Manager',
+                'designer': 'UI/UX Designer'
+            };
+
+            const popup = document.createElement('div');
+            popup.id = 'completion-popup';
+            popup.innerHTML = `
+                <div class="completion-overlay">
+                    <div class="completion-modal">
+                        <div class="completion-confetti">🎉</div>
+                        <h2 class="completion-title">Congratulations! 🎊</h2>
+                        <p class="completion-subtitle">You've mastered all the required skills for <strong>${roleNames[role] || 'your target role'}</strong>!</p>
+                        
+                        <div class="completion-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">6</span>
+                                <span class="stat-label">Weeks Completed</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">${ROADMAP_DATA.flatMap(w => w.tasks).length}</span>
+                                <span class="stat-label">Tasks Finished</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">100%</span>
+                                <span class="stat-label">Job Ready</span>
+                            </div>
+                        </div>
+
+                        <p class="completion-message">You're now ready to apply for your dream job! Choose your next step:</p>
+
+                        <div class="completion-actions">
+                            <button class="completion-btn primary" onclick="showJobsPanel()">
+                                <span class="btn-icon">💼</span>
+                                <span>Find Internships & Jobs</span>
+                            </button>
+                            <button class="completion-btn secondary" onclick="showSkillsPanel()">
+                                <span class="btn-icon">🚀</span>
+                                <span>Explore Related Skills</span>
+                            </button>
+                        </div>
+
+                        <button class="completion-close" onclick="closeCompletionPopup()">×</button>
+                    </div>
+                </div>
+
+                <!-- Jobs Panel -->
+                <div class="side-panel" id="jobs-panel">
+                    <div class="panel-header">
+                        <h3>🎯 Apply for Jobs & Internships</h3>
+                        <button class="panel-close" onclick="closeJobsPanel()">×</button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="job-category">
+                            <h4>🚀 Tech Jobs</h4>
+                            ${JOB_SITES.tech.map(site => `
+                                <a href="${site.url}" target="_blank" class="job-link">
+                                    <span class="job-icon">${site.icon}</span>
+                                    <span>${site.name}</span>
+                                    <span class="job-arrow">→</span>
+                                </a>
+                            `).join('')}
+                        </div>
+                        <div class="job-category">
+                            <h4>🎓 Internships</h4>
+                            ${JOB_SITES.internships.map(site => `
+                                <a href="${site.url}" target="_blank" class="job-link">
+                                    <span class="job-icon">${site.icon}</span>
+                                    <span>${site.name}</span>
+                                    <span class="job-arrow">→</span>
+                                </a>
+                            `).join('')}
+                        </div>
+                        <div class="job-category">
+                            <h4>🌍 Remote Opportunities</h4>
+                            ${JOB_SITES.remote.map(site => `
+                                <a href="${site.url}" target="_blank" class="job-link">
+                                    <span class="job-icon">${site.icon}</span>
+                                    <span>${site.name}</span>
+                                    <span class="job-arrow">→</span>
+                                </a>
+                            `).join('')}
+                        </div>
+                        <div class="job-category">
+                            <h4>💼 General Job Boards</h4>
+                            ${JOB_SITES.general.map(site => `
+                                <a href="${site.url}" target="_blank" class="job-link">
+                                    <span class="job-icon">${site.icon}</span>
+                                    <span>${site.name}</span>
+                                    <span class="job-arrow">→</span>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Panel -->
+                <div class="side-panel" id="skills-panel">
+                    <div class="panel-header">
+                        <h3>🚀 Related Skills to Explore</h3>
+                        <button class="panel-close" onclick="closeSkillsPanel()">×</button>
+                    </div>
+                    <div class="panel-content">
+                        <p class="panel-intro">Level up further with these skills related to ${roleNames[role] || 'your domain'}:</p>
+                        <div class="skills-list">
+                            ${relatedSkills.map(skill => `
+                                <div class="skill-card">
+                                    <div class="skill-name">${skill.name}</div>
+                                    <div class="skill-desc">${skill.desc}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="panel-tip">
+                            <span>💡</span>
+                            <span>These skills will make you stand out from other candidates and prepare you for senior roles!</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(popup);
+
+            // Add styles
+            const styles = document.createElement('style');
+            styles.id = 'completion-styles';
+            styles.textContent = `
+                .completion-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(10, 10, 18, 0.95);
+                    backdrop-filter: blur(12px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    animation: compFadeIn 0.4s ease;
+                }
+
+                .completion-modal {
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--border-radius-xl);
+                    padding: var(--spacing-2xl);
+                    max-width: 520px;
+                    width: 90%;
+                    text-align: center;
+                    position: relative;
+                    box-shadow: var(--shadow-lg), var(--shadow-glow);
+                    animation: compSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+
+                .completion-confetti {
+                    font-size: 64px;
+                    margin-bottom: var(--spacing-md);
+                    animation: compBounce 1s ease infinite;
+                }
+
+                .completion-title {
+                    font-size: clamp(24px, 5vw, 32px);
+                    font-weight: 800;
+                    background: var(--gradient-primary);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    margin-bottom: var(--spacing-sm);
+                }
+
+                .completion-subtitle {
+                    font-size: 16px;
+                    color: var(--text-secondary);
+                    margin-bottom: var(--spacing-lg);
+                    line-height: 1.6;
+                }
+
+                .completion-stats {
+                    display: flex;
+                    justify-content: center;
+                    gap: var(--spacing-xl);
+                    margin-bottom: var(--spacing-lg);
+                    padding: var(--spacing-lg);
+                    background: rgba(99, 102, 241, 0.08);
+                    border-radius: var(--border-radius-lg);
+                    border: 1px solid rgba(99, 102, 241, 0.15);
+                }
+
+                .completion-stats .stat-item {
+                    text-align: center;
+                }
+
+                .completion-stats .stat-value {
+                    display: block;
+                    font-size: 28px;
+                    font-weight: 700;
+                    color: var(--accent-green);
+                }
+
+                .completion-stats .stat-label {
+                    font-size: 12px;
+                    color: var(--text-muted);
+                }
+
+                .completion-message {
+                    font-size: 14px;
+                    color: var(--text-secondary);
+                    margin-bottom: var(--spacing-lg);
+                }
+
+                .completion-actions {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--spacing-sm);
+                }
+
+                .completion-btn {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: var(--spacing-sm);
+                    padding: var(--spacing-md) var(--spacing-lg);
+                    border-radius: var(--border-radius-md);
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: var(--transition-fast);
+                    border: none;
+                    font-family: 'Inter', sans-serif;
+                }
+
+                .completion-btn.primary {
+                    background: var(--gradient-primary);
+                    color: white;
+                    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+                }
+
+                .completion-btn.primary:hover {
+                    transform: translateY(-2px);
+                    box-shadow: var(--shadow-glow);
+                }
+
+                .completion-btn.secondary {
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-primary);
+                    border: 1px solid var(--border-color);
+                }
+
+                .completion-btn.secondary:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                .completion-btn .btn-icon {
+                    font-size: 18px;
+                }
+
+                .completion-close {
+                    position: absolute;
+                    top: var(--spacing-md);
+                    right: var(--spacing-md);
+                    width: 32px;
+                    height: 32px;
+                    border-radius: var(--border-radius-sm);
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-muted);
+                    border: none;
+                    font-size: 20px;
+                    cursor: pointer;
+                    transition: var(--transition-fast);
+                }
+
+                .completion-close:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--text-primary);
+                }
+
+                /* Side Panels */
+                .side-panel {
+                    position: fixed;
+                    top: 0;
+                    right: -480px;
+                    width: 420px;
+                    height: 100vh;
+                    background: var(--bg-secondary);
+                    border-left: 1px solid var(--border-color);
+                    z-index: 10001;
+                    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
+                }
+
+                .side-panel.open {
+                    right: 0;
+                }
+
+                .panel-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: var(--spacing-lg);
+                    border-bottom: 1px solid var(--border-color);
+                }
+
+                .panel-header h3 {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: var(--text-primary);
+                }
+
+                .panel-close {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: var(--border-radius-sm);
+                    background: rgba(255, 255, 255, 0.05);
+                    color: var(--text-muted);
+                    border: none;
+                    font-size: 20px;
+                    cursor: pointer;
+                    transition: var(--transition-fast);
+                }
+
+                .panel-close:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--text-primary);
+                }
+
+                .panel-content {
+                    flex: 1;
+                    overflow-y: auto;
+                    padding: var(--spacing-lg);
+                }
+
+                .panel-intro {
+                    color: var(--text-secondary);
+                    font-size: 14px;
+                    margin-bottom: var(--spacing-lg);
+                }
+
+                /* Job Links */
+                .job-category {
+                    margin-bottom: var(--spacing-lg);
+                }
+
+                .job-category h4 {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                    margin-bottom: var(--spacing-sm);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .job-link {
+                    display: flex;
+                    align-items: center;
+                    gap: var(--spacing-md);
+                    padding: var(--spacing-md);
+                    background: rgba(255, 255, 255, 0.02);
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--border-radius-md);
+                    margin-bottom: var(--spacing-sm);
+                    text-decoration: none;
+                    color: var(--text-primary);
+                    transition: var(--transition-fast);
+                }
+
+                .job-link:hover {
+                    background: rgba(99, 102, 241, 0.1);
+                    border-color: var(--accent-primary);
+                    transform: translateX(4px);
+                }
+
+                .job-icon {
+                    font-size: 20px;
+                }
+
+                .job-link span:nth-child(2) {
+                    flex: 1;
+                    font-size: 14px;
+                }
+
+                .job-arrow {
+                    color: var(--text-muted);
+                    transition: var(--transition-fast);
+                }
+
+                .job-link:hover .job-arrow {
+                    color: var(--accent-primary);
+                }
+
+                /* Skills List */
+                .skills-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--spacing-sm);
+                }
+
+                .skill-card {
+                    padding: var(--spacing-md);
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
+                    border-radius: var(--border-radius-md);
+                    transition: var(--transition-fast);
+                }
+
+                .skill-card:hover {
+                    border-color: var(--accent-primary);
+                    box-shadow: var(--shadow-glow);
+                }
+
+                .skill-name {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: var(--text-primary);
+                    margin-bottom: var(--spacing-xs);
+                }
+
+                .skill-desc {
+                    font-size: 13px;
+                    color: var(--text-muted);
+                }
+
+                .panel-tip {
+                    display: flex;
+                    gap: var(--spacing-sm);
+                    padding: var(--spacing-md);
+                    background: rgba(16, 185, 129, 0.08);
+                    border: 1px solid rgba(16, 185, 129, 0.2);
+                    border-radius: var(--border-radius-md);
+                    margin-top: var(--spacing-lg);
+                    font-size: 13px;
+                    color: var(--accent-green);
+                }
+
+                @keyframes compFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+
+                @keyframes compSlideUp {
+                    from { transform: translateY(30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+
+                @keyframes compBounce {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-8px); }
+                }
+
+                @media (max-width: 640px) {
+                    .side-panel {
+                        width: 100%;
+                        right: -100%;
+                    }
+                    .completion-stats {
+                        gap: var(--spacing-md);
+                        flex-wrap: wrap;
+                    }
+                    .completion-stats .stat-value {
+                        font-size: 22px;
+                    }
+                    .completion-modal {
+                        padding: var(--spacing-lg);
+                    }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+
+        function closeCompletionPopup() {
+            const popup = document.getElementById('completion-popup');
+            const styles = document.getElementById('completion-styles');
+            if (popup) popup.remove();
+            if (styles) styles.remove();
+        }
+
+        function showJobsPanel() {
+            document.getElementById('jobs-panel').classList.add('open');
+        }
+
+        function closeJobsPanel() {
+            document.getElementById('jobs-panel').classList.remove('open');
+        }
+
+        function showSkillsPanel() {
+            document.getElementById('skills-panel').classList.add('open');
+        }
+
+        function closeSkillsPanel() {
+            document.getElementById('skills-panel').classList.remove('open');
+        }
+
+        // Check completion on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Delay check to allow DOM to render
+            setTimeout(() => {
+                if (checkAllTasksComplete()) {
+                    showCompletionPopup();
+                }
+            }, 500);
+        });
     </script>
     <script src="js/sidebar.js"></script>
 </body>
