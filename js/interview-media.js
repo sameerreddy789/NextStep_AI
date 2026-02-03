@@ -9,21 +9,30 @@ class InterviewMedia {
         this.stream = null;
         this.recognition = null;
         this.isRecording = false;
+        this.mediaRecorder = null;
+        this.recordedChunks = [];
         this.onResult = null; // Callback for text result
+        this.synth = window.speechSynthesis;
     }
 
-    // Initialize Webcam
+    // Initialize Webcam with Audio
     async initCamera(videoElementId) {
         this.videoElement = document.getElementById(videoElementId);
         if (!this.videoElement) return false;
 
         try {
-            this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            // Request both video and audio
+            this.stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 1280, height: 720 },
+                audio: true
+            });
+
             this.videoElement.srcObject = this.stream;
+            // distinct from "isRecording" which is for speech recognition state in original code
+            // We will separate video recording logic
             return true;
         } catch (err) {
             console.error("Error accessing webcam:", err);
-            // Handle permission denied or no camera
             return false;
         }
     }
@@ -33,10 +42,83 @@ class InterviewMedia {
             this.stream.getTracks().forEach(track => track.stop());
             this.stream = null;
         }
+        this.cancelSpeech();
+    }
+
+    // Video Recording
+    startVideoRecording() {
+        if (this.stream && MediaRecorder.isTypeSupported('video/webm')) {
+            this.recordedChunks = [];
+            this.mediaRecorder = new MediaRecorder(this.stream, { mimeType: 'video/webm' });
+
+            this.mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    this.recordedChunks.push(event.data);
+                }
+            };
+
+            this.mediaRecorder.start();
+            console.log("Video recording started");
+            return true;
+        }
+        return false;
+    }
+
+    stopVideoRecording() {
+        return new Promise((resolve) => {
+            if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+                this.mediaRecorder.onstop = () => {
+                    const blob = new Blob(this.recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    resolve(url);
+                };
+                this.mediaRecorder.stop();
+                console.log("Video recording stopped");
+            } else {
+                resolve(null);
+            }
+        });
+    }
+
+    // Text to Speech
+    speak(text, onStart, onEnd) {
+        if (this.synth.speaking) {
+            this.synth.cancel();
+        }
+
+        const utterThis = new SpeechSynthesisUtterance(text);
+        utterThis.onstart = () => {
+            if (onStart) onStart();
+        }
+        utterThis.onend = () => {
+            if (onEnd) onEnd();
+        }
+
+        // Select a good voice (optional)
+        const voices = this.synth.getVoices();
+        // Try to find a natural sounding English voice
+        const preferredVoice = voices.find(voice => voice.name.includes("Google US English")) ||
+            voices.find(voice => voice.name.includes("Samantha")) ||
+            voices.find(voice => voice.lang === 'en-US');
+
+        if (preferredVoice) {
+            utterThis.voice = preferredVoice;
+        }
+
+        utterThis.pitch = 1;
+        utterThis.rate = 1;
+        this.synth.speak(utterThis);
+    }
+
+    cancelSpeech() {
+        if (this.synth) {
+            this.synth.cancel();
+        }
     }
 
     // Initialize Speech Recognition
     initSpeech(onResultCallback) {
+        // ... existing initSpeech logic ...
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             console.warn("Speech Recognition not supported in this browser.");
             return false;
@@ -68,7 +150,10 @@ class InterviewMedia {
         };
 
         this.recognition.onerror = (event) => {
-            console.error("Speech recognition error", event.error);
+            // Ignore no-speech error as it happens often
+            if (event.error !== 'no-speech') {
+                console.error("Speech recognition error", event.error);
+            }
         };
 
         return true;
@@ -76,9 +161,14 @@ class InterviewMedia {
 
     startListening() {
         if (this.recognition && !this.isRecording) {
-            this.recognition.start();
-            this.isRecording = true;
-            return true;
+            try {
+                this.recognition.start();
+                this.isRecording = true;
+                return true;
+            } catch (e) {
+                console.error("Start listening error:", e);
+                return false;
+            }
         }
         return false;
     }

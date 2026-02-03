@@ -128,10 +128,8 @@
         }
     }
     else if (CURRENT_PAGE === 'roadmap.html') {
-        if (!hasInterview) {
-            if (!hasResume) window.location.href = 'resume.html';
-            else window.location.href = 'interview.html';
-        }
+        // Allow access to roadmap.html
+        // The page logic itself will handle showing the "locked" state if !hasInterview
     }
     else if (CURRENT_PAGE === 'skill-gap.html') {
         if (!hasInterview) {

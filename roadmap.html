@@ -9,7 +9,20 @@
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <!-- Scripts -->
     <script src="js/route-guard.js"></script>
+    <!-- Load Environment Variables -->
+    <script type="module" src="js/env-loader.js"></script>
+    <script src="js/serp-service.js"></script>
+    <script src="js/roadmap-engine.js"></script>
+    <script>
+        // Initialize Services after environment is loaded
+        window.addEventListener('load', () => {
+            if (window.SerpService) {
+                window.SerpService.init();
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -21,41 +34,123 @@
         <main class="main-content">
             <div class="page-header">
                 <h1 class="page-title">🗺️ Your Learning Roadmap</h1>
-                <p class="page-subtitle">Personalized 6-week plan based on your skill gaps and interview feedback</p>
+                <p class="page-subtitle">Personalized plan based on your skill gaps and interview analysis</p>
+            </div>
+
+            <!-- Gated Access Modal (Hidden by default) -->
+            <div id="gated-modal" class="modal-overlay hidden">
+                <div class="modal-content">
+                    <div class="modal-icon">🔒</div>
+                    <h2 class="modal-title">Interview Required</h2>
+                    <p class="modal-desc">
+                        Your roadmap is generated based on your real skill assessment.
+                        Complete a short AI interview to unlock your personalized roadmap.
+                    </p>
+                    <div class="modal-actions">
+                        <a href="interview.html" class="btn btn-primary">Take Interview Now</a>
+                        <button onclick="unlockSampleMode()" class="btn btn-secondary">View Sample Roadmap</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Progress Overview -->
             <div class="roadmap-overview">
                 <div class="overview-stat">
-                    <span class="overview-value">2/6</span>
+                    <span class="overview-value" id="weeks-complete-val">0/6</span>
                     <span class="overview-label">Weeks Complete</span>
                 </div>
                 <div class="overview-progress">
                     <div class="progress-bar" style="height: 10px;">
-                        <div class="progress-fill green" style="width: 33%;"></div>
+                        <div class="progress-fill green" id="overall-progress-bar" style="width: 0%;"></div>
                     </div>
                 </div>
                 <div class="overview-stat">
-                    <span class="overview-value">33%</span>
+                    <span class="overview-value" id="overall-progress-val">0%</span>
                     <span class="overview-label">Overall Progress</span>
                 </div>
             </div>
 
-            <!-- Weeks -->
-            <div class="roadmap-weeks" id="roadmap-weeks">
+            <!-- Roadmap Container -->
+            <div class="roadmap-weeks" id="roadmap-container">
                 <!-- Injected by JS -->
             </div>
 
-            <!-- CTA -->
-            <div style="text-align: center; margin-top: 32px;">
-                <a href="dashboard.html" class="btn btn-primary btn-lg">
-                    Go to Dashboard →
-                </a>
-            </div>
         </main>
     </div>
 
     <style>
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.hidden {
+            display: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .modal-desc {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Roadmap UI */
         .roadmap-overview {
             display: flex;
             align-items: center;
@@ -67,13 +162,25 @@
             margin-bottom: 32px;
         }
 
+        @media (max-width: 768px) {
+            .roadmap-overview {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .overview-progress {
+                width: 100%;
+            }
+        }
+
         .overview-stat {
             text-align: center;
+            min-width: 80px;
         }
 
         .overview-value {
             display: block;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--accent-green);
         }
@@ -93,20 +200,23 @@
             gap: 16px;
         }
 
-        .roadmap-week {
+        .week-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             overflow: hidden;
+            transition: var(--transition-fast);
         }
 
-        .roadmap-week.completed {
-            border-color: rgba(16, 185, 129, 0.3);
+        .week-card.locked {
+            opacity: 0.6;
+            pointer-events: none;
+            filter: grayscale(0.8);
         }
 
-        .roadmap-week.current {
+        .week-card.current {
             border-color: var(--accent-primary);
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
         }
 
         .week-header {
@@ -115,11 +225,12 @@
             align-items: center;
             padding: 20px;
             cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
             transition: background 0.2s;
         }
 
         .week-header:hover {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.04);
         }
 
         .week-info {
@@ -129,1395 +240,318 @@
         }
 
         .week-number {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            font-weight: 700;
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--accent-primary);
-        }
-
-        .roadmap-week.completed .week-number {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-        }
-
-        .roadmap-week.current .week-number {
-            background: var(--gradient-primary);
-            color: white;
-        }
-
-        .week-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .week-focus {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        .week-progress-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .week-status {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .week-status.completed {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-        }
-
-        .week-status.current {
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--accent-primary);
-        }
-
-        .week-status.upcoming {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-muted);
-        }
-
-        .week-toggle {
-            font-size: 20px;
-            color: var(--text-muted);
-            transition: transform 0.2s;
-        }
-
-        .week-content {
-            display: none;
-            padding: 0 20px 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .week-content.open {
-            display: block;
-        }
-
-        .week-section {
-            margin-top: 20px;
-        }
-
-        .week-section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .week-tasks {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .week-task {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: var(--transition-fast);
-        }
-
-        .week-task:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .task-checkbox {
-            width: 22px;
-            height: 22px;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            transition: var(--transition-fast);
-            flex-shrink: 0;
-        }
-
-        .week-task.done .task-checkbox {
-            background: var(--accent-green);
-            border-color: var(--accent-green);
-            color: white;
-        }
-
-        .task-text {
-            flex: 1;
-            font-size: 14px;
-        }
-
-        .week-task.done .task-text {
-            text-decoration: line-through;
-            color: var(--text-muted);
-        }
-
-        .task-type {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .task-type.learn {
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--accent-blue);
-        }
-
-        .task-type.practice {
-            background: rgba(139, 92, 246, 0.15);
-            color: var(--accent-purple);
-        }
-
-        .task-type.interview {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-        }
-
-        /* Resource Cards Styling */
-        .resources-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-            gap: 24px;
-        }
-
-        .resource-category {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-        }
-
-        .category-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .platform-badge {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .platform-badge.youtube {
-            background: rgba(255, 0, 0, 0.15);
-            color: #ff0000;
-        }
-
-        .platform-badge.leetcode {
-            background: rgba(255, 161, 22, 0.15);
-            color: #ffa116;
-        }
-
-        .resource-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .resource-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            text-decoration: none;
-            color: var(--text-primary);
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .resource-card:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--accent-primary);
-            transform: translateX(4px);
-        }
-
-        .resource-icon {
             width: 40px;
             height: 40px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .youtube-icon {
-            background: rgba(255, 0, 0, 0.15);
-            color: #ff0000;
-        }
-
-        .leetcode-icon {
-            background: rgba(255, 161, 22, 0.15);
-            color: #ffa116;
-        }
-
-        .resource-info {
-            flex: 1;
-        }
-
-        .resource-title {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 4px;
-            color: var(--text-primary);
-        }
-
-        .resource-platform {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .resource-arrow {
-            font-size: 18px;
-            color: var(--text-muted);
-            transition: transform 0.2s;
-        }
-
-        .resource-card:hover .resource-arrow {
-            transform: translateX(4px);
+            background: rgba(99, 102, 241, 0.15);
             color: var(--accent-primary);
         }
 
-        /* Inline Resources within Weeks */
-        .resources-inline {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-top: 12px;
+        .week-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
         }
 
-        .resource-column {
-            background: rgba(255, 255, 255, 0.02);
+        .toggle-icon {
+            font-size: 18px;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+        }
+
+        .week-card.open .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .week-body {
+            display: none;
+            padding: 0 20px 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 0;
+        }
+
+        .week-card.open .week-body {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Topics Grid */
+        .topics-grid {
+            display: grid;
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .topic-item {
+            background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 14px;
+            padding: 16px;
         }
 
-        .resource-platform-header {
+        .topic-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 8px;
             margin-bottom: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 13px;
+        }
+
+        .topic-name {
             font-weight: 600;
-        }
-
-        .platform-logo {
-            width: 20px;
-            height: 20px;
-        }
-
-        .resource-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            margin-bottom: 6px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            text-decoration: none;
             color: var(--text-primary);
-            font-size: 13px;
+        }
+
+        .topic-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-resource {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            cursor: pointer;
             transition: all 0.2s;
         }
 
-        .resource-link:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateX(4px);
+        .btn-resource:hover {
+            background: var(--accent-primary);
+            color: #fff;
+            border-color: var(--accent-primary);
         }
 
-        .resource-link-icon {
+        .subtopic-list {
+            margin-left: 0;
+            padding-left: 0;
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .subtopic-tag {
             font-size: 12px;
-            opacity: 0.7;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid transparent;
         }
 
-        .resource-link span:nth-child(2) {
+        .subtopic-tag:hover {
+            border-color: var(--text-muted);
+            color: var(--text-primary);
+        }
+
+        /* Resources Area */
+        .resources-area {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            display: none;
+            /* Hidden by default */
+        }
+
+        .resources-area.active {
+            display: block;
+        }
+
+        .resource-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .resource-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .resource-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+            color: #fff;
+        }
+
+        .res-icon {
+            font-size: 18px;
+        }
+
+        .res-title {
             flex: 1;
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .resource-external {
-            font-size: 14px;
-            opacity: 0.5;
-            transition: opacity 0.2s;
+        .res-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        .resource-link:hover .resource-external {
-            opacity: 1;
+        .loader {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+            font-style: italic;
         }
 
-        @media (max-width: 768px) {
-            .resources-grid {
-                grid-template-columns: 1fr;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
             }
 
-            .resources-inline {
-                grid-template-columns: 1fr;
+            to {
+                opacity: 1;
             }
         }
     </style>
 
     <script>
-        // Role-Based Learning Resources
+        document.addEventListener('DOMContentLoaded', () => {
+            const hasInterview = localStorage.getItem('nextStep_interview');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const userRole = userData.targetRole || 'sde';
 
-        // Mark roadmap as generated
-        localStorage.setItem('nextStep_roadmapCompleted', 'true');
-
-        // Also update Firestore if user is logged in (Async, best effort)
-        // Note: Ideally we import firebase here, but for strict local flow guard, localStorage is key.
-
-        const RESOURCES_MAP = {
-            'frontend': {
-                youtube: [
-                    { title: 'HTML & CSS Full Course - Beginner to Pro', url: 'https://www.youtube.com/watch?v=G3e-cpL7ofc', platform: 'YouTube' },
-                    { title: 'JavaScript Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=W6NZfCO5SIk', platform: 'YouTube' },
-                    { title: 'React JS Full Course 2024', url: 'https://www.youtube.com/watch?v=SqcY0GlETPk', platform: 'YouTube' },
-                    { title: 'Responsive Web Design Tutorial', url: 'https://www.youtube.com/watch?v=srvUrASNj0s', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
-                    { title: 'Valid Parentheses (Easy)', url: 'https://leetcode.com/problems/valid-parentheses/', platform: 'LeetCode' },
-                    { title: 'Merge Two Sorted Lists (Easy)', url: 'https://leetcode.com/problems/merge-two-sorted-lists/', platform: 'LeetCode' },
-                    { title: 'Best Time to Buy and Sell Stock (Easy)', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/', platform: 'LeetCode' }
-                ]
-            },
-            'backend': {
-                youtube: [
-                    { title: 'Node.js Full Course for Beginners', url: 'https://www.youtube.com/watch?v=f2EqECiTBL8', platform: 'YouTube' },
-                    { title: 'REST API Tutorial', url: 'https://www.youtube.com/watch?v=-MTSQjw5DrM', platform: 'YouTube' },
-                    { title: 'SQL Tutorial - Full Database Course', url: 'https://www.youtube.com/watch?v=HXV3zeQKqGY', platform: 'YouTube' },
-                    { title: 'System Design Interview Basics', url: 'https://www.youtube.com/watch?v=UzLMhqg3_Wc', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Reverse Linked List (Easy)', url: 'https://leetcode.com/problems/reverse-linked-list/', platform: 'LeetCode' },
-                    { title: 'Binary Tree Level Order Traversal (Medium)', url: 'https://leetcode.com/problems/binary-tree-level-order-traversal/', platform: 'LeetCode' },
-                    { title: 'LRU Cache (Medium)', url: 'https://leetcode.com/problems/lru-cache/', platform: 'LeetCode' },
-                    { title: 'Design HashMap (Easy)', url: 'https://leetcode.com/problems/design-hashmap/', platform: 'LeetCode' }
-                ]
-            },
-            'fullstack': {
-                youtube: [
-                    { title: 'Full Stack Web Development Course', url: 'https://www.youtube.com/watch?v=nu_pCVPKzTk', platform: 'YouTube' },
-                    { title: 'MERN Stack Tutorial', url: 'https://www.youtube.com/watch?v=7CqJlxBYj-M', platform: 'YouTube' },
-                    { title: 'Next.js 14 Full Course', url: 'https://www.youtube.com/watch?v=wm5gMKuwSYk', platform: 'YouTube' },
-                    { title: 'Database Design Tutorial', url: 'https://www.youtube.com/watch?v=ztHopE5Wnpc', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Climbing Stairs (Easy)', url: 'https://leetcode.com/problems/climbing-stairs/', platform: 'LeetCode' },
-                    { title: 'Maximum Subarray (Medium)', url: 'https://leetcode.com/problems/maximum-subarray/', platform: 'LeetCode' },
-                    { title: 'Product of Array Except Self (Medium)', url: 'https://leetcode.com/problems/product-of-array-except-self/', platform: 'LeetCode' },
-                    { title: 'Longest Substring Without Repeating Characters (Medium)', url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/', platform: 'LeetCode' }
-                ]
-            },
-            'sde': {
-                youtube: [
-                    { title: 'Data Structures and Algorithms Full Course', url: 'https://www.youtube.com/watch?v=8hly31xKli0', platform: 'YouTube' },
-                    { title: 'System Design Interview Preparation', url: 'https://www.youtube.com/watch?v=bUHFg8CZFws', platform: 'YouTube' },
-                    { title: 'Object Oriented Programming Concepts', url: 'https://www.youtube.com/watch?v=pTB0EiLXUC8', platform: 'YouTube' },
-                    { title: 'Git and GitHub for Beginners', url: 'https://www.youtube.com/watch?v=RGOj5yH7evk', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
-                    { title: 'Add Two Numbers (Medium)', url: 'https://leetcode.com/problems/add-two-numbers/', platform: 'LeetCode' },
-                    { title: 'Longest Palindromic Substring (Medium)', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode' },
-                    { title: 'Merge K Sorted Lists (Hard)', url: 'https://leetcode.com/problems/merge-k-sorted-lists/', platform: 'LeetCode' }
-                ]
-            },
-            'data-analyst': {
-                youtube: [
-                    { title: 'SQL for Data Analysis - Full Course', url: 'https://www.youtube.com/watch?v=7mz73uXD9DA', platform: 'YouTube' },
-                    { title: 'Python for Data Analysis Tutorial', url: 'https://www.youtube.com/watch?v=GPVsHOlRBBI', platform: 'YouTube' },
-                    { title: 'Excel Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=Vl0H-qTclOg', platform: 'YouTube' },
-                    { title: 'Tableau Full Course', url: 'https://www.youtube.com/watch?v=aHaOIvR00So', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Combine Two Tables (Easy)', url: 'https://leetcode.com/problems/combine-two-tables/', platform: 'LeetCode' },
-                    { title: 'Second Highest Salary (Medium)', url: 'https://leetcode.com/problems/second-highest-salary/', platform: 'LeetCode' },
-                    { title: 'Nth Highest Salary (Medium)', url: 'https://leetcode.com/problems/nth-highest-salary/', platform: 'LeetCode' },
-                    { title: 'Department Top Three Salaries (Hard)', url: 'https://leetcode.com/problems/department-top-three-salaries/', platform: 'LeetCode' }
-                ]
-            },
-            'data-scientist': {
-                youtube: [
-                    { title: 'Machine Learning Full Course', url: 'https://www.youtube.com/watch?v=GwIo3gDZCVQ', platform: 'YouTube' },
-                    { title: 'Python for Data Science', url: 'https://www.youtube.com/watch?v=LHBE6Q9XlzI', platform: 'YouTube' },
-                    { title: 'Statistics for Data Science', url: 'https://www.youtube.com/watch?v=xxpc-HPKN28', platform: 'YouTube' },
-                    { title: 'Deep Learning Specialization', url: 'https://www.youtube.com/watch?v=CS4cs9xVecg', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Valid Sudoku (Medium)', url: 'https://leetcode.com/problems/valid-sudoku/', platform: 'LeetCode' },
-                    { title: 'Rotate Image (Medium)', url: 'https://leetcode.com/problems/rotate-image/', platform: 'LeetCode' },
-                    { title: 'Word Search (Medium)', url: 'https://leetcode.com/problems/word-search/', platform: 'LeetCode' },
-                    { title: 'Median of Two Sorted Arrays (Hard)', url: 'https://leetcode.com/problems/median-of-two-sorted-arrays/', platform: 'LeetCode' }
-                ]
-            },
-            'ml-engineer': {
-                youtube: [
-                    { title: 'Machine Learning Engineering Course', url: 'https://www.youtube.com/watch?v=JLTYNPoK7nw', platform: 'YouTube' },
-                    { title: 'TensorFlow 2.0 Complete Course', url: 'https://www.youtube.com/watch?v=tPYj3fFJGjk', platform: 'YouTube' },
-                    { title: 'MLOps Tutorial', url: 'https://www.youtube.com/watch?v=NGWujT4kYEE', platform: 'YouTube' },
-                    { title: 'PyTorch for Deep Learning', url: 'https://www.youtube.com/watch?v=c36lUUr864M', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Implement Trie (Medium)', url: 'https://leetcode.com/problems/implement-trie-prefix-tree/', platform: 'LeetCode' },
-                    { title: 'Word Search II (Hard)', url: 'https://leetcode.com/problems/word-search-ii/', platform: 'LeetCode' },
-                    { title: 'Serialize and Deserialize Binary Tree (Hard)', url: 'https://leetcode.com/problems/serialize-and-deserialize-binary-tree/', platform: 'LeetCode' },
-                    { title: 'Design Search Autocomplete System (Hard)', url: 'https://leetcode.com/problems/design-search-autocomplete-system/', platform: 'LeetCode' }
-                ]
-            },
-            'devops': {
-                youtube: [
-                    { title: 'DevOps Full Course', url: 'https://www.youtube.com/watch?v=hQcFE0RD0cQ', platform: 'YouTube' },
-                    { title: 'Docker Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=fqMOX6JJhGo', platform: 'YouTube' },
-                    { title: 'Kubernetes Course', url: 'https://www.youtube.com/watch?v=X48VuDVv0do', platform: 'YouTube' },
-                    { title: 'CI/CD Pipeline Tutorial', url: 'https://www.youtube.com/watch?v=scEDHsr3APg', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Valid Parentheses (Easy)', url: 'https://leetcode.com/problems/valid-parentheses/', platform: 'LeetCode' },
-                    { title: 'Min Stack (Medium)', url: 'https://leetcode.com/problems/min-stack/', platform: 'LeetCode' },
-                    { title: 'Evaluate Reverse Polish Notation (Medium)', url: 'https://leetcode.com/problems/evaluate-reverse-polish-notation/', platform: 'LeetCode' },
-                    { title: 'Basic Calculator (Hard)', url: 'https://leetcode.com/problems/basic-calculator/', platform: 'LeetCode' }
-                ]
-            },
-            'product': {
-                youtube: [
-                    { title: 'Product Management Full Course', url: 'https://www.youtube.com/watch?v=2zfRBfJzjgM', platform: 'YouTube' },
-                    { title: 'Agile Product Management', url: 'https://www.youtube.com/watch?v=502ILHjX9EE', platform: 'YouTube' },
-                    { title: 'User Research Methods', url: 'https://www.youtube.com/watch?v=WpzmOH0hrEM', platform: 'YouTube' },
-                    { title: 'Product Strategy Framework', url: 'https://www.youtube.com/watch?v=5WVXCy1Q88o', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Two Sum (Easy)', url: 'https://leetcode.com/problems/two-sum/', platform: 'LeetCode' },
-                    { title: 'Valid Anagram (Easy)', url: 'https://leetcode.com/problems/valid-anagram/', platform: 'LeetCode' },
-                    { title: 'Group Anagrams (Medium)', url: 'https://leetcode.com/problems/group-anagrams/', platform: 'LeetCode' },
-                    { title: 'Top K Frequent Elements (Medium)', url: 'https://leetcode.com/problems/top-k-frequent-elements/', platform: 'LeetCode' }
-                ]
-            },
-            'designer': {
-                youtube: [
-                    { title: 'UI/UX Design Tutorial', url: 'https://www.youtube.com/watch?v=c9Wg6Cb_YlU', platform: 'YouTube' },
-                    { title: 'Figma Tutorial for Beginners', url: 'https://www.youtube.com/watch?v=FTFaQWZBqQ8', platform: 'YouTube' },
-                    { title: 'Design Systems Crash Course', url: 'https://www.youtube.com/watch?v=wc5krC28ynQ', platform: 'YouTube' },
-                    { title: 'User Experience Design Fundamentals', url: 'https://www.youtube.com/watch?v=uL2ZB7XXIgg', platform: 'YouTube' }
-                ],
-                leetcode: [
-                    { title: 'Valid Palindrome (Easy)', url: 'https://leetcode.com/problems/valid-palindrome/', platform: 'LeetCode' },
-                    { title: 'Longest Palindromic Substring (Medium)', url: 'https://leetcode.com/problems/longest-palindromic-substring/', platform: 'LeetCode' },
-                    { title: 'Palindrome Partitioning (Medium)', url: 'https://leetcode.com/problems/palindrome-partitioning/', platform: 'LeetCode' },
-                    { title: 'Regular Expression Matching (Hard)', url: 'https://leetcode.com/problems/regular-expression-matching/', platform: 'LeetCode' }
-                ]
+            // Gated Access Logic
+            if (!hasInterview) {
+                document.getElementById('gated-modal').classList.remove('hidden');
+            } else {
+                initRoadmap(userRole, false);
             }
+        });
+
+        // Unlock Sample Mode (Preview)
+        window.unlockSampleMode = function () {
+            document.getElementById('gated-modal').classList.add('hidden');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const userRole = userData.targetRole || 'sde';
+            initRoadmap(userRole, true); // true = isSample
         };
 
-        const ROADMAP_DATA = [
-            {
-                week: 1,
-                title: 'Foundations & DSA Basics',
-                focus: 'Arrays, Strings, Time Complexity',
-                status: 'completed',
-                tasks: [
-                    { text: 'Learn Big O Notation', type: 'learn', done: true },
-                    { text: 'Array manipulation problems (10)', type: 'practice', done: true },
-                    { text: 'String algorithms basics', type: 'learn', done: true },
-                    { text: 'Two Sum, Three Sum problems', type: 'practice', done: true }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'Big O Notation Explained', url: 'https://www.youtube.com/watch?v=Mo4vesaut8g' },
-                        { title: 'Array Data Structure Tutorial', url: 'https://www.youtube.com/watch?v=55l-aZ7_F24' },
-                        { title: 'String Algorithms Basics', url: 'https://www.youtube.com/watch?v=Wdjr6uoZ0e0' },
-                        { title: 'Time Complexity Analysis', url: 'https://www.youtube.com/watch?v=D6xkbGLQesk' }
-                    ],
-                    leetcode: [
-                        { title: 'Two Sum', url: 'https://leetcode.com/problems/two-sum/' },
-                        { title: 'Best Time to Buy and Sell Stock', url: 'https://leetcode.com/problems/best-time-to-buy-and-sell-stock/' },
-                        { title: 'Contains Duplicate', url: 'https://leetcode.com/problems/contains-duplicate/' },
-                        { title: 'Valid Anagram', url: 'https://leetcode.com/problems/valid-anagram/' },
-                        { title: 'Product of Array Except Self', url: 'https://leetcode.com/problems/product-of-array-except-self/' }
-                    ]
-                }
-            },
-            {
-                week: 2,
-                title: 'Data Structures Deep Dive',
-                focus: 'Linked Lists, Stacks, Queues',
-                status: 'completed',
-                tasks: [
-                    { text: 'Linked List implementation', type: 'learn', done: true },
-                    { text: 'Stack & Queue problems (8)', type: 'practice', done: true },
-                    { text: 'Mock Interview #1', type: 'interview', done: true },
-                    { text: 'Review interview feedback', type: 'learn', done: true }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'Linked List Data Structure', url: 'https://www.youtube.com/watch?v=Hj_rA0dhr2I' },
-                        { title: 'Stack and Queue Explained', url: 'https://www.youtube.com/watch?v=wjI1WNcIntg' },
-                        { title: 'Linked List Interview Problems', url: 'https://www.youtube.com/watch?v=Nd0XDY-jVHs' },
-                        { title: 'Stack Applications Tutorial', url: 'https://www.youtube.com/watch?v=I5lq6sCuABE' }
-                    ],
-                    leetcode: [
-                        { title: 'Reverse Linked List', url: 'https://leetcode.com/problems/reverse-linked-list/' },
-                        { title: 'Valid Parentheses', url: 'https://leetcode.com/problems/valid-parentheses/' },
-                        { title: 'Merge Two Sorted Lists', url: 'https://leetcode.com/problems/merge-two-sorted-lists/' },
-                        { title: 'Linked List Cycle', url: 'https://leetcode.com/problems/linked-list-cycle/' },
-                        { title: 'Min Stack', url: 'https://leetcode.com/problems/min-stack/' }
-                    ]
-                }
-            },
-            {
-                week: 3,
-                title: 'Trees & Graphs',
-                focus: 'Binary Trees, BST, Graph Traversal',
-                status: 'current',
-                tasks: [
-                    { text: 'Binary Tree traversals', type: 'learn', done: true },
-                    { text: 'BST operations practice', type: 'practice', done: true },
-                    { text: 'Graph BFS/DFS algorithms', type: 'learn', done: false },
-                    { text: 'Graph problems (6)', type: 'practice', done: false },
-                    { text: 'Mock Interview #2', type: 'interview', done: false }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'Binary Tree Algorithms', url: 'https://www.youtube.com/watch?v=fAAZixBzIAI' },
-                        { title: 'Graph Algorithms (BFS/DFS)', url: 'https://www.youtube.com/watch?v=tWVWeAqZ0WU' },
-                        { title: 'Binary Search Tree Operations', url: 'https://www.youtube.com/watch?v=cySVml6e_Fc' },
-                        { title: 'Graph Theory Tutorial', url: 'https://www.youtube.com/watch?v=09_LlHjoEiY' }
-                    ],
-                    leetcode: [
-                        { title: 'Binary Tree Inorder Traversal', url: 'https://leetcode.com/problems/binary-tree-inorder-traversal/' },
-                        { title: 'Number of Islands', url: 'https://leetcode.com/problems/number-of-islands/' },
-                        { title: 'Maximum Depth of Binary Tree', url: 'https://leetcode.com/problems/maximum-depth-of-binary-tree/' },
-                        { title: 'Validate Binary Search Tree', url: 'https://leetcode.com/problems/validate-binary-search-tree/' },
-                        { title: 'Clone Graph', url: 'https://leetcode.com/problems/clone-graph/' }
-                    ]
-                }
-            },
-            {
-                week: 4,
-                title: 'System Design Basics',
-                focus: 'Scalability, Databases, Caching',
-                status: 'upcoming',
-                tasks: [
-                    { text: 'System design fundamentals', type: 'learn', done: false },
-                    { text: 'Database design patterns', type: 'learn', done: false },
-                    { text: 'Design URL shortener', type: 'practice', done: false },
-                    { text: 'Design Twitter feed', type: 'practice', done: false }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'System Design Interview Guide', url: 'https://www.youtube.com/watch?v=UzLMhqg3_Wc' },
-                        { title: 'Database Design Tutorial', url: 'https://www.youtube.com/watch?v=ztHopE5Wnpc' },
-                        { title: 'Scalability Fundamentals', url: 'https://www.youtube.com/watch?v=-W9F__D3oY4' },
-                        { title: 'Caching Strategies Explained', url: 'https://www.youtube.com/watch?v=U3RkDLtS7uY' },
-                        { title: 'Load Balancing Concepts', url: 'https://www.youtube.com/watch?v=K0Ta65OqQkY' }
-                    ],
-                    leetcode: [
-                        { title: 'Design HashMap', url: 'https://leetcode.com/problems/design-hashmap/' },
-                        { title: 'LRU Cache', url: 'https://leetcode.com/problems/lru-cache/' },
-                        { title: 'Design Twitter', url: 'https://leetcode.com/problems/design-twitter/' },
-                        { title: 'Design URL Shortener', url: 'https://leetcode.com/problems/design-tinyurl/' }
-                    ]
-                }
-            },
-            {
-                week: 5,
-                title: 'Advanced Topics',
-                focus: 'Dynamic Programming, Design Patterns',
-                status: 'upcoming',
-                tasks: [
-                    { text: 'DP concepts and patterns', type: 'learn', done: false },
-                    { text: 'DP problems (10)', type: 'practice', done: false },
-                    { text: 'Common design patterns', type: 'learn', done: false },
-                    { text: 'Mock Interview #3', type: 'interview', done: false }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'Dynamic Programming Tutorial', url: 'https://www.youtube.com/watch?v=oBt53YbR9Kk' },
-                        { title: 'Design Patterns Explained', url: 'https://www.youtube.com/watch?v=tv-_1er1mWI' },
-                        { title: 'DP Patterns and Strategies', url: 'https://www.youtube.com/watch?v=YBSt1jYwVfU' },
-                        { title: 'Common Design Patterns in Software', url: 'https://www.youtube.com/watch?v=BWprw8UHIzA' },
-                        { title: 'Memoization vs Tabulation', url: 'https://www.youtube.com/watch?v=P8Xa2BitN3I' }
-                    ],
-                    leetcode: [
-                        { title: 'Climbing Stairs', url: 'https://leetcode.com/problems/climbing-stairs/' },
-                        { title: 'Longest Palindromic Substring', url: 'https://leetcode.com/problems/longest-palindromic-substring/' },
-                        { title: 'Coin Change', url: 'https://leetcode.com/problems/coin-change/' },
-                        { title: 'House Robber', url: 'https://leetcode.com/problems/house-robber/' },
-                        { title: 'Longest Increasing Subsequence', url: 'https://leetcode.com/problems/longest-increasing-subsequence/' }
-                    ]
-                }
-            },
-            {
-                week: 6,
-                title: 'Interview Preparation',
-                focus: 'Mock Interviews, Behavioral Prep',
-                status: 'upcoming',
-                tasks: [
-                    { text: 'Behavioral interview prep', type: 'learn', done: false },
-                    { text: 'STAR method practice', type: 'practice', done: false },
-                    { text: 'Full mock interview', type: 'interview', done: false },
-                    { text: 'Resume final review', type: 'learn', done: false }
-                ],
-                resources: {
-                    youtube: [
-                        { title: 'Behavioral Interview Questions', url: 'https://www.youtube.com/watch?v=PJKYqLP6MRE' },
-                        { title: 'STAR Method Interview Technique', url: 'https://www.youtube.com/watch?v=0Z9mOnOXWFQ' },
-                        { title: 'How to Answer "Tell Me About Yourself"', url: 'https://www.youtube.com/watch?v=es7XtrloDIQ' },
-                        { title: 'Resume Writing Tips for Tech', url: 'https://www.youtube.com/watch?v=BYUy1yvjHxE' },
-                        { title: 'Mock Interview Walkthrough', url: 'https://www.youtube.com/watch?v=1qw5ITr3k9E' }
-                    ],
-                    leetcode: [
-                        { title: 'Top Interview Questions', url: 'https://leetcode.com/problem-list/top-interview-questions/' },
-                        { title: 'Mock Interview Practice', url: 'https://leetcode.com/interview/' },
-                        { title: 'Blind 75 Must Do', url: 'https://leetcode.com/discuss/general-discussion/460599/blind-75-leetcode-questions' },
-                        { title: 'Amazon Interview Questions', url: 'https://leetcode.com/company/amazon/' }
-                    ]
-                }
-            }
-        ];
+        function initRoadmap(role, isSample) {
+            const container = document.getElementById('roadmap-container');
+            const weeksData = isSample
+                ? RoadmapEngine.generateSampleRoadmap(role)
+                : RoadmapEngine.generateFullRoadmap(role, []);
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.getElementById('roadmap-weeks');
-
-            container.innerHTML = ROADMAP_DATA.map((week, idx) => {
-                const tasksDone = week.tasks.filter(t => t.done).length;
-                const progress = Math.round((tasksDone / week.tasks.length) * 100);
-
-                return `
-                    <div class="roadmap-week ${week.status}">
-                        <div class="week-header" onclick="toggleWeek(${idx})">
-                            <div class="week-info">
-                                <div class="week-number">${week.status === 'completed' ? '✓' : week.week}</div>
-                                <div>
-                                    <div class="week-title">Week ${week.week}: ${week.title}</div>
-                                    <div class="week-focus">${week.focus}</div>
-                                </div>
-                            </div>
-                            <div class="week-progress-info">
-                                <span class="week-status ${week.status}">
-                                    ${week.status === 'completed' ? 'Completed' : week.status === 'current' ? 'In Progress' : 'Upcoming'}
-                                </span>
-                                <span class="week-toggle" id="toggle-${idx}">▼</span>
-                            </div>
+            container.innerHTML = weeksData.map((week, idx) => `
+                <div class="week-card ${week.status} ${idx === 0 ? 'open' : ''}" id="week-${idx}">
+                    <div class="week-header" onclick="toggleWeek(${idx})">
+                        <div class="week-info">
+                            <div class="week-number">${week.week}</div>
+                            <div class="week-title">${week.title}</div>
                         </div>
-                        <div class="week-content ${week.status === 'current' ? 'open' : ''}" id="content-${idx}">
-                            <div class="week-section">
-                                <div class="week-section-title">📋 Tasks (${tasksDone}/${week.tasks.length})</div>
-                                <div class="week-tasks">
-                                    ${week.tasks.map((task, tidx) => `
-                                        <div class="week-task ${task.done ? 'done' : ''}" onclick="toggleTask(${idx}, ${tidx})">
-                                            <div class="task-checkbox">${task.done ? '✓' : ''}</div>
-                                            <span class="task-text">${task.text}</span>
-                                            <span class="task-type ${task.type}">${task.type}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                            ${week.resources ? `
-                                <div class="week-section">
-                                    <div class="week-section-title">📚 Learning Resources</div>
-                                    <div class="resources-inline">
-                                        <div class="resource-column">
-                                            <div class="resource-platform-header">
-                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 159 110'%3E%3Cpath fill='%23FF0000' d='M154 17.5c-1.82-6.73-7.07-12-13.8-13.8-9.04-3.49-96.6-5.2-122 0.1-6.73 1.82-12 7.07-13.8 13.8-4.08 17.9-4.39 56.6 0.1 74.9 1.82 6.73 7.07 12 13.8 13.8 17.9 4.12 103 4.7 122 0 6.73-1.82 12-7.07 13.8-13.8 4.35-19.5 4.66-55.8-0.1-75z'/%3E%3Cpath fill='%23FFF' d='M105 55L64.2 79.5V30.5L105 55z'/%3E%3C/svg%3E" alt="YouTube" class="platform-logo" />
-                                                <span>YouTube</span>
-                                            </div>
-                                            ${week.resources.youtube.map(resource => `
-                                                <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="resource-link">
-                                                    <span class="resource-link-icon">▶</span>
-                                                    <span>${resource.title}</span>
-                                                    <span class="resource-external">↗</span>
-                                                </a>
-                                            `).join('')}
-                                        </div>
-                                        <div class="resource-column">
-                                            <div class="resource-platform-header">
-                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23FFA116' d='M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z'/%3E%3C/svg%3E" alt="LeetCode" class="platform-logo" />
-                                                <span>LeetCode</span>
-                                            </div>
-                                            ${week.resources.leetcode.map(resource => `
-                                                <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="resource-link">
-                                                    <span class="resource-link-icon">{}</span>
-                                                    <span>${resource.title}</span>
-                                                    <span class="resource-external">↗</span>
-                                                </a>
-                                            `).join('')}
+                        <div class="toggle-icon">▼</div>
+                    </div>
+                    <div class="week-body">
+                        <div class="topics-grid">
+                            ${week.topics.map((topic, tIdx) => `
+                                <div class="topic-item">
+                                    <div class="topic-header">
+                                        <div class="topic-name">${topic.name}</div>
+                                        <div class="topic-actions">
+                                            ${!isSample ? `
+                                                <button class="btn-resource" onclick="loadResources(this, '${topic.name}', '${idx}-${tIdx}')">
+                                                    🔍 Resources
+                                                </button>
+                                            ` : '<span style="font-size:12px; color:var(--text-muted);">🔒 Interview to unlock</span>'}
                                         </div>
                                     </div>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        });
-
-
-
-        function toggleWeek(idx) {
-            const content = document.getElementById(`content-${idx}`);
-            const toggle = document.getElementById(`toggle-${idx}`);
-
-            content.classList.toggle('open');
-            toggle.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0)';
-        }
-
-        function toggleTask(weekIdx, taskIdx) {
-            ROADMAP_DATA[weekIdx].tasks[taskIdx].done = !ROADMAP_DATA[weekIdx].tasks[taskIdx].done;
-            // Re-render would go here in a real app
-            location.reload();
-        }
-
-        // =============================================
-        // Roadmap Completion Feature
-        // =============================================
-
-        // Related Skills Data by Domain
-        const RELATED_SKILLS = {
-            'sde': [
-                { name: 'Cloud Architecture (AWS/GCP)', desc: 'Design scalable cloud solutions' },
-                { name: 'Microservices & API Design', desc: 'Build modular, maintainable systems' },
-                { name: 'DevOps & CI/CD', desc: 'Automate deployment pipelines' },
-                { name: 'Mobile Development', desc: 'Expand to iOS/Android apps' },
-                { name: 'AI/ML Integration', desc: 'Add intelligent features to apps' }
-            ],
-            'frontend': [
-                { name: 'React Native / Flutter', desc: 'Build cross-platform mobile apps' },
-                { name: 'Three.js / WebGL', desc: 'Create immersive 3D experiences' },
-                { name: 'Motion Design & GSAP', desc: 'Advanced animations' },
-                { name: 'Accessibility (WCAG)', desc: 'Build inclusive interfaces' },
-                { name: 'Performance Optimization', desc: 'Core Web Vitals mastery' }
-            ],
-            'backend': [
-                { name: 'GraphQL & gRPC', desc: 'Modern API protocols' },
-                { name: 'Message Queues (Kafka, RabbitMQ)', desc: 'Event-driven architecture' },
-                { name: 'Kubernetes & Docker', desc: 'Container orchestration' },
-                { name: 'Database Optimization', desc: 'Query tuning & indexing' },
-                { name: 'Security & Auth (OAuth, JWT)', desc: 'Secure your applications' }
-            ],
-            'fullstack': [
-                { name: 'Serverless (AWS Lambda)', desc: 'Build without servers' },
-                { name: 'Real-time Apps (WebSockets)', desc: 'Live collaboration features' },
-                { name: 'Testing & TDD', desc: 'Write reliable code' },
-                { name: 'Performance Monitoring', desc: 'APM tools & observability' },
-                { name: 'Progressive Web Apps', desc: 'Offline-first applications' }
-            ],
-            'data-analyst': [
-                { name: 'Power BI / Looker', desc: 'Enterprise BI tools' },
-                { name: 'Statistical Modeling', desc: 'Advanced analytics' },
-                { name: 'ETL Pipelines', desc: 'Data transformation' },
-                { name: 'Python Automation', desc: 'Automate data workflows' },
-                { name: 'A/B Testing', desc: 'Experimentation frameworks' }
-            ],
-            'data-scientist': [
-                { name: 'Deep Learning (PyTorch)', desc: 'Neural network expertise' },
-                { name: 'NLP & LLMs', desc: 'Language model applications' },
-                { name: 'Computer Vision', desc: 'Image & video analysis' },
-                { name: 'MLOps', desc: 'Deploy models at scale' },
-                { name: 'Feature Engineering', desc: 'Create predictive features' }
-            ],
-            'ml-engineer': [
-                { name: 'Model Optimization', desc: 'Quantization & pruning' },
-                { name: 'Edge AI & TinyML', desc: 'On-device inference' },
-                { name: 'Distributed Training', desc: 'Multi-GPU scaling' },
-                { name: 'AutoML & Hyperparameter Tuning', desc: 'Automated optimization' },
-                { name: 'Responsible AI', desc: 'Fairness & explainability' }
-            ],
-            'devops': [
-                { name: 'Infrastructure as Code', desc: 'Terraform & Pulumi' },
-                { name: 'Service Mesh (Istio)', desc: 'Advanced networking' },
-                { name: 'GitOps', desc: 'ArgoCD & Flux workflows' },
-                { name: 'Chaos Engineering', desc: 'Resilience testing' },
-                { name: 'Security (DevSecOps)', desc: 'Shift-left security' }
-            ],
-            'product': [
-                { name: 'Data-Driven PM', desc: 'Analytics for decisions' },
-                { name: 'Growth Hacking', desc: 'Viral loops & retention' },
-                { name: 'Technical Writing', desc: 'PRDs & documentation' },
-                { name: 'Stakeholder Management', desc: 'Cross-functional leadership' },
-                { name: 'AI Product Strategy', desc: 'AI-first product thinking' }
-            ],
-            'designer': [
-                { name: 'Motion Design (After Effects)', desc: 'Animated prototypes' },
-                { name: 'Design Tokens & Systems', desc: 'Scalable design' },
-                { name: 'AR/VR Design', desc: 'Immersive experiences' },
-                { name: 'User Research Methods', desc: 'Deep user insights' },
-                { name: 'Front-end Basics (CSS)', desc: 'Developer collaboration' }
-            ]
-        };
-
-        // Job/Internship Sites Data
-        const JOB_SITES = {
-            general: [
-                { name: 'LinkedIn Jobs', url: 'https://www.linkedin.com/jobs/', icon: '💼' },
-                { name: 'Indeed', url: 'https://www.indeed.com/', icon: '🔍' },
-                { name: 'Glassdoor', url: 'https://www.glassdoor.com/Job/', icon: '🏢' }
-            ],
-            tech: [
-                { name: 'AngelList Talent', url: 'https://angel.co/jobs', icon: '🚀' },
-                { name: 'Wellfound (Startups)', url: 'https://wellfound.com/', icon: '⭐' },
-                { name: 'Hired', url: 'https://hired.com/', icon: '💎' }
-            ],
-            internships: [
-                { name: 'Internshala', url: 'https://internshala.com/', icon: '🎓' },
-                { name: 'LinkedIn Internships', url: 'https://www.linkedin.com/jobs/internship-jobs/', icon: '📚' },
-                { name: 'LetsIntern', url: 'https://www.letsintern.com/', icon: '🌱' }
-            ],
-            remote: [
-                { name: 'Remote.co', url: 'https://remote.co/remote-jobs/', icon: '🌍' },
-                { name: 'We Work Remotely', url: 'https://weworkremotely.com/', icon: '🏠' },
-                { name: 'FlexJobs', url: 'https://www.flexjobs.com/', icon: '⏰' }
-            ]
-        };
-
-        // Check if all tasks are complete
-        function checkAllTasksComplete() {
-            const allTasks = ROADMAP_DATA.flatMap(week => week.tasks);
-            return allTasks.every(task => task.done);
-        }
-
-        // Show completion popup
-        function showCompletionPopup() {
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-            const role = userData.targetRole || 'sde';
-            const relatedSkills = RELATED_SKILLS[role] || RELATED_SKILLS['sde'];
-
-            const roleNames = {
-                'sde': 'Software Developer',
-                'frontend': 'Frontend Developer',
-                'backend': 'Backend Developer',
-                'fullstack': 'Full Stack Developer',
-                'data-analyst': 'Data Analyst',
-                'data-scientist': 'Data Scientist',
-                'ml-engineer': 'ML Engineer',
-                'devops': 'DevOps Engineer',
-                'product': 'Product Manager',
-                'designer': 'UI/UX Designer'
-            };
-
-            const popup = document.createElement('div');
-            popup.id = 'completion-popup';
-            popup.innerHTML = `
-                <div class="completion-overlay">
-                    <div class="completion-modal">
-                        <div class="completion-confetti">🎉</div>
-                        <h2 class="completion-title">Congratulations! 🎊</h2>
-                        <p class="completion-subtitle">You've mastered all the required skills for <strong>${roleNames[role] || 'your target role'}</strong>!</p>
-                        
-                        <div class="completion-stats">
-                            <div class="stat-item">
-                                <span class="stat-value">6</span>
-                                <span class="stat-label">Weeks Completed</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">${ROADMAP_DATA.flatMap(w => w.tasks).length}</span>
-                                <span class="stat-label">Tasks Finished</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value">100%</span>
-                                <span class="stat-label">Job Ready</span>
-                            </div>
-                        </div>
-
-                        <p class="completion-message">You're now ready to apply for your dream job! Choose your next step:</p>
-
-                        <div class="completion-actions">
-                            <button class="completion-btn primary" onclick="showJobsPanel()">
-                                <span class="btn-icon">💼</span>
-                                <span>Find Internships & Jobs</span>
-                            </button>
-                            <button class="completion-btn secondary" onclick="showSkillsPanel()">
-                                <span class="btn-icon">🚀</span>
-                                <span>Explore Related Skills</span>
-                            </button>
-                        </div>
-
-                        <button class="completion-close" onclick="closeCompletionPopup()">×</button>
-                    </div>
-                </div>
-
-                <!-- Jobs Panel -->
-                <div class="side-panel" id="jobs-panel">
-                    <div class="panel-header">
-                        <h3>🎯 Apply for Jobs & Internships</h3>
-                        <button class="panel-close" onclick="closeJobsPanel()">×</button>
-                    </div>
-                    <div class="panel-content">
-                        <div class="job-category">
-                            <h4>🚀 Tech Jobs</h4>
-                            ${JOB_SITES.tech.map(site => `
-                                <a href="${site.url}" target="_blank" class="job-link">
-                                    <span class="job-icon">${site.icon}</span>
-                                    <span>${site.name}</span>
-                                    <span class="job-arrow">→</span>
-                                </a>
-                            `).join('')}
-                        </div>
-                        <div class="job-category">
-                            <h4>🎓 Internships</h4>
-                            ${JOB_SITES.internships.map(site => `
-                                <a href="${site.url}" target="_blank" class="job-link">
-                                    <span class="job-icon">${site.icon}</span>
-                                    <span>${site.name}</span>
-                                    <span class="job-arrow">→</span>
-                                </a>
-                            `).join('')}
-                        </div>
-                        <div class="job-category">
-                            <h4>🌍 Remote Opportunities</h4>
-                            ${JOB_SITES.remote.map(site => `
-                                <a href="${site.url}" target="_blank" class="job-link">
-                                    <span class="job-icon">${site.icon}</span>
-                                    <span>${site.name}</span>
-                                    <span class="job-arrow">→</span>
-                                </a>
-                            `).join('')}
-                        </div>
-                        <div class="job-category">
-                            <h4>💼 General Job Boards</h4>
-                            ${JOB_SITES.general.map(site => `
-                                <a href="${site.url}" target="_blank" class="job-link">
-                                    <span class="job-icon">${site.icon}</span>
-                                    <span>${site.name}</span>
-                                    <span class="job-arrow">→</span>
-                                </a>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Skills Panel -->
-                <div class="side-panel" id="skills-panel">
-                    <div class="panel-header">
-                        <h3>🚀 Related Skills to Explore</h3>
-                        <button class="panel-close" onclick="closeSkillsPanel()">×</button>
-                    </div>
-                    <div class="panel-content">
-                        <p class="panel-intro">Level up further with these skills related to ${roleNames[role] || 'your domain'}:</p>
-                        <div class="skills-list">
-                            ${relatedSkills.map(skill => `
-                                <div class="skill-card">
-                                    <div class="skill-name">${skill.name}</div>
-                                    <div class="skill-desc">${skill.desc}</div>
+                                    <ul class="subtopic-list">
+                                        ${topic.items.map(item => `<li class="subtopic-tag">${item}</li>`).join('')}
+                                    </ul>
+                                    <div class="resources-area" id="res-${idx}-${tIdx}"></div>
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="panel-tip">
-                            <span>💡</span>
-                            <span>These skills will make you stand out from other candidates and prepare you for senior roles!</span>
-                        </div>
                     </div>
                 </div>
-            `;
-            document.body.appendChild(popup);
+            `).join('');
 
-            // Add styles
-            const styles = document.createElement('style');
-            styles.id = 'completion-styles';
-            styles.textContent = `
-                .completion-overlay {
-                    position: fixed;
-                    inset: 0;
-                    background: rgba(10, 10, 18, 0.95);
-                    backdrop-filter: blur(12px);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    z-index: 10000;
-                    animation: compFadeIn 0.4s ease;
-                }
-
-                .completion-modal {
-                    background: var(--bg-card);
-                    border: 1px solid var(--border-color);
-                    border-radius: var(--border-radius-xl);
-                    padding: var(--spacing-2xl);
-                    max-width: 520px;
-                    width: 90%;
-                    text-align: center;
-                    position: relative;
-                    box-shadow: var(--shadow-lg), var(--shadow-glow);
-                    animation: compSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-
-                .completion-confetti {
-                    font-size: 64px;
-                    margin-bottom: var(--spacing-md);
-                    animation: compBounce 1s ease infinite;
-                }
-
-                .completion-title {
-                    font-size: clamp(24px, 5vw, 32px);
-                    font-weight: 800;
-                    background: var(--gradient-primary);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    margin-bottom: var(--spacing-sm);
-                }
-
-                .completion-subtitle {
-                    font-size: 16px;
-                    color: var(--text-secondary);
-                    margin-bottom: var(--spacing-lg);
-                    line-height: 1.6;
-                }
-
-                .completion-stats {
-                    display: flex;
-                    justify-content: center;
-                    gap: var(--spacing-xl);
-                    margin-bottom: var(--spacing-lg);
-                    padding: var(--spacing-lg);
-                    background: rgba(99, 102, 241, 0.08);
-                    border-radius: var(--border-radius-lg);
-                    border: 1px solid rgba(99, 102, 241, 0.15);
-                }
-
-                .completion-stats .stat-item {
-                    text-align: center;
-                }
-
-                .completion-stats .stat-value {
-                    display: block;
-                    font-size: 28px;
-                    font-weight: 700;
-                    color: var(--accent-green);
-                }
-
-                .completion-stats .stat-label {
-                    font-size: 12px;
-                    color: var(--text-muted);
-                }
-
-                .completion-message {
-                    font-size: 14px;
-                    color: var(--text-secondary);
-                    margin-bottom: var(--spacing-lg);
-                }
-
-                .completion-actions {
-                    display: flex;
-                    flex-direction: column;
-                    gap: var(--spacing-sm);
-                }
-
-                .completion-btn {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: var(--spacing-sm);
-                    padding: var(--spacing-md) var(--spacing-lg);
-                    border-radius: var(--border-radius-md);
-                    font-size: 15px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: var(--transition-fast);
-                    border: none;
-                    font-family: 'Inter', sans-serif;
-                }
-
-                .completion-btn.primary {
-                    background: var(--gradient-primary);
-                    color: white;
-                    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
-                }
-
-                .completion-btn.primary:hover {
-                    transform: translateY(-2px);
-                    box-shadow: var(--shadow-glow);
-                }
-
-                .completion-btn.secondary {
-                    background: rgba(255, 255, 255, 0.05);
-                    color: var(--text-primary);
-                    border: 1px solid var(--border-color);
-                }
-
-                .completion-btn.secondary:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                }
-
-                .completion-btn .btn-icon {
-                    font-size: 18px;
-                }
-
-                .completion-close {
-                    position: absolute;
-                    top: var(--spacing-md);
-                    right: var(--spacing-md);
-                    width: 32px;
-                    height: 32px;
-                    border-radius: var(--border-radius-sm);
-                    background: rgba(255, 255, 255, 0.05);
-                    color: var(--text-muted);
-                    border: none;
-                    font-size: 20px;
-                    cursor: pointer;
-                    transition: var(--transition-fast);
-                }
-
-                .completion-close:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: var(--text-primary);
-                }
-
-                /* Side Panels */
-                .side-panel {
-                    position: fixed;
-                    top: 0;
-                    right: -480px;
-                    width: 420px;
-                    height: 100vh;
-                    background: var(--bg-secondary);
-                    border-left: 1px solid var(--border-color);
-                    z-index: 10001;
-                    transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                    display: flex;
-                    flex-direction: column;
-                    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
-                }
-
-                .side-panel.open {
-                    right: 0;
-                }
-
-                .panel-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: var(--spacing-lg);
-                    border-bottom: 1px solid var(--border-color);
-                }
-
-                .panel-header h3 {
-                    font-size: 18px;
-                    font-weight: 700;
-                    color: var(--text-primary);
-                }
-
-                .panel-close {
-                    width: 32px;
-                    height: 32px;
-                    border-radius: var(--border-radius-sm);
-                    background: rgba(255, 255, 255, 0.05);
-                    color: var(--text-muted);
-                    border: none;
-                    font-size: 20px;
-                    cursor: pointer;
-                    transition: var(--transition-fast);
-                }
-
-                .panel-close:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: var(--text-primary);
-                }
-
-                .panel-content {
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: var(--spacing-lg);
-                }
-
-                .panel-intro {
-                    color: var(--text-secondary);
-                    font-size: 14px;
-                    margin-bottom: var(--spacing-lg);
-                }
-
-                /* Job Links */
-                .job-category {
-                    margin-bottom: var(--spacing-lg);
-                }
-
-                .job-category h4 {
-                    font-size: 13px;
-                    font-weight: 600;
-                    color: var(--text-muted);
-                    margin-bottom: var(--spacing-sm);
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-
-                .job-link {
-                    display: flex;
-                    align-items: center;
-                    gap: var(--spacing-md);
-                    padding: var(--spacing-md);
-                    background: rgba(255, 255, 255, 0.02);
-                    border: 1px solid var(--border-color);
-                    border-radius: var(--border-radius-md);
-                    margin-bottom: var(--spacing-sm);
-                    text-decoration: none;
-                    color: var(--text-primary);
-                    transition: var(--transition-fast);
-                }
-
-                .job-link:hover {
-                    background: rgba(99, 102, 241, 0.1);
-                    border-color: var(--accent-primary);
-                    transform: translateX(4px);
-                }
-
-                .job-icon {
-                    font-size: 20px;
-                }
-
-                .job-link span:nth-child(2) {
-                    flex: 1;
-                    font-size: 14px;
-                }
-
-                .job-arrow {
-                    color: var(--text-muted);
-                    transition: var(--transition-fast);
-                }
-
-                .job-link:hover .job-arrow {
-                    color: var(--accent-primary);
-                }
-
-                /* Skills List */
-                .skills-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: var(--spacing-sm);
-                }
-
-                .skill-card {
-                    padding: var(--spacing-md);
-                    background: var(--bg-card);
-                    border: 1px solid var(--border-color);
-                    border-radius: var(--border-radius-md);
-                    transition: var(--transition-fast);
-                }
-
-                .skill-card:hover {
-                    border-color: var(--accent-primary);
-                    box-shadow: var(--shadow-glow);
-                }
-
-                .skill-name {
-                    font-size: 15px;
-                    font-weight: 600;
-                    color: var(--text-primary);
-                    margin-bottom: var(--spacing-xs);
-                }
-
-                .skill-desc {
-                    font-size: 13px;
-                    color: var(--text-muted);
-                }
-
-                .panel-tip {
-                    display: flex;
-                    gap: var(--spacing-sm);
-                    padding: var(--spacing-md);
-                    background: rgba(16, 185, 129, 0.08);
-                    border: 1px solid rgba(16, 185, 129, 0.2);
-                    border-radius: var(--border-radius-md);
-                    margin-top: var(--spacing-lg);
-                    font-size: 13px;
-                    color: var(--accent-green);
-                }
-
-                @keyframes compFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-
-                @keyframes compSlideUp {
-                    from { transform: translateY(30px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-
-                @keyframes compBounce {
-                    0%, 100% { transform: translateY(0); }
-                    50% { transform: translateY(-8px); }
-                }
-
-                @media (max-width: 640px) {
-                    .side-panel {
-                        width: 100%;
-                        right: -100%;
-                    }
-                    .completion-stats {
-                        gap: var(--spacing-md);
-                        flex-wrap: wrap;
-                    }
-                    .completion-stats .stat-value {
-                        font-size: 22px;
-                    }
-                    .completion-modal {
-                        padding: var(--spacing-lg);
-                    }
-                }
-            `;
-            document.head.appendChild(styles);
+            // Update Stats
+            document.getElementById('weeks-complete-val').textContent = isSample ? '0/6' : '1/6';
+            document.getElementById('overall-progress-val').textContent = isSample ? '0%' : '15%';
+            document.getElementById('overall-progress-bar').style.width = isSample ? '0%' : '15%';
         }
 
-        function closeCompletionPopup() {
-            const popup = document.getElementById('completion-popup');
-            const styles = document.getElementById('completion-styles');
-            if (popup) popup.remove();
-            if (styles) styles.remove();
-        }
+        window.toggleWeek = function (idx) {
+            const el = document.getElementById(`week-${idx}`);
+            if (el && !el.classList.contains('locked')) {
+                el.classList.toggle('open');
+            }
+        };
 
-        function showJobsPanel() {
-            document.getElementById('jobs-panel').classList.add('open');
-        }
+        window.loadResources = async function (btn, topicName, id) {
+            const area = document.getElementById(`res-${id}`);
+            if (area.innerHTML !== '') {
+                area.classList.toggle('active');
+                return;
+            }
 
-        function closeJobsPanel() {
-            document.getElementById('jobs-panel').classList.remove('open');
-        }
+            area.classList.add('active');
+            area.innerHTML = '<div class="loader">Fetching AI-curated resources using SERP...</div>';
+            btn.disabled = true;
 
-        function showSkillsPanel() {
-            document.getElementById('skills-panel').classList.add('open');
-        }
+            try {
+                // Fetch in parallel
+                const [videos, problems] = await Promise.all([
+                    SerpService.searchYouTube(topicName),
+                    SerpService.searchLeetCode(topicName)
+                ]);
 
-        function closeSkillsPanel() {
-            document.getElementById('skills-panel').classList.remove('open');
-        }
+                let html = '<div class="resource-list">';
 
-        // Check completion on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            // Delay check to allow DOM to render
-            setTimeout(() => {
-                if (checkAllTasksComplete()) {
-                    showCompletionPopup();
+                // YouTube Section
+                if (videos.length > 0) {
+                    html += '<h4 style="margin:10px 0 5px; font-size:13px; color:#ff4444;">YouTube Tutorials</h4>';
+                    html += videos.slice(0, 3).map(v => `
+                        <a href="${v.link}" target="_blank" class="resource-item">
+                            <span class="res-icon">📺</span>
+                            <span class="res-title">${v.title}</span>
+                            <span class="res-badge">${v.channel}</span>
+                        </a>
+                    `).join('');
                 }
-            }, 500);
-        });
+
+                // LeetCode Section
+                if (problems.length > 0) {
+                    html += '<h4 style="margin:15px 0 5px; font-size:13px; color:#ffa116;">LeetCode Practice</h4>';
+                    html += problems.slice(0, 3).map(p => `
+                        <a href="${p.link}" target="_blank" class="resource-item">
+                            <span class="res-icon">💻</span>
+                            <span class="res-title">${p.title}</span>
+                            <span class="res-badge">Practice</span>
+                        </a>
+                    `).join('');
+                }
+
+                html += '</div>';
+                area.innerHTML = html;
+            } catch (err) {
+                area.innerHTML = '<div style="color:red; padding:10px;">Failed to load resources. Try again.</div>';
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
     </script>
     <script src="js/sidebar.js"></script>
 </body>

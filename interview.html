@@ -425,12 +425,34 @@
             }
 
             70% {
-                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
             }
 
             100% {
                 box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
             }
+        }
+
+        @keyframes pulse-blue {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+                opacity: 0.8;
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(99, 102, 241, 0);
+                opacity: 0;
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+                opacity: 0;
+            }
+        }
+
+        .ai-pulse.speaking {
+            animation: pulse-blue 1.5s infinite;
+            opacity: 1;
         }
 
         .interview-actions {
@@ -524,8 +546,14 @@
             window.interviewMedia.initCamera('webcam-feed').then(success => {
                 if (success) {
                     console.log("Camera initialized");
+                    // Start Recording (Video + Audio)
+                    const recordingStarted = window.interviewMedia.startVideoRecording();
+                    if (recordingStarted) {
+                        document.getElementById('rec-indicator').classList.add('active');
+                    }
                 } else {
                     console.warn("Could not access camera.");
+                    alert("Please enable camera and microphone for the interview.");
                 }
             });
 
@@ -565,6 +593,13 @@
             document.getElementById('current-q').textContent = currentQuestionIndex + 1;
             document.getElementById('question-category').textContent = q.category;
             document.getElementById('question-text').textContent = q.text;
+
+            // Speak the question
+            const pulse = document.querySelector('.ai-pulse');
+            window.interviewMedia.speak(q.text,
+                () => pulse.classList.add('speaking'), // onStart
+                () => pulse.classList.remove('speaking') // onEnd
+            );
 
             // UI Toggle based on type
             const textContainer = document.getElementById('text-input-container');
@@ -644,8 +679,30 @@
             clearInterval(timerInterval);
 
             // Stop media
-            window.interviewMedia.stopCamera();
+            // Stop speech recognition immediately
             window.interviewMedia.stopListening();
+
+            // Stop recording first, then camera
+            window.interviewMedia.stopVideoRecording().then(videoUrl => {
+                window.interviewMedia.stopCamera(); // Now it keeps stream alive until recording stops
+
+                if (videoUrl) {
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = videoUrl;
+                    downloadBtn.download = `nextstep-interview-${new Date().getTime()}.webm`;
+                    downloadBtn.className = 'btn btn-secondary';
+                    downloadBtn.style.marginTop = '16px';
+                    downloadBtn.innerHTML = '📥 Download Interview Recording';
+
+                    // Insert after the existing button
+                    const container = document.getElementById('complete-section');
+                    // Check if button already exists to prevent duplicates if called multiple times
+                    if (!container.querySelector('a[download]')) {
+                        container.appendChild(document.createElement('br'));
+                        container.appendChild(downloadBtn);
+                    }
+                }
+            });
 
             // Save interview results
             const interviewData = {
