@@ -55,6 +55,9 @@
                         <span class="stat-lbl">Day Streak</span>
                     </div>
                 </div>
+                <button class="btn-logout-profile" onclick="logout()">
+                    <span>🚪</span> Logout
+                </button>
             </div>
 
             <!-- Activity Heatmap (Moved from Tracker) -->
@@ -319,6 +322,29 @@
         .profile-stats-mini {
             display: flex;
             gap: 32px;
+        }
+
+        .btn-logout-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            color: #ef4444;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-left: auto;
+        }
+
+        .btn-logout-profile:hover {
+            background: #ef4444;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
         .profile-stat-mini {

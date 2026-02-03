@@ -61,21 +61,13 @@ function generateSidebar() {
             `).join('')}
         </nav>
         <div class="sidebar-footer">
-            <div class="user-info-widget" onclick="toggleUserMenu(event)" style="cursor: pointer;">
+            <a href="profile.html" class="user-info-widget" style="text-decoration: none; cursor: pointer;">
                 <div class="user-avatar-widget">${userInitial}</div>
                 <div class="user-details-widget">
-                    <div class="user-name-widget">${userName} <span style="font-size: 10px; opacity: 0.7;">▾</span></div>
+                    <div class="user-name-widget">${userName}</div>
                     <div class="user-role-widget">${userRole}</div>
                 </div>
-            </div>
-            <div class="user-menu-dropdown hidden" id="user-menu">
-                <a href="profile.html" class="user-menu-item">
-                    <span>👤</span> Profile
-                </a>
-                <a href="#" onclick="logout(); return false;" class="user-menu-item logout-item">
-                    <span>🚪</span> Logout
-                </a>
-            </div>
+            </a>
         </div>
     `;
 
