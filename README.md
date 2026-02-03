@@ -44,21 +44,22 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 - **Skills Coverage Metrics** — Track skills covered vs. skills needed
 - **Day Streak Counter** — Stay consistent with gamified motivation
 
-### 👤 User Profiles
-- **Student/Fresher Mode** — Tailored for placement preparation
-- **Career Gap Mode** — Specialized guidance for returning professionals
+### 👤 User Profiles & Navigation
+- **Simplified Sidebar** — Clean navigation with direct Profile access
+- **Smart User Tab** — Single click to access profile, no hidden menus
+- **Streamlined Logout** — Secure logout from profile page, redirects to landing
 - **Activity Heatmap** — Github-style visualization of your daily learning progress
 
-### � Onboarding Wizard
+### 🚀 Onboarding Wizard
 - **Multi-step Flow** — Guided setup for personalized experience
 - **Career Goal Setting** — Define your path (Student, Professional, etc.)
 - **Interactive Resume Upload** — Drag & drop interface
-- **Progress Tracking** — Save and resume capability
+- **Seamless Transition** — Auto-redirects to resume analysis upon completion
 
 ### 🔐 Authentication
 - **Firebase Auth** — Secure Email/Password & Google Sign-In
 - **Cloud Persistence** — User profiles stored in Firestore
-- **Smart Redirection** — New users guided to onboarding
+- **Smart Redirection** — New users guided to onboarding automatically
 
 ---
 
