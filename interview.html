@@ -83,10 +83,6 @@
                                 <div class="answer-tools">
                                     <span id="code-lang-badge" class="badge badge-secondary hidden"
                                         style="font-size: 11px;">JavaScript</span>
-                                    <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
-                                        <span class="mic-icon">🎤</span>
-                                        <span id="mic-status">Start Speaking</span>
-                                    </button>
                                 </div>
                             </div>
 
@@ -94,6 +90,22 @@
                             <div id="text-input-container">
                                 <textarea class="answer-input" id="answer-input"
                                     placeholder="Type your answer here or use the microphone... Be clear and structured in your response."></textarea>
+
+                                <!-- Real-time Speech Transcription Preview -->
+                                <div class="transcript-preview-container">
+                                    <div class="transcript-label">
+                                        <span>🎤 Live Transcription:</span>
+                                    </div>
+                                    <div class="transcript-preview" id="transcript-preview"></div>
+                                </div>
+
+                                <!-- Mic Button Below Transcript -->
+                                <div style="margin-top: 12px; display: flex; justify-content: center;">
+                                    <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
+                                        <span class="mic-icon">🎤</span>
+                                        <span id="mic-status">Start Speaking</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Code Editor Input -->
@@ -134,12 +146,12 @@
                             </div>
                         </div>
 
-                        <div class="ai-interviewer">
+                        <div class="ai-interviewer" id="ai-interviewer">
                             <div class="ai-avatar">
                                 <div class="ai-pulse"></div>
                                 🤖
                             </div>
-                            <div class="ai-status">AI is listening...</div>
+                            <div class="ai-status hidden" id="ai-status">AI is listening...</div>
                         </div>
                     </div>
                 </div>
@@ -154,6 +166,19 @@
                 <a href="skill-gap.html" class="btn btn-primary btn-lg">
                     View Skill Analysis →
                 </a>
+            </div>
+
+            <!-- Custom Modal for Alerts & Confirmations -->
+            <div id="custom-modal" class="modal-overlay hidden">
+                <div class="modal-container">
+                    <div class="modal-icon" id="modal-icon">⚠️</div>
+                    <h3 class="modal-title" id="modal-title">Alert</h3>
+                    <p class="modal-message" id="modal-message">This is a message</p>
+                    <div class="modal-actions" id="modal-actions">
+                        <button class="btn btn-secondary" id="modal-cancel">Cancel</button>
+                        <button class="btn btn-primary" id="modal-confirm">OK</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -307,10 +332,12 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s;
+            position: relative;
         }
 
         .mic-btn:hover {
             background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
         }
 
         .mic-btn.recording {
@@ -318,6 +345,22 @@
             border-color: rgba(239, 68, 68, 0.5);
             color: var(--accent-red);
             animation: pulse-red 2s infinite;
+        }
+
+        .mic-btn.recording .mic-icon {
+            animation: pulse-scale 1s infinite;
+        }
+
+        @keyframes pulse-scale {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
         }
 
         .video-container {
@@ -488,6 +531,157 @@
             resize: vertical;
             outline: none;
         }
+
+        /* Speech Transcription Preview */
+        .transcript-preview-container {
+            margin-top: 12px;
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            min-height: 50px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s;
+        }
+
+        .transcript-preview-container:has(.transcript-preview:not(:empty)) {
+            background: rgba(99, 102, 241, 0.12);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+
+        .transcript-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .transcript-preview {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            font-style: italic;
+            min-height: 20px;
+            animation: fadeIn 0.2s;
+        }
+
+        .transcript-preview:empty::before {
+            content: 'Click the mic button and start speaking to see your words appear here...';
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: modal-fade-in 0.2s ease;
+        }
+
+        @keyframes modal-fade-in {
+            from {
+                opacity: 0;
+                backdrop-filter: blur(0px);
+            }
+
+            to {
+                opacity: 1;
+                backdrop-filter: blur(8px);
+            }
+        }
+
+        .modal-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modal-slide-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modal-slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+            animation: icon-bounce 0.5s ease;
+        }
+
+        @keyframes icon-bounce {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-actions .btn {
+            min-width: 100px;
+        }
     </style>
 
     <script>
@@ -510,23 +704,183 @@
         let answers = [];
         let timerInterval = null;
         let timeLeft = 120;
+        let initialTime = 120; // Track initial time for accurate calculation
+        let autoSaveInterval = null;
 
-        // Load user data
+        // Load user data - Fixed to handle missing elements gracefully
         document.addEventListener('DOMContentLoaded', () => {
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-            if (userData.name) {
-                document.getElementById('user-name').textContent = userData.name;
-                document.getElementById('user-avatar').textContent = userData.name.charAt(0).toUpperCase();
+            // Only update if elements exist (they're in sidebar.js)
+            const userName = document.getElementById('user-name');
+            const userAvatar = document.getElementById('user-avatar');
+            const userRole = document.getElementById('user-role');
+
+            if (userName && userData.name) {
+                userName.textContent = userData.name;
             }
-            if (userData.targetRole) {
+            if (userAvatar && userData.name) {
+                userAvatar.textContent = userData.name.charAt(0).toUpperCase();
+            }
+            if (userRole && userData.targetRole) {
                 const roleNames = {
                     'sde': 'Software Developer',
                     'frontend': 'Frontend Dev',
                     'backend': 'Backend Dev'
                 };
-                document.getElementById('user-role').textContent = roleNames[userData.targetRole] || userData.targetRole;
+                userRole.textContent = roleNames[userData.targetRole] || userData.targetRole;
             }
+
+            // Auto-save answers every 10 seconds
+            autoSaveInterval = setInterval(() => {
+                if (answers.length > 0) {
+                    localStorage.setItem('nextStep_interview_autosave', JSON.stringify({
+                        mode: currentMode,
+                        answers: answers,
+                        currentIndex: currentQuestionIndex,
+                        lastSaved: new Date().toISOString()
+                    }));
+                }
+            }, 10000);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Don't trigger if user is typing in textarea or input
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    submitAnswer();
+                } else if (e.key === 'Escape') {
+                    skipQuestion();
+                }
+            });
         });
+
+        // Custom Modal Functions
+        function showAlert(message, icon = '⚠️', title = 'Alert') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-modal');
+                const modalIcon = document.getElementById('modal-icon');
+                const modalTitle = document.getElementById('modal-title');
+                const modalMessage = document.getElementById('modal-message');
+                const modalActions = document.getElementById('modal-actions');
+                const confirmBtn = document.getElementById('modal-confirm');
+                const cancelBtn = document.getElementById('modal-cancel');
+
+                // Set content
+                modalIcon.textContent = icon;
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+
+                // Show only confirm button
+                cancelBtn.classList.add('hidden');
+                confirmBtn.textContent = 'OK';
+
+                // Show modal
+                modal.classList.remove('hidden');
+
+                // Handle confirm
+                const handleConfirm = () => {
+                    modal.classList.add('hidden');
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    resolve(true);
+                };
+
+                confirmBtn.addEventListener('click', handleConfirm);
+            });
+        }
+
+        function showConfirm(message, icon = '❓', title = 'Confirm') {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('custom-modal');
+                const modalIcon = document.getElementById('modal-icon');
+                const modalTitle = document.getElementById('modal-title');
+                const modalMessage = document.getElementById('modal-message');
+                const modalActions = document.getElementById('modal-actions');
+                const confirmBtn = document.getElementById('modal-confirm');
+                const cancelBtn = document.getElementById('modal-cancel');
+
+                // Set content
+                modalIcon.textContent = icon;
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+
+                // Show both buttons
+                cancelBtn.classList.remove('hidden');
+                confirmBtn.textContent = 'OK';
+                cancelBtn.textContent = 'Cancel';
+
+                // Show modal
+                modal.classList.remove('hidden');
+
+                // Handle buttons
+                const handleConfirm = () => {
+                    modal.classList.add('hidden');
+                    cleanup();
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    modal.classList.add('hidden');
+                    cleanup();
+                    resolve(false);
+                };
+
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                };
+
+                confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
+            });
+        }
+
+        // Timer Functions (MISSING - NOW ADDED)
+        function startTimer() {
+            // Clear any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                // Warning when 30 seconds left
+                if (timeLeft === 30) {
+                    const timerEl = document.getElementById('timer');
+                    timerEl.style.color = '#ef4444';
+                    timerEl.style.animation = 'pulse 1s infinite';
+                }
+
+                // Auto-submit when time runs out
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    showAlert('Time is up! Moving to next question...', '⏰', 'Time Expired').then(() => {
+                        // Auto-move to next question
+                        currentQuestionIndex++;
+                        if (currentQuestionIndex >= QUESTIONS[currentMode].length) {
+                            completeInterview();
+                        } else {
+                            showQuestion();
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timerDisplay = document.getElementById('timer');
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            // Reset color if time left > 30
+            if (timeLeft > 30) {
+                timerDisplay.style.color = 'var(--accent-gold)';
+                timerDisplay.style.animation = 'none';
+            }
+        }
 
         function startInterview(mode) {
             currentMode = mode;
@@ -545,25 +899,42 @@
             // Initialize Media
             window.interviewMedia.initCamera('webcam-feed').then(success => {
                 if (success) {
-                    console.log("Camera initialized");
+                    console.log("✅ Camera initialized");
                     // Start Recording (Video + Audio)
                     const recordingStarted = window.interviewMedia.startVideoRecording();
                     if (recordingStarted) {
+                        console.log("✅ Video recording started");
                         document.getElementById('rec-indicator').classList.add('active');
+                    } else {
+                        console.error("❌ Video recording failed to start");
+                        alert("Warning: Video recording could not start. Your interview will continue but won't be recorded.");
                     }
                 } else {
-                    console.warn("Could not access camera.");
+                    console.warn("❌ Could not access camera");
                     alert("Please enable camera and microphone for the interview.");
                 }
+            }).catch(err => {
+                console.error("Camera initialization error:", err);
             });
 
+            // Initialize speech with real-time transcription preview
             window.interviewMedia.initSpeech((final, interim) => {
                 const textArea = document.getElementById('answer-input');
+                const transcriptPreview = document.getElementById('transcript-preview');
+
                 // Only for text mode
                 if (!document.getElementById('text-input-container').classList.contains('hidden')) {
+                    // Update preview with interim results
+                    if (interim) {
+                        transcriptPreview.textContent = interim;
+                        transcriptPreview.style.opacity = '0.6';
+                    }
+
+                    // Add final results to textarea
                     if (final) {
                         textArea.value += (textArea.value ? ' ' : '') + final;
                         textArea.scrollTop = textArea.scrollHeight;
+                        transcriptPreview.textContent = '';
                     }
                 }
             });
@@ -573,16 +944,32 @@
             const isRecording = window.interviewMedia.toggleListening();
             const btn = document.getElementById('mic-btn');
             const status = document.getElementById('mic-status');
-            const recIndicator = document.getElementById('rec-indicator');
+            const micIcon = btn.querySelector('.mic-icon');
+            const aiStatus = document.getElementById('ai-status');
 
             if (isRecording) {
+                // Started recording - Show AI Status
                 btn.classList.add('recording');
-                status.textContent = 'Listening...';
-                recIndicator.classList.add('active');
+                status.textContent = 'Stop Recording';
+                micIcon.textContent = '⏹️'; // Stop icon
+                if (aiStatus) {
+                    aiStatus.classList.remove('hidden');
+                    aiStatus.textContent = 'AI is listening...';
+                }
             } else {
+                // Stopped recording - Hide AI Status
                 btn.classList.remove('recording');
                 status.textContent = 'Start Speaking';
-                recIndicator.classList.remove('active');
+                micIcon.textContent = '🎤'; // Mic icon
+                if (aiStatus) {
+                    aiStatus.classList.add('hidden');
+                }
+
+                // Clear transcript preview when stopped
+                const transcriptPreview = document.getElementById('transcript-preview');
+                if (transcriptPreview) {
+                    transcriptPreview.textContent = '';
+                }
             }
         }
 
@@ -606,6 +993,7 @@
             const codeContainer = document.getElementById('code-input-container');
             const micBtn = document.getElementById('mic-btn');
             const codeBadge = document.getElementById('code-lang-badge');
+            const aiInterviewer = document.getElementById('ai-interviewer');
 
             if (q.type === 'code') {
                 // Code Mode
@@ -613,6 +1001,7 @@
                 codeContainer.classList.remove('hidden');
                 micBtn.classList.add('hidden');
                 codeBadge.classList.remove('hidden');
+                aiInterviewer.classList.add('hidden'); // Hide AI for code questions
                 document.getElementById('code-area').value = ''; // Clear code
             } else {
                 // Text/Speech Mode
@@ -620,50 +1009,90 @@
                 codeContainer.classList.add('hidden');
                 micBtn.classList.remove('hidden');
                 codeBadge.classList.add('hidden');
+                aiInterviewer.classList.remove('hidden'); // Show AI for text questions
                 document.getElementById('answer-input').value = ''; // Clear text
+
+                // Clear transcript preview
+                const transcriptPreview = document.getElementById('transcript-preview');
+                if (transcriptPreview) {
+                    transcriptPreview.textContent = '';
+                }
             }
 
             document.getElementById('interview-progress').style.width =
                 ((currentQuestionIndex + 1) / questions.length * 100) + '%';
 
-            timeLeft = q.type === 'code' ? 300 : 120; // More time for code
+            // Set time based on question type and track initial time
+            initialTime = q.type === 'code' ? 300 : 120;
+            timeLeft = initialTime;
             updateTimerDisplay();
+
+            // Restart timer for new question
+            startTimer();
         }
 
-        function submitAnswer() {
+        async function submitAnswer() {
             const questions = QUESTIONS[currentMode];
             const q = questions[currentQuestionIndex];
 
             let answer = '';
             if (q.type === 'code') {
-                answer = document.getElementById('code-area').value;
+                answer = document.getElementById('code-area').value.trim();
             } else {
-                answer = document.getElementById('answer-input').value;
+                answer = document.getElementById('answer-input').value.trim();
             }
+
+            // Validate answer (allow skip with confirmation)
+            if (!answer) {
+                const confirmSkip = await showConfirm('Your answer is empty. Do you want to skip this question?', '❓', 'Empty Answer');
+                if (!confirmSkip) return;
+            }
+
+            // Visual feedback
+            const submitBtn = document.querySelector('.interview-actions .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '✓ Submitted';
+            submitBtn.disabled = true;
+
             answers.push({
                 question: q.text,
                 category: q.category,
                 type: q.type,
                 answer: answer,
-                timeSpent: 120 - timeLeft // Approximate
+                timeSpent: initialTime - timeLeft // Fixed: Use initialTime
             });
 
-            currentQuestionIndex++;
+            // Small delay for feedback
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
 
-            if (currentQuestionIndex >= questions.length) {
-                completeInterview();
-            } else {
-                showQuestion();
-            }
+                currentQuestionIndex++;
+
+                if (currentQuestionIndex >= questions.length) {
+                    completeInterview();
+                } else {
+                    showQuestion();
+                }
+            }, 500);
         }
 
-        function skipQuestion() {
-            const questions = QUESTIONS[currentMode];
+        async function skipQuestion() {
+            // Ask for confirmation before skipping
+            const confirmSkip = await showConfirm('Are you sure you want to skip this question?', '⏭️', 'Skip Question');
+            if (!confirmSkip) return;
 
+            const questions = QUESTIONS[currentMode];
+            const q = questions[currentQuestionIndex];
+
+            // Fixed: Match format with submitAnswer
             answers.push({
-                question: questions[currentQuestionIndex],
+                question: q.text,
+                category: q.category,
+                type: q.type,
                 answer: '',
-                skipped: true
+                skipped: true,
+                timeSpent: initialTime - timeLeft
             });
 
             currentQuestionIndex++;
@@ -677,16 +1106,19 @@
 
         function completeInterview() {
             clearInterval(timerInterval);
+            clearInterval(autoSaveInterval);
 
             // Stop media
-            // Stop speech recognition immediately
             window.interviewMedia.stopListening();
 
             // Stop recording first, then camera
+            console.log("🎬 Stopping video recording...");
             window.interviewMedia.stopVideoRecording().then(videoUrl => {
-                window.interviewMedia.stopCamera(); // Now it keeps stream alive until recording stops
+                console.log("📹 Video URL:", videoUrl);
+                window.interviewMedia.stopCamera();
 
                 if (videoUrl) {
+                    console.log("✅ Video recording completed successfully");
                     const downloadBtn = document.createElement('a');
                     downloadBtn.href = videoUrl;
                     downloadBtn.download = `nextstep-interview-${new Date().getTime()}.webm`;
@@ -694,14 +1126,16 @@
                     downloadBtn.style.marginTop = '16px';
                     downloadBtn.innerHTML = '📥 Download Interview Recording';
 
-                    // Insert after the existing button
                     const container = document.getElementById('complete-section');
-                    // Check if button already exists to prevent duplicates if called multiple times
                     if (!container.querySelector('a[download]')) {
                         container.appendChild(document.createElement('br'));
                         container.appendChild(downloadBtn);
                     }
+                } else {
+                    console.error("❌ No video URL returned - recording may have failed");
                 }
+            }).catch(err => {
+                console.error("❌ Error stopping video recording:", err);
             });
 
             // Save interview results
@@ -711,13 +1145,10 @@
                 completedAt: new Date().toISOString()
             };
             localStorage.setItem('nextStep_interview', JSON.stringify(interviewData));
+            localStorage.removeItem('nextStep_interview_autosave'); // Clear autosave
 
             document.getElementById('interview-section').classList.add('hidden');
             document.getElementById('complete-section').classList.remove('hidden');
-
-            // Auto redirect after a few seconds or let them click
-            // For now, let's keep the manual click but update the link
-
         }
     </script>
     <script src="js/interview-media.js"></script>

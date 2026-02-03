@@ -21,6 +21,7 @@ class InterviewMedia {
         if (!this.videoElement) return false;
 
         try {
+            console.log("Requesting camera access...");
             // Request both video and audio
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: { width: 1280, height: 720 },
@@ -28,11 +29,19 @@ class InterviewMedia {
             });
 
             this.videoElement.srcObject = this.stream;
-            // distinct from "isRecording" which is for speech recognition state in original code
-            // We will separate video recording logic
+            console.log("Camera access granted.");
             return true;
         } catch (err) {
             console.error("Error accessing webcam:", err);
+            let msg = "Could not access camera.";
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                msg = "Camera/Mic permission denied. Please allow access in your browser settings (look for the icon in the address bar).";
+            } else if (err.name === 'NotFoundError') {
+                msg = "No camera or microphone found on this device.";
+            } else if (err.name === 'NotReadableError') {
+                msg = "Camera is currently in use by another application.";
+            }
+            alert(msg);
             return false;
         }
     }
@@ -118,9 +127,10 @@ class InterviewMedia {
 
     // Initialize Speech Recognition
     initSpeech(onResultCallback) {
-        // ... existing initSpeech logic ...
+        // Check browser support
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             console.warn("Speech Recognition not supported in this browser.");
+            alert("Note: Speech-to-Text is not supported in this browser. Please use Chrome or Edge for the best experience.");
             return false;
         }
 
@@ -153,7 +163,14 @@ class InterviewMedia {
             // Ignore no-speech error as it happens often
             if (event.error !== 'no-speech') {
                 console.error("Speech recognition error", event.error);
+                if (event.error === 'not-allowed') {
+                    alert("Microphone access blocked for speech recognition. Please check your tracking protection or permission settings.");
+                }
             }
+        };
+
+        this.recognition.onend = () => {
+            this.isRecording = false;
         };
 
         return true;
@@ -181,12 +198,19 @@ class InterviewMedia {
     }
 
     toggleListening() {
+        if (!this.recognition) {
+            alert("Speech recognition is not initialized or supported.");
+            return false;
+        }
+
         if (this.isRecording) {
             this.stopListening();
+            return false; // Stopped
         } else {
-            this.startListening();
+            const started = this.startListening();
+            if (started) return true; // Started
+            return false; // Failed to start
         }
-        return this.isRecording;
     }
 }
 

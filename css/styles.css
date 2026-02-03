@@ -94,6 +94,11 @@ img {
     display: block;
 }
 
+/* ===== Utility Classes ===== */
+.hidden {
+    display: none !important;
+}
+
 /* ===== Container ===== */
 .container {
     max-width: var(--container-max);
