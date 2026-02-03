@@ -201,8 +201,8 @@ async function finishOnboarding() {
         }));
     }
 
-    // Redirect
+    // Redirect to Resume Analysis (Next Step in Flow)
     setTimeout(() => {
-        window.location.href = 'dashboard.html';
+        window.location.href = 'resume.html';
     }, 1500);
 }
