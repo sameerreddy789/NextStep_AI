@@ -661,20 +661,38 @@
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('analyzing-section').classList.remove('hidden');
 
-            // Simulate analysis progress
-            let progress = 0;
+            const statusText = document.querySelector('#analyzing-section .text-muted');
             const progressBar = document.getElementById('analysis-progress');
+            let progress = 0;
+
+            // Simulation Steps
+            const steps = [
+                { p: 15, t: "Scanning PDF Document..." },
+                { p: 40, t: "Extracting Technical Skills..." },
+                { p: 70, t: "Analyzing Job Fit..." },
+                { p: 90, t: "Calculating ATS Score..." },
+                { p: 100, t: "Finalizing Report..." }
+            ];
+
+            let stepIndex = 0;
+
             const interval = setInterval(() => {
-                progress += 25; // Faster, more predictable
+                progress += 1;
+                progressBar.style.width = progress + '%';
+
+                // Update text based on progress
+                if (stepIndex < steps.length && progress >= steps[stepIndex].p) {
+                    statusText.textContent = steps[stepIndex].t;
+                    stepIndex++;
+                }
+
                 if (progress >= 100) {
-                    progress = 100;
                     clearInterval(interval);
                     setTimeout(() => {
                         showResults(DEMO_RESUME_DATA);
                     }, 500);
                 }
-                progressBar.style.width = progress + '%';
-            }, 100); // Faster interval
+            }, 30); // 30ms * 100 = 3000ms (3 seconds)
         }
 
         function useDemoResume() {

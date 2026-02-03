@@ -240,61 +240,7 @@
                 </div>
             </div>
 
-            <!-- Address -->
-            <div class="profile-section">
-                <div class="section-header">
-                    <h3 class="section-title">Address</h3>
-                    <button class="btn-edit" onclick="toggleEdit('address')">
-                        <span>✏️</span> Edit
-                    </button>
-                </div>
-                <div class="profile-grid" id="address-view">
-                    <div class="profile-field">
-                        <label>Country</label>
-                        <span id="view-country">India</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>City</label>
-                        <span id="view-city">Bangalore</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>Postal Code</label>
-                        <span id="view-postal">560001</span>
-                    </div>
-                </div>
-                <div class="profile-grid edit-mode hidden" id="address-edit">
-                    <div class="form-group">
-                        <label class="form-label">Country</label>
-                        <input type="text" class="form-input" id="edit-country" value="India">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">City</label>
-                        <input type="text" class="form-input" id="edit-city" value="Bangalore">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Postal Code</label>
-                        <input type="text" class="form-input" id="edit-postal" value="560001">
-                    </div>
-                    <div class="edit-actions">
-                        <button class="btn btn-secondary" onclick="toggleEdit('address')">Cancel</button>
-                        <button class="btn btn-primary" onclick="saveAddress()">Save Changes</button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Danger Zone -->
-            <div class="profile-section danger-zone">
-                <div class="section-header">
-                    <h3 class="section-title" style="color: var(--accent-red);">Danger Zone</h3>
-                </div>
-                <div class="danger-content">
-                    <div>
-                        <strong>Delete Account</strong>
-                        <p>Permanently delete your account and all associated data.</p>
-                    </div>
-                    <button class="btn btn-danger">Delete Account</button>
-                </div>
-            </div>
         </main>
     </div>
 
@@ -809,7 +755,7 @@
                 localStorage.removeItem('nextStep_user');
                 localStorage.removeItem('nextStep_resume');
                 localStorage.removeItem('nextStep_profile');
-                window.location.href = 'auth.html';
+                window.location.href = 'index.html';
             }
         }
 

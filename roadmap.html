@@ -37,6 +37,49 @@
                 <p class="page-subtitle">Personalized plan based on your skill gaps and interview analysis</p>
             </div>
 
+            <!-- Celebration Modal (Hidden by default) -->
+            <div id="celebration-modal" class="modal-overlay hidden">
+                <div class="modal-content" style="max-width: 600px;">
+                    <div class="modal-icon">🎉</div>
+                    <h2 class="modal-title">Roadmap Complete!</h2>
+                    <p class="modal-desc">
+                        Incredible work! You've mastered all the skills required for your target role.
+                        You are now <strong>100% Job Ready</strong>.
+                    </p>
+                    <div class="modal-actions">
+                        <button onclick="showJobLinks()" class="btn btn-primary">Find Internships & Jobs</button>
+                        <button onclick="showRelatedSkills()" class="btn btn-secondary">Explore Related Skills</button>
+                    </div>
+
+                    <!-- Job Links Panel (Hidden initially) -->
+                    <div id="job-panel" class="hidden" style="margin-top: 24px; text-align: left;">
+                        <h4 style="color: var(--accent-green); margin-bottom: 12px;">🚀 Apply Now</h4>
+                        <div class="resource-list">
+                            <a href="https://linkedin.com/jobs" target="_blank" class="resource-item">
+                                <span class="res-icon">💼</span> <span class="res-title">LinkedIn Jobs</span>
+                            </a>
+                            <a href="https://internshala.com" target="_blank" class="resource-item">
+                                <span class="res-icon">🎓</span> <span class="res-title">Internshala</span>
+                            </a>
+                            <a href="https://wellfound.com/jobs" target="_blank" class="resource-item">
+                                <span class="res-icon">🦄</span> <span class="res-title">Wellfound (Startups)</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Related Skills Panel (Hidden initially) -->
+                    <div id="skills-panel" class="hidden" style="margin-top: 24px; text-align: left;">
+                        <h4 style="color: var(--accent-purple); margin-bottom: 12px;">🔮 Level Up Further</h4>
+                        <div class="subtopic-list">
+                            <span class="subtopic-tag">GraphDB</span>
+                            <span class="subtopic-tag">WebAssembly</span>
+                            <span class="subtopic-tag">Rust</span>
+                            <span class="subtopic-tag">Cybersecurity Basics</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Gated Access Modal (Hidden by default) -->
             <div id="gated-modal" class="modal-overlay hidden">
                 <div class="modal-content">
@@ -77,6 +120,10 @@
 
         </main>
     </div>
+
+    <!-- Canvas for Confetti -->
+    <canvas id="confetti-canvas"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:9999; display:none;"></canvas>
 
     <style>
         /* Modal Styles */
@@ -422,8 +469,32 @@
                 opacity: 1;
             }
         }
+
+        /* Interactive Subtopic Styles */
+        .subtopic-tag.interactive {
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .subtopic-tag.interactive:hover {
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .subtopic-tag.done {
+            background: var(--accent-green);
+            color: #000;
+            font-weight: 600;
+            border-color: var(--accent-green);
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const hasInterview = localStorage.getItem('nextStep_interview');
@@ -445,6 +516,9 @@
             const userRole = userData.targetRole || 'sde';
             initRoadmap(userRole, true); // true = isSample
         };
+
+        // Track progress
+        const completedTopics = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
 
         function initRoadmap(role, isSample) {
             const container = document.getElementById('roadmap-container');
@@ -476,7 +550,12 @@
                                         </div>
                                     </div>
                                     <ul class="subtopic-list">
-                                        ${topic.items.map(item => `<li class="subtopic-tag">${item}</li>`).join('')}
+                                        ${topic.items.map(item => {
+                const itemId = `${idx}-${tIdx}-${item.replace(/\s+/g, '')}`;
+                const isDone = completedTopics.includes(itemId);
+                return `<li class="subtopic-tag ${!isSample ? 'interactive' : ''} ${isDone ? 'done' : ''}" 
+                                                onclick="${!isSample ? `toggleTopic('${itemId}', this)` : ''}">${item}</li>`
+            }).join('')}
                                     </ul>
                                     <div class="resources-area" id="res-${idx}-${tIdx}"></div>
                                 </div>
@@ -486,11 +565,81 @@
                 </div>
             `).join('');
 
-            // Update Stats
-            document.getElementById('weeks-complete-val').textContent = isSample ? '0/6' : '1/6';
-            document.getElementById('overall-progress-val').textContent = isSample ? '0%' : '15%';
-            document.getElementById('overall-progress-bar').style.width = isSample ? '0%' : '15%';
+            updateProgress();
         }
+
+        window.toggleTopic = function (id, el) {
+            if (completedTopics.includes(id)) {
+                const idx = completedTopics.indexOf(id);
+                completedTopics.splice(idx, 1);
+                el.classList.remove('done');
+            } else {
+                completedTopics.push(id);
+                el.classList.add('done');
+            }
+            localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
+            updateProgress();
+        };
+
+        function updateProgress() {
+            // Calculate pseudo-progress based on clicks for the demo
+            // Assuming approx 18 topics total for a full roadmap (3 topics * 6 weeks)
+            const total = 18;
+            const current = completedTopics.length;
+            const percentage = Math.min(100, Math.round((current / total) * 100));
+
+            document.getElementById('overall-progress-val').textContent = percentage + '%';
+            document.getElementById('overall-progress-bar').style.width = percentage + '%';
+            document.getElementById('weeks-complete-val').textContent = Math.floor(current / 3) + '/6';
+
+            // Trigger celebration if essentially done (>= 90% for demo forgiveness)
+            if (percentage >= 90) {
+                triggerCelebration();
+            }
+        }
+
+        function triggerCelebration() {
+            const modal = document.getElementById('celebration-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+
+                // Fire Confetti
+                document.getElementById('confetti-canvas').style.display = 'block';
+                const duration = 3000;
+                const end = Date.now() + duration;
+
+                (function frame() {
+                    confetti({
+                        particleCount: 5,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 5,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        document.getElementById('confetti-canvas').style.display = 'none';
+                    }
+                }());
+            }
+        }
+
+        window.showJobLinks = function () {
+            document.getElementById('job-panel').classList.remove('hidden');
+            document.getElementById('skills-panel').classList.add('hidden');
+        };
+
+        window.showRelatedSkills = function () {
+            document.getElementById('skills-panel').classList.remove('hidden');
+            document.getElementById('job-panel').classList.add('hidden');
+        };
 
         window.toggleWeek = function (idx) {
             const el = document.getElementById(`week-${idx}`);
@@ -519,7 +668,7 @@
 
                 let html = '<div class="resource-list">';
 
-                // YouTube Section
+                // YouTube Section (Limit to 3)
                 if (videos.length > 0) {
                     html += '<h4 style="margin:10px 0 5px; font-size:13px; color:#ff4444;">YouTube Tutorials</h4>';
                     html += videos.slice(0, 3).map(v => `
@@ -531,7 +680,7 @@
                     `).join('');
                 }
 
-                // LeetCode Section
+                // LeetCode Section (Limit to 3)
                 if (problems.length > 0) {
                     html += '<h4 style="margin:15px 0 5px; font-size:13px; color:#ffa116;">LeetCode Practice</h4>';
                     html += problems.slice(0, 3).map(p => `

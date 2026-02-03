@@ -15,9 +15,6 @@ const SIDEBAR_CONFIG = {
         { icon: '🎯', text: 'Skill Gap', href: 'skill-gap.html' },
         { icon: '🎤', text: 'Interview', href: 'interview.html' },
         { icon: '🗺️', text: 'Roadmap', href: 'roadmap.html' }
-    ],
-    accountNav: [
-        { icon: '👤', text: 'My Profile', href: 'profile.html' }
     ]
 };
 
@@ -62,26 +59,22 @@ function generateSidebar() {
                     ${item.text}
                 </a>
             `).join('')}
-            
-            <div class="nav-section-title" style="margin-top: 24px;">Account</div>
-            ${SIDEBAR_CONFIG.accountNav.map(item => `
-                <a href="${item.href}" class="sidebar-link ${currentPage === item.href ? 'active' : ''}">
-                    <span class="sidebar-link-icon">${item.icon}</span>
-                    ${item.text}
-                </a>
-            `).join('')}
-            <a href="#" onclick="if(typeof logout === 'function') logout(); return false;" class="sidebar-link">
-                <span class="sidebar-link-icon">🚪</span>
-                Logout
-            </a>
         </nav>
         <div class="sidebar-footer">
-            <div class="user-info-widget">
+            <div class="user-info-widget" onclick="toggleUserMenu(event)" style="cursor: pointer;">
                 <div class="user-avatar-widget">${userInitial}</div>
                 <div class="user-details-widget">
-                    <div class="user-name-widget">${userName}</div>
+                    <div class="user-name-widget">${userName} <span style="font-size: 10px; opacity: 0.7;">▾</span></div>
                     <div class="user-role-widget">${userRole}</div>
                 </div>
+            </div>
+            <div class="user-menu-dropdown hidden" id="user-menu">
+                <a href="profile.html" class="user-menu-item">
+                    <span>👤</span> Profile
+                </a>
+                <a href="#" onclick="logout(); return false;" class="user-menu-item logout-item">
+                    <span>🚪</span> Logout
+                </a>
             </div>
         </div>
     `;
@@ -209,7 +202,79 @@ function generateSidebar() {
         `;
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     }
+
+    /* Add User Menu Dropdown Styles */
+    if (!document.getElementById('user-menu-styles')) {
+        const menuStyles = document.createElement('style');
+        menuStyles.id = 'user-menu-styles';
+        menuStyles.textContent = `
+            .user-menu-dropdown {
+                position: absolute;
+                bottom: 80px;
+                left: 12px;
+                right: 12px;
+                background: rgba(30, 30, 50, 0.95);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 12px;
+                padding: 8px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(10px);
+                z-index: 1000;
+            }
+
+            .user-menu-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                color: white;
+                text-decoration: none;
+                border-radius: 8px;
+                transition: background 0.2s;
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .user-menu-item:hover {
+                background: rgba(99, 102, 241, 0.1);
+            }
+
+            .user-menu-item.logout-item {
+                color: #ef4444;
+            }
+
+            .user-menu-item.logout-item:hover {
+                background: rgba(239, 68, 68, 0.1);
+            }
+
+            .user-menu-item span {
+                font-size: 18px;
+            }
+        `;
+        document.head.appendChild(menuStyles);
+    }
 }
+
+// Toggle User Menu Dropdown
+window.toggleUserMenu = function (event) {
+    event.stopPropagation();
+    const menu = document.getElementById('user-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+};
+
+// Close menu when clicking outside
+document.addEventListener('click', function (event) {
+    const menu = document.getElementById('user-menu');
+    const userWidget = document.querySelector('.user-info-widget');
+
+    if (menu && !menu.classList.contains('hidden')) {
+        if (!userWidget || !userWidget.contains(event.target)) {
+            menu.classList.add('hidden');
+        }
+    }
+});
 
 // Global Logout Logic
 window.logout = function () {
@@ -241,8 +306,8 @@ window.confirmLogout = function () {
     localStorage.removeItem('nextStep_tasks');
     localStorage.removeItem('nextStep_roadmapCompleted');
 
-    // Redirect
-    window.location.href = 'auth.html';
+    // Redirect to landing page
+    window.location.href = 'index.html';
 };
 
 // Initialize on DOM ready
