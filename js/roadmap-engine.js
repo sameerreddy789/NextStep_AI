@@ -82,6 +82,12 @@ const ROLE_TOPICS = {
 };
 
 const RoadmapEngine = {
+    customTopics: [],
+
+    addCustomTopic(weekTitle, topic) {
+        this.customTopics.push({ weekTitle, topic });
+    },
+
     getRoleData(role) {
         return ROLE_TOPICS[role] || ROLE_TOPICS['sde'];
     },
@@ -97,8 +103,16 @@ const RoadmapEngine = {
     },
 
     generateFullRoadmap(role, skillGaps) {
-        // In a real app, this would filter/prioritize based on skillGaps
-        const data = this.getRoleData(role);
+        const data = JSON.parse(JSON.stringify(this.getRoleData(role))); // Deep copy
+
+        // Inject custom topics
+        this.customTopics.forEach(custom => {
+            const week = data.find(w => w.title.includes(custom.weekTitle)) || data[data.length - 1];
+            if (week) {
+                week.topics.push(custom.topic);
+            }
+        });
+
         return data.map((week, index) => ({
             week: index + 1,
             title: week.title,

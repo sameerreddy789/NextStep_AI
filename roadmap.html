@@ -15,6 +15,7 @@
     <script type="module" src="js/env-loader.js"></script>
     <script src="js/serp-service.js"></script>
     <script src="js/roadmap-engine.js"></script>
+    <script src="js/roadmap-customizer.js"></script>
     <script>
         // Initialize Services after environment is loaded
         window.addEventListener('load', () => {
@@ -33,8 +34,13 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="page-header">
-                <h1 class="page-title">🗺️ Your Learning Roadmap</h1>
-                <p class="page-subtitle">Personalized plan based on your skill gaps and interview analysis</p>
+                <div>
+                    <h1 class="page-title">🗺️ Your Learning Roadmap</h1>
+                    <p class="page-subtitle">Personalized plan based on your skill gaps and interview analysis</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.roadmapCustomizer.openModal()">
+                    ✨ Refine with AI
+                </button>
             </div>
 
             <!-- Celebration Modal (Hidden by default) -->
@@ -92,6 +98,38 @@
                     <div class="modal-actions">
                         <a href="interview.html" class="btn btn-primary">Take Interview Now</a>
                         <button onclick="unlockSampleMode()" class="btn btn-secondary">View Sample Roadmap</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- AI Customization Modal -->
+            <div id="ai-customization-modal" class="modal-overlay hidden">
+                <div class="modal-content" style="max-width: 500px; text-align: left;">
+                    <div class="modal-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 class="modal-title" style="margin: 0; font-size: 20px;">✨ Refine Roadmap</h2>
+                        <button onclick="window.roadmapCustomizer.closeModal()"
+                            style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
+                    </div>
+
+                    <p class="modal-desc" style="margin-bottom: 20px;">
+                        Tell the AI how you want to adjust your learning path.
+                    </p>
+
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <textarea id="ai-prompt-input"
+                            style="width: 100%; height: 120px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; color: #fff; font-family: inherit; resize: none;"
+                            placeholder="e.g. I want to focus more on Backend development..."></textarea>
+                    </div>
+
+                    <div class="modal-actions" style="justify-content: flex-end;">
+                        <button onclick="window.roadmapCustomizer.closeModal()"
+                            class="btn btn-secondary">Cancel</button>
+                        <button onclick="window.roadmapCustomizer.submitPrompt()" class="btn btn-primary"
+                            id="btn-generate-ai">
+                            Update Roadmap
+                        </button>
                     </div>
                 </div>
             </div>
@@ -495,7 +533,11 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script>
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
         document.addEventListener('DOMContentLoaded', () => {
             const hasInterview = localStorage.getItem('nextStep_interview');
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
@@ -506,6 +548,25 @@
                 document.getElementById('gated-modal').classList.remove('hidden');
             } else {
                 initRoadmap(userRole, false);
+
+                // Fix: Mark roadmap as completed to allow dashboard access
+                localStorage.setItem('nextStep_roadmapCompleted', 'true');
+                console.log("Roadmap generated. Dashboard access unlocked.");
+
+                // Sync with Firestore
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        try {
+                            const userRef = doc(db, "users", user.uid);
+                            // We use updateDoc because the document should already exist (created in auth/onboarding)
+                            await updateDoc(userRef, {
+                                roadmapGenerated: true
+                            });
+                        } catch (e) {
+                            console.error("Error updating roadmap status:", e);
+                        }
+                    }
+                });
             }
         });
 
@@ -702,7 +763,9 @@
             }
         };
     </script>
+    <script src="js/serp-service.js"></script>
     <script src="js/sidebar.js"></script>
+    <script src="js/click-spark.js"></script>
 </body>
 
 </html>

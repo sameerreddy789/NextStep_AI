@@ -335,7 +335,8 @@ const initCardStack = () => {
         new CardStack({
             containerSelector: '#card-stack-container',
             items: stackItems,
-            autoAdvance: true,
+            initialIndex: 2, // Start in the middle for visual symmetry
+            autoAdvance: false, // User request: static start to see all cards
             intervalMs: 3500
         });
     }

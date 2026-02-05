@@ -24,14 +24,42 @@ const btnBack = document.getElementById('btn-back');
 document.addEventListener('DOMContentLoaded', () => {
 
     // Check Auth
+    // Check Auth & Redirect if already onboarded
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             window.location.href = 'auth.html';
             return;
         }
 
-        // Restore State if exists
-        // (In a real app, we would fetch partial progress from DB here)
+        // Check if onboarding is already finished
+        try {
+            const docRef = doc(db, "users", user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // If roadmap is already generated, go straight to dashboard
+                if (data.roadmapGenerated) {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // If onboarding is done, go to next step (resume)
+                if (data.onboardingCompleted) {
+                    window.location.href = 'resume.html';
+                    return;
+                }
+
+                // Restore State if exists (user in progress)
+                if (data.careerGoal) {
+                    userData = { ...userData, ...data };
+                    // Optionally advance step if we saved that, for now just load data
+                }
+            }
+        } catch (error) {
+            console.error("Error checking user status:", error);
+        }
     });
 
     // Event Listeners

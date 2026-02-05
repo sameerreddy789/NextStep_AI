@@ -3,20 +3,28 @@
  * Handles resource discovery via SerpApi with local caching.
  */
 
-const CACHE_PREFIX = 'serp_cache_';
+const CACHE_PREFIX = 'serp_cache_v3_';
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 const SerpService = {
     apiKey: '', // Loaded from env or window.ENV
 
     init(apiKey) {
-        this.apiKey = apiKey || window.ENV?.VITE_SERP_API_KEY || '';
+        // Try all possible sources for the key
+        this.apiKey = apiKey ||
+            window.ENV?.VITE_SERP_API_KEY ||
+            '';
     },
 
     async _fetch(params) {
+        // Auto-init if needed
+        if (!this.apiKey) this.init();
+
         if (!this.apiKey) {
             console.warn('SerpApi Key missing. Using mock data.');
-            return this._getMockData(params.engine, params.q);
+            // Fix: params.search_query is used for YouTube, params.q for Google
+            const query = params.search_query || params.q;
+            return this._getMockData(params.engine, query);
         }
 
         const queryParams = new URLSearchParams({
@@ -30,7 +38,8 @@ const SerpService = {
             return await response.json();
         } catch (error) {
             console.error('SerpApi Error:', error);
-            return this._getMockData(params.engine, params.q);
+            const query = params.search_query || params.q;
+            return this._getMockData(params.engine, query);
         }
     },
 
@@ -101,7 +110,7 @@ const SerpService = {
             return {
                 video_results: Array.from({ length: 5 }, (_, i) => ({
                     title: `How to master ${query} - Video ${i + 1}`,
-                    link: 'https://www.youtube.com/',
+                    link: `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`,
                     channel: { name: 'Tech Course' },
                     thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg'
                 }))
@@ -110,7 +119,7 @@ const SerpService = {
             return {
                 organic_results: Array.from({ length: 5 }, (_, i) => ({
                     title: `${query} Problem ${i + 1} - LeetCode`,
-                    link: 'https://leetcode.com/problems/',
+                    link: `https://leetcode.com/problemset/all/?search=${encodeURIComponent(query)}`,
                     snippet: `Master ${query} with this challenging LeetCode problem.`
                 }))
             };

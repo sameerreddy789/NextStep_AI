@@ -92,13 +92,15 @@
     list-style: none;
     display: flex;
     align-items: stretch;
-    justify-content: space-between;
-    /* Distribute items */
+    justify-content: flex-end;
+    /* Align items to the right */
     width: 100%;
     /* Use full available width */
     margin: 0;
     padding: 4px;
     height: 100%;
+    gap: 24px;
+    /* Add spacing between buttons */
 }
 
 .pill-list>li {
