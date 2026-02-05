@@ -31,7 +31,7 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 
 ### 🗺️ Personalized Learning Roadmap
 - **6-Week Structured Plan** — Week-by-week learning path based on your skill gaps
-- **Role-Specific Resources** — Curated YouTube tutorials and LeetCode problems for your target role
+- **Dynamic Resource Integration** — Live YouTube tutorials and LeetCode problems fetched via SerpAPI
 - **Task Management** — Interactive checklist with learn, practice, and interview tasks
 - **Progress Visualization** — Track completion and stay motivated
 - **🎉 Completion Celebration** — Congratulatory popup when you finish all tasks with:
