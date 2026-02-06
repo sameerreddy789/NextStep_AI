@@ -1,29 +1,29 @@
 /* ===== CSS Variables & Design System ===== */
 :root {
-    /* Colors */
-    --bg-primary: #0a0a12;
-    --bg-secondary: #12121f;
-    --bg-card: #16162a;
-    --bg-card-hover: #1e1e3a;
+    /* Colors - Carbon Slate Theme */
+    --bg-primary: #0F1419;
+    --bg-secondary: #1A1F29;
+    --bg-card: #232937;
+    --bg-card-hover: #2D3748;
 
     --text-primary: #ffffff;
     --text-secondary: rgba(255, 255, 255, 0.7);
     --text-muted: rgba(255, 255, 255, 0.5);
 
-    --accent-primary: #6366f1;
-    --accent-primary-dark: #4f46e5;
-    --accent-green: #10b981;
+    --accent-primary: #3B82F6;
+    --accent-primary-dark: #1E40AF;
+    --accent-green: #10B981;
     --accent-green-dark: #059669;
-    --accent-gold: #f59e0b;
-    --accent-red: #ef4444;
-    --accent-blue: #3b82f6;
-    --accent-purple: #8b5cf6;
-    --accent-cyan: #06b6d4;
+    --accent-gold: #F59E0B;
+    --accent-red: #EF4444;
+    --accent-blue: #3B82F6;
+    --accent-purple: #8B5CF6;
+    --accent-cyan: #06B6D4;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
-    --gradient-green: linear-gradient(135deg, #10b981, #059669);
-    --gradient-gold: linear-gradient(135deg, #f59e0b, #d97706);
+    --gradient-primary: linear-gradient(135deg, #1E40AF, #3B82F6);
+    --gradient-green: linear-gradient(135deg, #10B981, #059669);
+    --gradient-gold: linear-gradient(135deg, #F59E0B, #D97706);
 
     /* Spacing */
     --nav-height: 70px;
@@ -46,7 +46,7 @@
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.4);
-    --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+    --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.3);
 
     /* Transitions */
     --transition-fast: 150ms ease;
@@ -708,6 +708,123 @@ img {
 .sidebar-footer {
     padding: var(--spacing-lg);
     border-top: 1px solid var(--border-color);
+}
+
+/* Sidebar Progress Card */
+.sidebar-progress-card {
+    margin: 16px 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(30, 64, 175, 0.05));
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    margin-top: auto;
+}
+
+.progress-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.progress-emoji {
+    font-size: 20px;
+}
+
+.progress-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.progress-stat {
+    margin-bottom: 16px;
+}
+
+.progress-stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.progress-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+    border-radius: 10px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-mini-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mini-stat-icon {
+    font-size: 20px;
+}
+
+.mini-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.mini-stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.next-milestone {
+    padding: 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 10px;
+}
+
+.milestone-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.milestone-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent-green);
 }
 
 .main-content {
