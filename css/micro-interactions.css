@@ -1,0 +1,147 @@
+/**
+ * Button Micro-Interactions
+ * Adds ripple effects and scale animations to buttons
+ */
+
+/* Enhanced button hover states */
+.btn,
+button:not(.toast-close):not(.btn-modal-cancel):not(.btn-modal-confirm) {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover,
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.btn:active,
+button:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Ripple effect on click */
+.btn::after,
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::after,
+button:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Primary button enhancements */
+.btn-primary:hover {
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+}
+
+/* Pulse animation for CTA buttons */
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+}
+
+.btn-primary.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Subtle glow on focus */
+.btn:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+/* Disabled state */
+.btn:disabled,
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* Link hover effects */
+a:not(.btn):not(.sidebar-link):not(.nav-link) {
+    position: relative;
+    transition: color 0.2s ease;
+}
+
+a:not(.btn):hover {
+    color: var(--accent-primary) !important;
+}
+
+/* Scale animation for interactive cards */
+.card-interactive,
+.stat-card,
+.skill-card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-interactive:hover,
+.stat-card:hover,
+.skill-card:hover {
+    transform: translateY(-4px) scale(1.02);
+}
+
+.card-interactive:active {
+    transform: translateY(-2px) scale(0.99);
+}
+
+/* Input focus animations */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Checkbox/Radio animations */
+input[type="checkbox"],
+input[type="radio"] {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+    transform: scale(1.1);
+}
+
+/* Icon bounce on hover */
+.icon-bounce:hover {
+    animation: iconBounce 0.5s ease;
+}
+
+@keyframes iconBounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
