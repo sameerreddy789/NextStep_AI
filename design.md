@@ -1512,3 +1512,321 @@ This design provides a pragmatic, frontend-focused solution for resume analysis 
 **Hackathon Demo Ready**: The simulated AI extraction provides a working prototype that demonstrates the complete user flow and platform integration.
 
 **Production Ready**: The modular architecture and provider abstraction enable easy transition to real AI backend when ready to scale.
+
+---
+
+## UI/UX Component Specifications (NEW)
+
+### Toast Notification System
+
+**Component**: `js/toast-notifications.js`
+
+**Purpose**: Provide non-intrusive feedback for user actions with auto-dismissible notifications.
+
+**Features**:
+- 4 notification types: success (green), error (red), warning (yellow), info (blue)
+- Auto-dismiss after 3 seconds with manual close option
+- Stackable notifications in top-right corner
+- Smooth slide-in/fade-out animations
+- ARIA live regions for screen reader accessibility
+
+**API**:
+```javascript
+showToast(message, type, duration);
+// Example: showToast('Resume uploaded successfully!', 'success');
+```
+
+**Styling**:
+- Uses CSS variables from design system
+- Glassmorphism backdrop filter
+- Icon indicators for each type
+- Z-index: 10000 (top layer)
+- Mobile-responsive positioning
+
+---
+
+### Loading States System
+
+**Component**: `js/loading-states.js`
+
+**Purpose**: Provide visual feedback during asynchronous operations.
+
+**Features**:
+1. **Full Page Overlay**: Blur backdrop with centered spinner and custom message
+2. **Skeleton Screens**: Shimmer effect placeholders for content
+3. **Button Loading States**: Inline spinners with disabled state
+4. **Card Loading**: Shimmer animation overlay
+
+**API**:
+```javascript
+showLoader('Analyzing resume...');
+hideLoader();
+setButtonLoading(buttonElement, true/false);
+createSkeleton('text' | 'title' | 'card' | 'circle');
+```
+
+**Performance**: Uses CSS-only animations (60fps guaranteed)
+
+---
+
+### Page Transition Animations
+
+**Component**: `css/page-transitions.css`
+
+**Purpose**: Smooth, professional page load experience.
+
+**Animations**:
+- Page fade-in on load (0.4s)
+- Card slide-up with stagger delay (0.1s, 0.2s, 0.3s)
+- Sidebar slide-in from left (0.4s)
+- Modal zoom-in (0.3s cubic-bezier)
+- Respects `prefers-reduced-motion` accessibility setting
+
+**Implementation**: Pure CSS with `@keyframes`, no JavaScript overhead.
+
+---
+
+### Micro-Interactions
+
+**Component**: `css/micro-interactions.css`
+
+**Purpose**: Add delightful feedback to user interactions.
+
+**Interactions**:
+1. **Button Ripple Effect**: Expanding circle on click using ::after pseudo-element
+2. **Hover Lift**: translateY(-2px) + shadow enhancement
+3. **Active Scale**: scale(0.98) on button press
+4. **Input Focus Glow**: 3px shadow in accent color
+5. **Link Underline Animation**: Width transition from 0 to 100%
+6. **Icon Bounce**: translateY animation on hover
+7. **Checkbox Scale**: scale(1.1) when checked
+
+**Performance**: Hardware-accelerated transforms, no layout thrashing.
+
+---
+
+### Mobile Optimization
+
+**Components**: 
+- `css/mobile-responsive.css`
+- `js/mobile-menu.js`
+
+**Purpose**: Provide excellent mobile experience with touch-friendly interactions.
+
+**Features**:
+
+1. **Hamburger Menu**:
+   - Fixed position button (top-left, 44x44px)
+   - 3-bar animated icon transforms to X
+   - Toggles sidebar visibility with slide animation
+   - Auto-creates on mobile devices
+
+2. **Sidebar Overlay**:
+   - Dark backdrop with blur
+   - Closes on tap outside
+   - Slide-in animation from left
+   - Box shadow for depth
+
+3. **Touch Targets**:
+   - Minimum 44x44px for all interactive elements
+   - Increased padding on links and buttons
+   - Larger font sizes (16px minimum)
+
+4. **Responsive Breakpoints**:
+   - Mobile: < 768px (hamburger menu)
+   - Tablet: 769-1024px (narrow sidebar)
+   - Desktop: > 1024px (full sidebar)
+
+5. **Bottom Navigation** (optional alternative):
+   - Fixed 64px height bar
+   - Icon + label layout
+   - 5-item limit for optimal UX
+
+**Mobile-Specific Styles**:
+- Full-width modals (95% viewport)
+- Stacked footer layout
+- Padding adjustments for content
+
+---
+
+### Keyboard Navigation & Accessibility
+
+**Component**: `js/keyboard-nav.js`
+
+**Purpose**: Provide full keyboard control and screen reader support.
+
+**Keyboard Shortcuts**:
+- **Esc**: Close modals, menus, overlays
+- **Tab/Shift+Tab**: Navigate interactive elements
+- **Arrow Up/Down**: Navigate sidebar links
+- **Ctrl+K / Cmd+K**: Focus search input (if present)
+
+**Accessibility Features**:
+
+1. **Focus Management**:
+   - Visible focus indicators (2px outline)
+   - Skip-to-content link (appears on Tab)
+   - Focus trap in modals
+   - Focus return after modal close
+
+2. **ARIA Labels**:
+   - Auto-added to buttons without text
+   - Navigation landmarks (`role="navigation"`)
+   - Main content (`role="main"`)
+   - Live regions for dynamic content
+
+3. **Screen Reader Support**:
+   - Semantic HTML5 elements
+   - Alt text on images
+   - aria-label for icons
+   - aria-expanded for collapsibles
+   - aria-hidden for decorative elements
+
+4. **Color Contrast**:
+   - WCAG AA compliant
+   - Text: #ffffff on dark backgrounds
+   - Links: #3B82F6 (4.5:1 ratio)
+
+---
+
+### Enhanced Footer
+
+**Updated in**: `css/styles.css` (lines 472-567)
+
+**Enhancements**:
+- Gradient background: `linear-gradient(180deg, transparent, rgba(15,20,25,0.5))`
+- Link hover effects: translateY(-2px) + underline animation
+- Social icon lift: translateY(-4px) + blue glow shadow
+- Mobile-responsive: stacked layout below 768px
+- Glassmorphism on icon containers
+
+**Layout**:
+- Max-width container (var(--container-max))
+- Flexbox row with space-between alignment
+- Footer links with gap spacing
+- Social icons in 36x36px containers
+
+---
+
+### Custom 404 Page
+
+**File**: `404.html`
+
+**Features**:
+- Large animated 404 number with gradient text
+- Floating emoji animation (keyframe-based)
+- Action buttons: "Go Home" and "Go Back"
+- Popular pages quick links
+- Fully styled standalone page
+
+**Animations**:
+```css
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+```
+
+---
+
+### Empty State Templates
+
+**File**: `templates/empty-states.md`
+
+**Purpose**: Engaging placeholders for content-less pages.
+
+**Structure**:
+- Large emoji icon with float animation
+- Title and description text
+- Call-to-action button
+- Dashed border container
+
+**Usage**: Copy HTML snippets for:
+- Dashboard without data
+- Resume before upload
+- Roadmap before generation
+- Interview history when empty
+
+**Styling**: Consistent with design system, reusable classes.
+
+---
+
+### Animated Number Counters
+
+**Component**: `js/counter-animation.js`
+
+**Purpose**: Animate statistics from 0 to target value.
+
+**Implementation**:
+- Easing function: ease-out cubic
+- Duration: 1-1.5s
+- Scroll-triggered via IntersectionObserver
+- Prevents re-animation (data-animated flag)
+
+**API**:
+```javascript
+animateNumber(element, targetValue, duration, suffix);
+// Auto-init via data attributes:
+<div data-counter="85" data-suffix="%">0%</div>
+```
+
+**Use Cases**:
+- Dashboard statistics
+- Readiness score updates
+- Progress percentages
+- Task completion counts
+
+---
+
+## Updated Tech Stack
+
+**Frontend UI/UX**:
+- Custom toast notification system
+- Loading state management
+- Page transition animations
+- Micro-interaction CSS
+- Mobile-first responsive design
+- Keyboard navigation system
+- ARIA accessibility enhancements
+- Animated number counters
+- Custom 404 handling
+- Empty state templates
+
+**CSS Architecture**:
+- Modular CSS files for each system
+- CSS custom properties (variables)
+- BEM-style naming conventions
+- Mobile-first media queries
+- Hardware-accelerated animations
+
+**JavaScript Patterns**:
+- Class-based components
+- Global utility functions
+- Event delegation
+- IntersectionObserver APIs
+- Progressive enhancement
+
+---
+
+## Performance Considerations
+
+**Animation Performance**:
+- CSS-only animations where possible (GPU-accelerated)
+- Transform and opacity properties (no layout thrashing)
+- RequestAnimationFrame for JavaScript animations
+- Reduced motion media query support
+
+**Bundle Size**:
+- No external UI libraries (vanilla JS)
+- Modular CSS (load only what's needed)
+- Lazy initialization of heavy components
+- Total added size: ~25KB (minified)
+
+**Runtime Performance**:
+- Event delegation for dynamic content
+- Debounced resize handlers
+- Passive event listeners for scroll
+- Intersection Observer for scroll-based triggers
+
+---
+
