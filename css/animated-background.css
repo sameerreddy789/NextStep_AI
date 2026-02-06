@@ -1,0 +1,49 @@
+/* Animated Background for Internal Pages */
+/* Add this to the <style> section of: auth.html, profile.html, resume.html, interview.html, roadmap.html, skill-gap.html, onboarding.html, feedback.html */
+
+body {
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+    animation: gradientShift 20s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+
+    0%,
+    100% {
+        background:
+            radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    }
+
+    50% {
+        background:
+            radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+            radial-gradient(circle at 20% 80%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+    }
+}
+
+/* Ensure content stays above background */
+.app-container,
+.auth-page,
+main,
+.container {
+    position: relative;
+    z-index: 1;
+}
