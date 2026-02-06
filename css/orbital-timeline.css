@@ -92,14 +92,17 @@
 .orbital-node {
     position: absolute;
     cursor: pointer;
-    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 0;
     height: 0;
     overflow: visible;
-    pointer-events: none;
+    pointer-events: auto;
+}
+
+.orbital-node.ready {
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .node-circle {
@@ -138,7 +141,7 @@
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
     transition: all 0.3s ease;
-    pointer-events: none;
+    cursor: pointer;
 }
 
 /* Node States */
