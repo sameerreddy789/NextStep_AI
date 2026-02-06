@@ -126,13 +126,22 @@
                         <h3 class="card-title">Job Readiness</h3>
                     </div>
                     <div class="readiness-chart">
-                        <div class="circle-progress" id="readiness-circle">
-                            <svg viewBox="0 0 100 100">
-                                <circle class="bg" cx="50" cy="50" r="40"></circle>
-                                <circle class="progress" cx="50" cy="50" r="40" id="progress-circle"></circle>
+                        <div class="pie-chart-container">
+                            <svg viewBox="0 0 200 200" class="pie-chart">
+                                <!-- Background circle -->
+                                <circle cx="100" cy="100" r="80" fill="rgba(255, 255, 255, 0.05)" />
+
+                                <!-- Pie segments (will be updated by JS) -->
+                                <path id="segment-completed" class="pie-segment completed" d="" />
+                                <path id="segment-progress" class="pie-segment progress" d="" />
+                                <path id="segment-pending" class="pie-segment pending" d="" />
+
+                                <!-- Center hole for donut effect -->
+                                <circle cx="100" cy="100" r="50" fill="var(--bg-card)" />
                             </svg>
-                            <div class="circle-value">
-                                <span id="readiness-value">58</span>%
+                            <div class="pie-center-text">
+                                <span id="readiness-value" class="pie-value"></span>
+                                <span class="pie-label"></span>
                             </div>
                         </div>
                         <div class="readiness-legend">
@@ -216,6 +225,50 @@
     </div>
 
     <style>
+        /* Animated Background */
+        body {
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: gradientShift 20s ease-in-out infinite;
+        }
+
+        @keyframes gradientShift {
+
+            0%,
+            100% {
+                background:
+                    radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            }
+
+            50% {
+                background:
+                    radial-gradient(circle at 80% 40%, rgba(59, 130, 246, 0.10) 0%, transparent 40%),
+                    radial-gradient(circle at 20% 80%, rgba(30, 64, 175, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            }
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+        }
+
         .user-avatar-lg {
             width: 40px;
             height: 40px;
@@ -375,45 +428,64 @@
             padding: 20px;
         }
 
-        .circle-progress {
+        .pie-chart-container {
             position: relative;
-            width: 160px;
-            height: 160px;
+            width: 240px;
+            height: 240px;
             margin-bottom: 24px;
         }
 
-        .circle-progress svg {
+        .pie-chart {
+            width: 100%;
+            height: 100%;
             transform: rotate(-90deg);
         }
 
-        .circle-progress circle {
-            fill: none;
-            stroke-width: 8;
+        .pie-segment {
+            cursor: pointer;
+            transition: opacity 0.3s ease, filter 0.3s ease;
         }
 
-        .circle-progress .bg {
-            stroke: rgba(255, 255, 255, 0.1);
+        .pie-segment:hover {
+            filter: brightness(1.2);
         }
 
-        .circle-progress .progress {
-            stroke: var(--accent-green);
-            stroke-dasharray: 251.2;
-            stroke-dashoffset: 105;
-            stroke-linecap: round;
-            transition: stroke-dashoffset 1s ease;
+        .pie-segment.completed {
+            fill: var(--accent-green);
         }
 
-        .circle-value {
+        .pie-segment.progress {
+            fill: var(--accent-gold);
+        }
+
+        .pie-segment.pending {
+            fill: rgba(255, 255, 255, 0.1);
+        }
+
+        .pie-center-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 36px;
-            font-weight: 700;
+            text-align: center;
+            pointer-events: none;
         }
 
-        .circle-value span {
+        .pie-value {
+            display: block;
+            font-size: 36px;
+            font-weight: 700;
             color: var(--accent-green);
+            line-height: 1;
+        }
+
+        .pie-label {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
         }
 
         .readiness-legend {
@@ -427,6 +499,16 @@
             gap: 8px;
             font-size: 13px;
             color: var(--text-secondary);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .legend-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            transform: translateX(3px);
         }
 
         .legend-dot {
@@ -465,6 +547,9 @@
 
         .task-item:hover {
             background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+            transform: translateX(5px);
         }
 
         .task-icon {
@@ -543,6 +628,14 @@
             padding: 12px;
             background: rgba(255, 255, 255, 0.02);
             border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skill-mini-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+            transform: translateY(-2px);
         }
 
         .skill-mini-icon {
@@ -604,12 +697,96 @@
                 document.getElementById('career-gap-section').style.display = 'block';
             }
 
-            // Update readiness
-            if (resumeData.readiness) {
-                document.getElementById('readiness-value').textContent = resumeData.readiness;
-                const offset = 251.2 - (251.2 * resumeData.readiness / 100);
-                document.getElementById('progress-circle').style.strokeDashoffset = offset;
+            // Draw Pie Chart
+            function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
+                const total = completed + inProgress + pending;
+
+                // Helper function to create SVG path for pie segment
+                function createPieSegment(startAngle, endAngle) {
+                    const radius = 80;
+                    const cx = 100;
+                    const cy = 100;
+
+                    const startRad = (startAngle * Math.PI) / 180;
+                    const endRad = (endAngle * Math.PI) / 180;
+
+                    const x1 = cx + radius * Math.cos(startRad);
+                    const y1 = cy + radius * Math.sin(startRad);
+                    const x2 = cx + radius * Math.cos(endRad);
+                    const y2 = cy + radius * Math.sin(endRad);
+
+                    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+
+                    return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+                }
+
+                let currentAngle = 0;
+
+                // Draw completed segment
+                const completedAngle = (completed / total) * 360;
+                if (completed > 0) {
+                    document.getElementById('segment-completed').setAttribute('d',
+                        createPieSegment(currentAngle, currentAngle + completedAngle));
+                }
+                currentAngle += completedAngle;
+
+                // Draw in-progress segment
+                const progressAngle = (inProgress / total) * 360;
+                if (inProgress > 0) {
+                    document.getElementById('segment-progress').setAttribute('d',
+                        createPieSegment(currentAngle, currentAngle + progressAngle));
+                }
+                currentAngle += progressAngle;
+
+                // Draw pending segment
+                const pendingAngle = (pending / total) * 360;
+                if (pending > 0) {
+                    document.getElementById('segment-pending').setAttribute('d',
+                        createPieSegment(currentAngle, currentAngle + pendingAngle));
+                }
             }
+
+            // Initialize pie chart with default or stored values
+            let pieData = { completed: 35, inProgress: 25, pending: 40 };
+
+            if (resumeData.readiness) {
+                const readiness = resumeData.readiness;
+                pieData = { completed: readiness, inProgress: 25, pending: 100 - readiness - 25 };
+                drawPieChart(pieData.completed, pieData.inProgress, pieData.pending);
+            } else {
+                drawPieChart(pieData.completed, pieData.inProgress, pieData.pending);
+            }
+
+            // Add click handlers to pie segments
+            function updateCenterText(label, percentage, color) {
+                const valueEl = document.getElementById('readiness-value');
+                const labelEl = document.querySelector('.pie-label');
+
+                valueEl.textContent = percentage;
+                valueEl.style.color = color;
+                labelEl.textContent = label;
+            }
+
+            // Completed segment click
+            document.getElementById('segment-completed').addEventListener('click', () => {
+                const total = pieData.completed + pieData.inProgress + pieData.pending;
+                const percent = Math.round((pieData.completed / total) * 100);
+                updateCenterText('Completed', percent + '%', 'var(--accent-green)');
+            });
+
+            // In Progress segment click
+            document.getElementById('segment-progress').addEventListener('click', () => {
+                const total = pieData.completed + pieData.inProgress + pieData.pending;
+                const percent = Math.round((pieData.inProgress / total) * 100);
+                updateCenterText('In Progress', percent + '%', 'var(--accent-gold)');
+            });
+
+            // Pending segment click
+            document.getElementById('segment-pending').addEventListener('click', () => {
+                const total = pieData.completed + pieData.inProgress + pieData.pending;
+                const percent = Math.round((pieData.pending / total) * 100);
+                updateCenterText('Pending', percent + '%', 'rgba(255, 255, 255, 0.5)');
+            });
 
             // Render interactive tasks
             function renderTasks() {
