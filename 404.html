@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | NextStep AI</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 40px 20px;
+            max-width: 600px;
+        }
+
+        .error-404 {
+            font-size: 120px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .error-emoji {
+            font-size: 80px;
+            margin: 20px 0;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .error-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 20px 0 16px;
+        }
+
+        .error-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-home {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #3B82F6, #1E40AF);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-back {
+            padding: 14px 28px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .error-suggestions {
+            margin-top: 48px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .suggestions-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .suggestion-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 15px;
+            transition: color 0.2s ease;
+        }
+
+        .suggestion-link:hover {
+            color: #60A5FA;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            .error-404 {
+                font-size: 80px;
+            }
+
+            .error-emoji {
+                font-size: 60px;
+            }
+
+            .error-title {
+                font-size: 24px;
+            }
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .btn-home,
+            .btn-back {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="error-container">
+        <div class="error-404">404</div>
+        <div class="error-emoji">🧭</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-description">
+            Oops! It looks like you've ventured off the career path. The page you're looking for doesn't exist or has
+            been moved.
+        </p>
+
+        <div class="error-actions">
+            <a href="index.html" class="btn-home">Go Home</a>
+            <a href="javascript:history.back()" class="btn-back">Go Back</a>
+        </div>
+
+        <div class="error-suggestions">
+            <div class="suggestions-title">Popular Pages</div>
+            <div class="suggestions-list">
+                <a href="dashboard.html" class="suggestion-link">→ Dashboard</a>
+                <a href="resume.html" class="suggestion-link">→ Resume Analysis</a>
+                <a href="interview.html" class="suggestion-link">→ Mock Interview</a>
+                <a href="roadmap.html" class="suggestion-link">→ Learning Roadmap</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
