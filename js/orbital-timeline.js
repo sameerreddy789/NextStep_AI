@@ -8,8 +8,8 @@ class OrbitalTimeline {
         this.options = {
             containerSelector: options.containerSelector || '#orbital-timeline-container',
             data: options.data || [],
-            autoRotate: options.autoRotate !== undefined ? options.autoRotate : false,
-            rotationSpeed: options.rotationSpeed || 0,
+            autoRotate: options.autoRotate !== undefined ? options.autoRotate : true,
+            rotationSpeed: options.rotationSpeed || 0.2,
             radius: options.radius || 200,
             accentColor: options.accentColor || '#6366f1',
             ...options
