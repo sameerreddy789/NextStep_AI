@@ -60,6 +60,39 @@ function generateSidebar() {
                 </a>
             `).join('')}
         </nav>
+        <div class="sidebar-progress-card">
+            <div class="progress-header">
+                <span class="progress-emoji">🎯</span>
+                <span class="progress-title">Your Progress</span>
+            </div>
+            <div class="progress-stat">
+                <div class="progress-stat-label">Completion</div>
+                <div class="progress-stat-value">45%</div>
+                <div class="progress-bar">
+                    <div class="progress-bar-fill" style="width: 45%"></div>
+                </div>
+            </div>
+            <div class="progress-mini-stats">
+                <div class="mini-stat">
+                    <div class="mini-stat-icon">🔥</div>
+                    <div class="mini-stat-info">
+                        <div class="mini-stat-value">7</div>
+                        <div class="mini-stat-label">Day Streak</div>
+                    </div>
+                </div>
+                <div class="mini-stat">
+                    <div class="mini-stat-icon">🎓</div>
+                    <div class="mini-stat-info">
+                        <div class="mini-stat-value">12</div>
+                        <div class="mini-stat-label">Skills</div>
+                    </div>
+                </div>
+            </div>
+            <div class="next-milestone">
+                <div class="milestone-label">Next Milestone</div>
+                <div class="milestone-text">Complete Interview</div>
+            </div>
+        </div>
         <div class="sidebar-footer">
             <a href="profile.html" class="user-info-widget" style="text-decoration: none; cursor: pointer;">
                 <div class="user-avatar-widget">${userInitial}</div>
