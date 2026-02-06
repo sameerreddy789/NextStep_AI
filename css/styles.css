@@ -471,11 +471,105 @@ img {
 
 /* ===== Footer ===== */
 .footer {
-    padding: var(--spacing-xl) 0;
-    border-top: 1px solid var(--border-color);
-    text-align: center;
-    color: var(--text-muted);
+    padding: var(--spacing-3xl) 0 var(--spacing-xl);
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    background: linear-gradient(180deg, transparent, rgba(15, 20, 25, 0.5));
+    margin-top: var(--spacing-3xl);
+}
+
+.footer-content {
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.footer-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+}
+
+.footer-links {
+    display: flex;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.footer-link {
+    color: var(--text-secondary);
     font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    position: relative;
+}
+
+.footer-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+}
+
+.footer-link:hover {
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.footer-link:hover::after {
+    width: 100%;
+}
+
+.footer-contact {
+    display: flex;
+    gap: 16px;
+}
+
+.footer-social-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.footer-social-icon:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .footer-main {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-links {
+        justify-content: center;
+    }
 }
 
 /* ===== Auth Page ===== */
