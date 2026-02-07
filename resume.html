@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="js/route-guard.js"></script>
+    <script src="js/gemini-service.js"></script>
 </head>
 
 <body>
@@ -660,15 +661,64 @@
             if (file) analyzeResume(file);
         });
 
-        function analyzeResume(file) {
+        async function analyzeResume(file) {
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('analyzing-section').classList.remove('hidden');
 
             const statusText = document.querySelector('#analyzing-section .text-muted');
             const progressBar = document.getElementById('analysis-progress');
-            let progress = 0;
 
-            // Simulation Steps
+            // Get user's target role
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
+
+            try {
+                // Use Gemini AI if available
+                if (file && window.GeminiService && window.GeminiService.isAvailable()) {
+                    const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+                    statusText.textContent = 'AI analyzing your resume...';
+                    progressBar.style.width = '30%';
+
+                    let aiResult;
+                    if (isPDF) {
+                        aiResult = await window.GeminiService.analyzePDF(file, targetRole);
+                    } else {
+                        const text = await file.text();
+                        aiResult = await window.GeminiService.analyzeResume(text, targetRole);
+                    }
+
+                    progressBar.style.width = '90%';
+                    statusText.textContent = 'Finalizing analysis...';
+
+                    const result = {
+                        skills: aiResult.skills || DEMO_RESUME_DATA.skills,
+                        experience: aiResult.experience || DEMO_RESUME_DATA.experience,
+                        projects: aiResult.projects || DEMO_RESUME_DATA.projects,
+                        score: aiResult.score || 70,
+                        coverage: aiResult.coverage || 60,
+                        readiness: aiResult.readiness || 55,
+                        atsScore: aiResult.atsScore || null,
+                        _aiGenerated: true
+                    };
+
+                    progressBar.style.width = '100%';
+                    setTimeout(() => showResults(result), 500);
+                    return;
+                }
+
+                // Fallback: Simulated analysis
+                console.log('[Resume] No Gemini API - using demo data');
+                simulateAnalysis(statusText, progressBar);
+
+            } catch (error) {
+                console.error('[Resume] Analysis error:', error);
+                simulateAnalysis(statusText, progressBar);
+            }
+        }
+
+        function simulateAnalysis(statusText, progressBar) {
             const steps = [
                 { p: 15, t: "Scanning PDF Document..." },
                 { p: 40, t: "Extracting Technical Skills..." },
@@ -676,26 +726,20 @@
                 { p: 90, t: "Calculating ATS Score..." },
                 { p: 100, t: "Finalizing Report..." }
             ];
-
-            let stepIndex = 0;
+            let progress = 0, stepIndex = 0;
 
             const interval = setInterval(() => {
                 progress += 1;
                 progressBar.style.width = progress + '%';
-
-                // Update text based on progress
                 if (stepIndex < steps.length && progress >= steps[stepIndex].p) {
                     statusText.textContent = steps[stepIndex].t;
                     stepIndex++;
                 }
-
                 if (progress >= 100) {
                     clearInterval(interval);
-                    setTimeout(() => {
-                        showResults(DEMO_RESUME_DATA);
-                    }, 500);
+                    setTimeout(() => showResults(DEMO_RESUME_DATA), 500);
                 }
-            }, 30); // 30ms * 100 = 3000ms (3 seconds)
+            }, 30);
         }
 
         function useDemoResume() {

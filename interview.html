@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="js/route-guard.js"></script>
+    <script src="js/gemini-service.js"></script>
 </head>
 
 <body>
@@ -885,16 +886,42 @@
             }
         }
 
-        function startInterview(mode) {
+        // AI-generated questions storage
+        let AI_QUESTIONS = null;
+
+        async function startInterview(mode) {
             currentMode = mode;
             currentQuestionIndex = 0;
             answers = [];
 
             document.getElementById('mode-selection').classList.add('hidden');
             document.getElementById('interview-section').classList.remove('hidden');
-
             document.getElementById('interview-mode-badge').textContent = 'Adaptive Interview';
-            document.getElementById('total-q').textContent = QUESTIONS[mode].length;
+
+            // Try to generate AI questions based on resume
+            const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
+            const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
+
+            if (window.GeminiService && window.GeminiService.isAvailable() && resumeData.skills) {
+                try {
+                    console.log('[Interview] Generating AI questions...');
+                    const skills = [
+                        ...(resumeData.skills.present || []),
+                        ...(resumeData.skills.partial || [])
+                    ];
+                    AI_QUESTIONS = await window.GeminiService.generateQuestions(skills, targetRole, mode, 8);
+                    console.log('[Interview] ✅ AI generated', AI_QUESTIONS.length, 'questions');
+                } catch (error) {
+                    console.error('[Interview] AI failed:', error);
+                    AI_QUESTIONS = null;
+                }
+            }
+
+            // Use AI or fallback to static questions
+            const questions = AI_QUESTIONS || QUESTIONS[mode];
+            document.getElementById('total-q').textContent = questions.length;
 
             showQuestion();
             startTimer();
@@ -976,8 +1003,13 @@
             }
         }
 
+        // Helper: Get current questions (AI or static)
+        function getQuestions() {
+            return AI_QUESTIONS || QUESTIONS[currentMode];
+        }
+
         function showQuestion() {
-            const questions = QUESTIONS[currentMode];
+            const questions = getQuestions();
             const q = questions[currentQuestionIndex];
 
             document.getElementById('current-q').textContent = currentQuestionIndex + 1;
@@ -1035,7 +1067,7 @@
         }
 
         async function submitAnswer() {
-            const questions = QUESTIONS[currentMode];
+            const questions = getQuestions();
             const q = questions[currentQuestionIndex];
 
             let answer = '';
@@ -1085,7 +1117,7 @@
             const confirmSkip = await showConfirm('Are you sure you want to skip this question?', '⏭️', 'Skip Question');
             if (!confirmSkip) return;
 
-            const questions = QUESTIONS[currentMode];
+            const questions = getQuestions();
             const q = questions[currentQuestionIndex];
 
             // Fixed: Match format with submitAnswer
