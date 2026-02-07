@@ -48,7 +48,11 @@
 
             <!-- Celebration Modal (Hidden by default) -->
             <div id="celebration-modal" class="modal-overlay hidden">
-                <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-content" style="max-width: 600px; position: relative;">
+                    <!-- Close Button -->
+                    <button onclick="closeCelebrationModal()" class="modal-close-btn"
+                        style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 8px; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: all 0.2s;">✕</button>
+
                     <div class="modal-icon">🎉</div>
                     <h2 class="modal-title">Roadmap Complete!</h2>
                     <p class="modal-desc">
@@ -79,12 +83,34 @@
                     <!-- Related Skills Panel (Hidden initially) -->
                     <div id="skills-panel" class="hidden" style="margin-top: 24px; text-align: left;">
                         <h4 style="color: var(--accent-purple); margin-bottom: 12px;">🔮 Level Up Further</h4>
-                        <div class="subtopic-list">
-                            <span class="subtopic-tag">GraphDB</span>
-                            <span class="subtopic-tag">WebAssembly</span>
-                            <span class="subtopic-tag">Rust</span>
-                            <span class="subtopic-tag">Cybersecurity Basics</span>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Click a skill to
+                            start a new learning roadmap:</p>
+                        <div class="skill-courses-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <button onclick="startNewRoadmap('GraphDB')" class="skill-course-btn">📊 GraphDB</button>
+                            <button onclick="startNewRoadmap('WebAssembly')" class="skill-course-btn">⚡
+                                WebAssembly</button>
+                            <button onclick="startNewRoadmap('Rust')" class="skill-course-btn">🦀 Rust</button>
+                            <button onclick="startNewRoadmap('Cybersecurity')" class="skill-course-btn">🔒
+                                Cybersecurity</button>
+                            <button onclick="startNewRoadmap('Machine Learning')" class="skill-course-btn">🤖 Machine
+                                Learning</button>
+                            <button onclick="startNewRoadmap('Cloud Architecture')" class="skill-course-btn">☁️ Cloud
+                                Architecture</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Roadmap Success Modal -->
+            <div id="new-roadmap-modal" class="modal-overlay hidden">
+                <div class="modal-content" style="max-width: 450px;">
+                    <div class="modal-icon">🚀</div>
+                    <h2 class="modal-title">New Roadmap Generated!</h2>
+                    <p class="modal-desc" id="new-roadmap-desc">
+                        Your progress has been reset and a new learning roadmap has been created.
+                    </p>
+                    <div class="modal-actions">
+                        <button onclick="closeNewRoadmapModal()" class="btn btn-primary">Let's Go!</button>
                     </div>
                 </div>
             </div>
@@ -311,7 +337,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px;
+            padding: 20px 24px;
             cursor: pointer;
             background: rgba(255, 255, 255, 0.02);
             transition: background 0.2s;
@@ -328,28 +354,69 @@
         }
 
         .week-number {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            background: rgba(99, 102, 241, 0.15);
-            color: var(--accent-primary);
+            background: linear-gradient(135deg, #8B5CF6, #6366F1);
+            color: white;
+        }
+
+        .week-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .week-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
             color: #fff;
         }
 
+        .week-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .week-status-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .week-status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .week-status-badge.in-progress {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818CF8;
+        }
+
+        .week-status-badge.completed {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+        }
+
+        .week-status-badge.locked {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
         .toggle-icon {
-            font-size: 18px;
+            font-size: 14px;
             color: var(--text-muted);
             transition: transform 0.3s;
+            cursor: pointer;
+            padding: 8px;
         }
 
         .week-card.open .toggle-icon {
@@ -358,9 +425,8 @@
 
         .week-body {
             display: none;
-            padding: 0 20px 20px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 0;
+            padding: 0 24px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .week-card.open .week-body {
@@ -368,85 +434,153 @@
             animation: fadeIn 0.3s ease;
         }
 
-        /* Topics Grid */
-        .topics-grid {
-            display: grid;
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .topic-item {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px;
-        }
-
-        .topic-header {
+        /* Tasks Header */
+        .tasks-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .topic-name {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .topic-actions {
-            display: flex;
             gap: 8px;
+            padding: 16px 0 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
-        .btn-resource {
-            padding: 6px 12px;
+        .tasks-header .task-icon {
+            font-size: 14px;
+        }
+
+        /* Task List */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .task-row {
+            display: flex;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 10px;
+            transition: background 0.2s;
+            gap: 14px;
+        }
+
+        .task-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Checkbox */
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
             border-radius: 6px;
-            font-size: 12px;
-            border: 1px solid var(--border-color);
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-secondary);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
+            background: transparent;
         }
 
-        .btn-resource:hover {
-            background: var(--accent-primary);
-            color: #fff;
-            border-color: var(--accent-primary);
+        .task-checkbox:hover {
+            border-color: var(--accent-green);
         }
 
-        .subtopic-list {
-            margin-left: 0;
-            padding-left: 0;
-            list-style: none;
+        .task-checkbox.checked {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Task Name */
+        .task-name {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .task-row.completed .task-name {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Task Type Badge */
+        .task-type-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: lowercase;
+        }
+
+        .task-type-badge.learn {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818CF8;
+        }
+
+        .task-type-badge.practice {
+            background: rgba(245, 158, 11, 0.15);
+            color: #FBBF24;
+        }
+
+        .task-type-badge.interview {
+            background: rgba(236, 72, 153, 0.15);
+            color: #F472B6;
+        }
+
+        /* Task Action Buttons */
+        .task-actions {
             display: flex;
-            flex-wrap: wrap;
             gap: 8px;
         }
 
-        .subtopic-tag {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-muted);
-            border: 1px solid transparent;
+        .task-action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-size: 14px;
         }
 
-        .subtopic-tag:hover {
-            border-color: var(--text-muted);
-            color: var(--text-primary);
+        .task-action-btn.youtube {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22C55E;
         }
 
-        /* Resources Area */
+        .task-action-btn.youtube:hover {
+            background: rgba(34, 197, 94, 0.3);
+        }
+
+        .task-action-btn.leetcode {
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
+        }
+
+        .task-action-btn.leetcode:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        /* Resources Area (kept for compatibility) */
         .resources-area {
             margin-top: 16px;
             padding: 16px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             display: none;
-            /* Hidden by default */
         }
 
         .resources-area.active {
@@ -511,23 +645,29 @@
             }
         }
 
-        /* Interactive Subtopic Styles */
-        .subtopic-tag.interactive {
+        /* Skill Course Buttons */
+        .skill-course-btn {
+            padding: 10px 16px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            color: #A78BFA;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            user-select: none;
         }
 
-        .subtopic-tag.interactive:hover {
-            border-color: var(--accent-primary);
-            background: rgba(99, 102, 241, 0.1);
+        .skill-course-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
         }
 
-        .subtopic-tag.done {
-            background: var(--accent-green);
-            color: #000;
-            font-weight: 600;
-            border-color: var(--accent-green);
+        .modal-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
         }
 
         .hidden {
@@ -584,54 +724,163 @@
         // Track progress
         const completedTopics = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
 
+        // Track open weeks (separate from completion state)
+        const openWeeks = new Set([0]); // Default only first week open
+        let totalTaskCount = 0; // Will be calculated during init
+
         function initRoadmap(role, isSample) {
             const container = document.getElementById('roadmap-container');
             const weeksData = isSample
                 ? RoadmapEngine.generateSampleRoadmap(role)
                 : RoadmapEngine.generateFullRoadmap(role, []);
 
-            container.innerHTML = weeksData.map((week, idx) => `
-                <div class="week-card ${week.status} ${idx === 0 ? 'open' : ''}" id="week-${idx}">
+            container.innerHTML = weeksData.map((week, idx) => {
+                // Flatten all tasks from topics into a single list
+                const allTasks = [];
+                week.topics.forEach((topic, tIdx) => {
+                    // Add main topic as a task
+                    allTasks.push({
+                        id: `${idx}-${tIdx}-main`,
+                        name: topic.name,
+                        type: 'learn',
+                        topicName: topic.name,
+                        topicIdx: `${idx}-${tIdx}`
+                    });
+                    // Add sub-items as practice tasks
+                    topic.items.forEach((item, iIdx) => {
+                        allTasks.push({
+                            id: `${idx}-${tIdx}-${item.replace(/\s+/g, '')}`,
+                            name: item,
+                            type: iIdx % 3 === 0 ? 'learn' : (iIdx % 3 === 1 ? 'practice' : 'interview'),
+                            topicName: topic.name,
+                            topicIdx: `${idx}-${tIdx}`
+                        });
+                    });
+                });
+
+                const completedCount = allTasks.filter(t => completedTopics.includes(t.id)).length;
+                const totalCount = allTasks.length;
+                const statusClass = completedCount === totalCount ? 'completed' : (completedCount > 0 ? 'in-progress' : 'locked');
+                const statusText = completedCount === totalCount ? 'Completed' : (completedCount > 0 ? 'In Progress' : 'Not Started');
+
+                return `
+                <div class="week-card ${week.status} ${openWeeks.has(idx) ? 'open' : ''}" id="week-${idx}">
                     <div class="week-header" onclick="toggleWeek(${idx})">
                         <div class="week-info">
                             <div class="week-number">${week.week}</div>
-                            <div class="week-title">${week.title}</div>
+                            <div class="week-meta">
+                                <div class="week-title">${week.title}</div>
+                                <div class="week-subtitle">${week.topics.map(t => t.name).join(', ')}</div>
+                            </div>
                         </div>
-                        <div class="toggle-icon">▼</div>
+                        <div class="week-status-group">
+                            <span class="week-status-badge ${statusClass}">${statusText}</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
                     </div>
                     <div class="week-body">
-                        <div class="topics-grid">
-                            ${week.topics.map((topic, tIdx) => `
-                                <div class="topic-item">
-                                    <div class="topic-header">
-                                        <div class="topic-name">${topic.name}</div>
-                                        <div class="topic-actions">
-                                            ${!isSample ? `
-                                                <button class="btn-resource" onclick="loadResources(this, '${topic.name}', '${idx}-${tIdx}')">
-                                                    🔍 Resources
-                                                </button>
-                                            ` : '<span style="font-size:12px; color:var(--text-muted);">🔒 Interview to unlock</span>'}
-                                        </div>
+                        <div class="tasks-header">
+                            <span class="task-icon">📋</span>
+                            <span>Tasks (${completedCount}/${totalCount})</span>
+                        </div>
+                        <div class="task-list">
+                            ${allTasks.map(task => {
+                    const isDone = completedTopics.includes(task.id);
+                    return `
+                                <div class="task-row ${isDone ? 'completed' : ''}" data-task-id="${task.id}">
+                                    <div class="task-checkbox ${isDone ? 'checked' : ''}" onclick="${!isSample ? `toggleTask('${task.id}', this)` : ''}"></div>
+                                    <span class="task-name">${task.name}</span>
+                                    <span class="task-type-badge ${task.type}">${task.type}</span>
+                                    ${!isSample ? `
+                                    <div class="task-actions">
+                                        <button class="task-action-btn youtube" onclick="event.stopPropagation(); openYouTube('${task.topicName}')" title="Watch Tutorial">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                                        </button>
+                                        <button class="task-action-btn leetcode" onclick="event.stopPropagation(); openLeetCode('${task.topicName}')" title="Practice Problems">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"/></svg>
+                                        </button>
                                     </div>
-                                    <ul class="subtopic-list">
-                                        ${topic.items.map(item => {
-                const itemId = `${idx}-${tIdx}-${item.replace(/\s+/g, '')}`;
-                const isDone = completedTopics.includes(itemId);
-                return `<li class="subtopic-tag ${!isSample ? 'interactive' : ''} ${isDone ? 'done' : ''}" 
-                                                onclick="${!isSample ? `toggleTopic('${itemId}', this)` : ''}">${item}</li>`
-            }).join('')}
-                                    </ul>
-                                    <div class="resources-area" id="res-${idx}-${tIdx}"></div>
+                                    ` : ''}
                                 </div>
-                            `).join('')}
+                                `;
+                }).join('')}
                         </div>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
+            // Store total task count for accurate completion calculation
+            totalTaskCount = Array.from(document.querySelectorAll('.task-row')).length;
             updateProgress();
         }
 
+        // Toggle task completion (WITHOUT re-rendering to preserve accordion state)
+        window.toggleTask = function (id, checkbox) {
+            const taskRow = checkbox.closest('.task-row');
+            const weekCard = checkbox.closest('.week-card');
+
+            if (completedTopics.includes(id)) {
+                const idx = completedTopics.indexOf(id);
+                completedTopics.splice(idx, 1);
+                checkbox.classList.remove('checked');
+                if (taskRow) taskRow.classList.remove('completed');
+            } else {
+                completedTopics.push(id);
+                checkbox.classList.add('checked');
+                if (taskRow) taskRow.classList.add('completed');
+            }
+            localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
+
+            // Update task counts in-place without re-rendering
+            updateTaskCountsInPlace(weekCard);
+            updateProgress();
+        };
+
+        // Update task counts without full re-render (preserves accordion state)
+        function updateTaskCountsInPlace(weekCard) {
+            if (!weekCard) return;
+
+            const taskRows = weekCard.querySelectorAll('.task-row');
+            const completedCount = weekCard.querySelectorAll('.task-row.completed').length;
+            const totalCount = taskRows.length;
+
+            // Update the tasks header
+            const tasksHeader = weekCard.querySelector('.tasks-header span:last-child');
+            if (tasksHeader) {
+                tasksHeader.textContent = `Tasks (${completedCount}/${totalCount})`;
+            }
+
+            // Update the status badge
+            const statusBadge = weekCard.querySelector('.week-status-badge');
+            if (statusBadge) {
+                statusBadge.classList.remove('completed', 'in-progress', 'locked');
+                if (completedCount === totalCount && totalCount > 0) {
+                    statusBadge.classList.add('completed');
+                    statusBadge.textContent = 'Completed';
+                } else if (completedCount > 0) {
+                    statusBadge.classList.add('in-progress');
+                    statusBadge.textContent = 'In Progress';
+                } else {
+                    statusBadge.classList.add('locked');
+                    statusBadge.textContent = 'Not Started';
+                }
+            }
+        };
+
+        // Open YouTube search for topic
+        window.openYouTube = function (topicName) {
+            const query = encodeURIComponent(topicName + ' tutorial');
+            window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+        };
+
+        // Open LeetCode search for topic
+        window.openLeetCode = function (topicName) {
+            const query = encodeURIComponent(topicName);
+            window.open(`https://leetcode.com/problemset/all/?search=${query}`, '_blank');
+        };
+
+        // Keep old toggleTopic for backwards compatibility
         window.toggleTopic = function (id, el) {
             if (completedTopics.includes(id)) {
                 const idx = completedTopics.indexOf(id);
@@ -646,18 +895,28 @@
         };
 
         function updateProgress() {
-            // Calculate pseudo-progress based on clicks for the demo
-            // Assuming approx 18 topics total for a full roadmap (3 topics * 6 weeks)
-            const total = 18;
+            // Calculate ACTUAL progress from completed tasks vs total tasks
+            const total = totalTaskCount > 0 ? totalTaskCount : document.querySelectorAll('.task-row').length;
             const current = completedTopics.length;
-            const percentage = Math.min(100, Math.round((current / total) * 100));
+            const percentage = total > 0 ? Math.min(100, Math.round((current / total) * 100)) : 0;
 
             document.getElementById('overall-progress-val').textContent = percentage + '%';
             document.getElementById('overall-progress-bar').style.width = percentage + '%';
-            document.getElementById('weeks-complete-val').textContent = Math.floor(current / 3) + '/6';
 
-            // Trigger celebration if essentially done (>= 90% for demo forgiveness)
-            if (percentage >= 90) {
+            // Count actually completed weeks (all tasks in week done)
+            const weekCards = document.querySelectorAll('.week-card');
+            let completedWeeks = 0;
+            weekCards.forEach(week => {
+                const weekTasks = week.querySelectorAll('.task-row');
+                const weekCompleted = week.querySelectorAll('.task-row.completed');
+                if (weekTasks.length > 0 && weekTasks.length === weekCompleted.length) {
+                    completedWeeks++;
+                }
+            });
+            document.getElementById('weeks-complete-val').textContent = `${completedWeeks}/${weekCards.length}`;
+
+            // Trigger celebration ONLY when ALL tasks are completed (100% exactly)
+            if (percentage === 100 && current > 0 && current === total) {
                 triggerCelebration();
             }
         }
@@ -705,10 +964,66 @@
             document.getElementById('job-panel').classList.add('hidden');
         };
 
+        // Close celebration modal
+        window.closeCelebrationModal = function () {
+            document.getElementById('celebration-modal').classList.add('hidden');
+            document.getElementById('job-panel').classList.add('hidden');
+            document.getElementById('skills-panel').classList.add('hidden');
+        };
+
+        // Start a new roadmap with a selected skill
+        window.startNewRoadmap = function (skillName) {
+            // Clear previous progress
+            localStorage.removeItem('nextStep_roadmap_progress');
+
+            // Store the new skill focus for after reload
+            localStorage.setItem('nextStep_newSkillFocus', skillName);
+            localStorage.setItem('nextStep_showNewRoadmapModal', 'true');
+
+            // Close the celebration modal
+            closeCelebrationModal();
+
+            // Reload the page to regenerate roadmap
+            window.location.reload();
+        };
+
+        // Close new roadmap success modal
+        window.closeNewRoadmapModal = function () {
+            document.getElementById('new-roadmap-modal').classList.add('hidden');
+        };
+
+        // Check on page load if we should show new roadmap modal
+        (function checkNewRoadmapModal() {
+            const showModal = localStorage.getItem('nextStep_showNewRoadmapModal');
+            const skillFocus = localStorage.getItem('nextStep_newSkillFocus');
+
+            if (showModal === 'true' && skillFocus) {
+                // Clear the flags
+                localStorage.removeItem('nextStep_showNewRoadmapModal');
+
+                // Update modal description with skill name
+                const descEl = document.getElementById('new-roadmap-desc');
+                if (descEl) {
+                    descEl.innerHTML = `Your progress has been reset and a new <strong>${skillFocus}</strong> learning roadmap has been created for you!`;
+                }
+
+                // Show the modal after a short delay
+                setTimeout(() => {
+                    document.getElementById('new-roadmap-modal').classList.remove('hidden');
+                }, 500);
+            }
+        })();
+
         window.toggleWeek = function (idx) {
             const el = document.getElementById(`week-${idx}`);
             if (el && !el.classList.contains('locked')) {
                 el.classList.toggle('open');
+                // Track open state in Set (for potential re-renders)
+                if (el.classList.contains('open')) {
+                    openWeeks.add(idx);
+                } else {
+                    openWeeks.delete(idx);
+                }
             }
         };
 
