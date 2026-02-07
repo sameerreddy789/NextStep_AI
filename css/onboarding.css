@@ -309,3 +309,45 @@ body {
     color: var(--text-main);
     border-color: var(--text-main);
 }
+
+/* Skip Button (Ghost Style) */
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    font-size: 14px;
+    padding: 12px 16px;
+}
+
+.btn-ghost:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Wizard Actions Layout */
+.wizard-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Keyboard Hint */
+.keyboard-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+.keyboard-hint kbd {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 2px;
+}

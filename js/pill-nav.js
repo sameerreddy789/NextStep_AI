@@ -253,4 +253,17 @@ document.addEventListener('DOMContentLoaded', () => {
             pillTextColor: '#ffffff'
         });
     }
+
+    // Intercept clicks on auth.html links - redirect to dashboard if already logged in
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href="auth.html"]');
+        if (link) {
+            // Check if user is already logged in
+            const userData = localStorage.getItem('nextStep_user');
+            if (userData) {
+                e.preventDefault();
+                window.location.href = 'dashboard.html';
+            }
+        }
+    });
 });

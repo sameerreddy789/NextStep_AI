@@ -139,8 +139,11 @@ function createSkeleton(type = 'text', count = 1) {
  * @param {string} message - Dialog message
  * @param {Function} onConfirm - Callback for confirm button
  * @param {Function} onCancel - Callback for cancel button
+ * @param {Object} options - Additional options (confirmText, cancelText, danger)
  */
-function showConfirmDialog(title, message, onConfirm, onCancel) {
+function showConfirmDialog(title, message, onConfirm, onCancel, options = {}) {
+    const { confirmText = 'Confirm', cancelText = 'Cancel', danger = false } = options;
+
     const dialog = document.createElement('div');
     dialog.className = 'dialog-overlay';
     dialog.innerHTML = `
@@ -148,8 +151,8 @@ function showConfirmDialog(title, message, onConfirm, onCancel) {
             <h3 class="dialog-title">${title}</h3>
             <p class="dialog-message">${message}</p>
             <div class="dialog-actions">
-                <button class="btn btn-secondary" data-action="cancel">Cancel</button>
-                <button class="btn btn-primary" data-action="confirm">Confirm</button>
+                <button class="btn btn-secondary" data-action="cancel">${cancelText}</button>
+                <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" data-action="confirm">${confirmText}</button>
             </div>
         </div>
     `;
@@ -170,12 +173,21 @@ function showConfirmDialog(title, message, onConfirm, onCancel) {
         if (onCancel) onCancel();
     });
 
-    // Close on overlay click
+    // Close on overlay click or Escape key
     dialog.addEventListener('click', (e) => {
         if (e.target === dialog) {
             dialog.remove();
             document.body.style.overflow = '';
             if (onCancel) onCancel();
+        }
+    });
+
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            dialog.remove();
+            document.body.style.overflow = '';
+            if (onCancel) onCancel();
+            document.removeEventListener('keydown', escHandler);
         }
     });
 }
@@ -199,6 +211,58 @@ function updateProgress(progressBar, percentage) {
     }
 }
 
+/**
+ * Creates an empty state component
+ * @param {Object} config - Configuration object
+ * @returns {string} HTML string for empty state
+ */
+function createEmptyState(config) {
+    const {
+        icon = '📭',
+        title = 'Nothing here yet',
+        description = 'Get started by taking an action.',
+        actions = [],
+        variant = '', // 'compact', 'success', 'warning', 'info'
+    } = config;
+
+    const actionsHtml = actions.map(action =>
+        `<a href="${action.href || '#'}" class="btn ${action.primary ? 'btn-primary' : 'btn-secondary'}" ${action.onclick ? `onclick="${action.onclick}"` : ''}>${action.label}</a>`
+    ).join('');
+
+    return `
+        <div class="empty-state ${variant}">
+            <div class="empty-state-icon">${icon}</div>
+            <h3 class="empty-state-title">${title}</h3>
+            <p class="empty-state-description">${description}</p>
+            ${actionsHtml ? `<div class="empty-state-actions">${actionsHtml}</div>` : ''}
+        </div>
+    `;
+}
+
+/**
+ * Initializes global keyboard shortcuts
+ * @param {Object} shortcuts - Map of key combinations to callbacks
+ */
+function initKeyboardShortcuts(shortcuts = {}) {
+    document.addEventListener('keydown', (e) => {
+        // Skip if user is typing in an input
+        if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+
+        const key = [];
+        if (e.ctrlKey) key.push('ctrl');
+        if (e.shiftKey) key.push('shift');
+        if (e.altKey) key.push('alt');
+        key.push(e.key.toLowerCase());
+
+        const combo = key.join('+');
+
+        if (shortcuts[combo]) {
+            e.preventDefault();
+            shortcuts[combo]();
+        }
+    });
+}
+
 // Export functions for use in other modules
 if (typeof window !== 'undefined') {
     window.UIUtils = {
@@ -209,6 +273,9 @@ if (typeof window !== 'undefined') {
         hideInlineLoader,
         createSkeleton,
         showConfirmDialog,
-        updateProgress
+        updateProgress,
+        createEmptyState,
+        initKeyboardShortcuts
     };
 }
+

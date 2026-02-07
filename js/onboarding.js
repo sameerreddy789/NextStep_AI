@@ -85,7 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
     fileInput.addEventListener('change', handleFileUpload);
     removeFileBtn.addEventListener('click', removeFile);
 
-
+    // Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !btnNext.disabled) {
+            e.preventDefault();
+            nextStep();
+        } else if (e.key === 'Escape' && currentStep > 1) {
+            e.preventDefault();
+            prevStep();
+        }
+    });
 
     updateUI();
 });
@@ -126,6 +135,12 @@ function updateUI() {
     btnBack.classList.toggle('hidden', currentStep === 1);
     btnNext.textContent = currentStep === totalSteps ? 'Finish' : 'Next';
 
+    // Show/hide skip button for optional steps (3 and 4)
+    const skipBtn = document.getElementById('btn-skip');
+    if (skipBtn) {
+        skipBtn.classList.toggle('hidden', currentStep !== 3 && currentStep !== 4);
+    }
+
     validateStep();
 }
 
@@ -162,6 +177,16 @@ function validateStep() {
 
     btnNext.disabled = !isValid;
 }
+
+// Skip optional steps with default values
+window.skipStep = () => {
+    if (currentStep === 3) {
+        userData.jobReadyTimeline = '3-6 months'; // Default
+    } else if (currentStep === 4) {
+        userData.preparationStyle = 'Somewhat structured'; // Default
+    }
+    nextStep();
+};
 
 // File Handling
 function handleFileUpload(e) {
