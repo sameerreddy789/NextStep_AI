@@ -1,15 +1,19 @@
 /**
  * Radial Orbital Timeline - Vanilla JS Version
  * Handles mathematical positioning, 3D rotations, and interactions
+ * Version: 2.1 (Auto-Rotation Enabled)
  */
+
 
 class OrbitalTimeline {
     constructor(options = {}) {
         this.options = {
             containerSelector: options.containerSelector || '#orbital-timeline-container',
             data: options.data || [],
-            autoRotate: options.autoRotate !== undefined ? options.autoRotate : true,
-            rotationSpeed: options.rotationSpeed || 0.2,
+            autoRotate: options.autoRotate !== undefined ? options.autoRotate : false,
+            rotationSpeed: options.rotationSpeed || 0,
+            autoCycle: options.autoCycle !== undefined ? options.autoCycle : false,
+            cycleDuration: options.cycleDuration || 4000,
             radius: options.radius || 200,
             accentColor: options.accentColor || '#6366f1',
             ...options
@@ -20,23 +24,39 @@ class OrbitalTimeline {
         this.expandedId = null;
         this.pulseEffects = {};
         this.nodeElements = {};
+        this.container = null;
+        this.cycleTimer = null;
+        this.currentCycleIndex = 0;
 
         this.init();
     }
 
+
     init() {
-        this.render();
-        this.setupEventListeners();
-        this.startAnimation();
+        console.log("OrbitalTimeline: Initializing...");
+        try {
+            this.render();
+            this.setupEventListeners();
+            this.startAnimation();
+            if (this.options.autoCycle) {
+                this.startAutoCycle();
+            }
+            console.log("OrbitalTimeline: Initialization complete");
+        } catch (e) {
+            console.error("OrbitalTimeline: Initialization failed", e);
+        }
     }
 
+
     render() {
-        const container = document.querySelector(this.options.containerSelector);
-        if (!container) return;
+        this.container = document.querySelector(this.options.containerSelector);
+        if (!this.container) return;
 
-        container.classList.add('orbital-timeline-wrapper');
+        this.container.classList.add('orbital-timeline-wrapper');
+        this.updateRotationState();
 
-        container.innerHTML = `
+
+        this.container.innerHTML = `
             <div class="orbital-scene">
                 <!-- Center Core -->
                 <div class="orbital-core">
@@ -70,8 +90,9 @@ class OrbitalTimeline {
         `;
 
         this.options.data.forEach(item => {
-            this.nodeElements[item.id] = container.querySelector(`#node-${item.id}`);
+            this.nodeElements[item.id] = this.container.querySelector(`#node-${item.id}`);
         });
+
     }
 
     getIcon(iconName) {
@@ -115,7 +136,6 @@ class OrbitalTimeline {
         }
 
         this.expandedId = id;
-        this.isAutoRotating = false;
 
         // Center the view on this node (270deg is top)
         const index = this.options.data.findIndex(item => item.id === id);
@@ -133,12 +153,59 @@ class OrbitalTimeline {
         this.updateNodeStates();
     }
 
+
     closeAll() {
         this.expandedId = null;
-        this.isAutoRotating = true;
         this.pulseEffects = {};
         this.updateNodeStates();
     }
+
+
+    updateRotationState() {
+        if (this.container) {
+            if (this.isAutoRotating) {
+                this.container.classList.add('is-rotating');
+            } else {
+                this.container.classList.remove('is-rotating');
+            }
+        }
+    }
+
+    startAutoCycle() {
+        console.log("OrbitalTimeline: Starting auto-cycle");
+        // Start with the first card immediately
+        this.cycleToNext();
+    }
+
+    cycleToNext() {
+        // Clear existing timer
+        if (this.cycleTimer) {
+            clearTimeout(this.cycleTimer);
+        }
+
+        // Get the current item ID
+        const currentItem = this.options.data[this.currentCycleIndex];
+        if (currentItem) {
+            this.toggleNode(currentItem.id);
+        }
+
+        // Move to next index
+        this.currentCycleIndex = (this.currentCycleIndex + 1) % this.options.data.length;
+
+        // Schedule next cycle
+        this.cycleTimer = setTimeout(() => {
+            this.cycleToNext();
+        }, this.options.cycleDuration);
+    }
+
+    stopAutoCycle() {
+        if (this.cycleTimer) {
+            clearTimeout(this.cycleTimer);
+            this.cycleTimer = null;
+        }
+    }
+
+
 
     updateNodeStates() {
         Object.keys(this.nodeElements).forEach(id => {
@@ -257,10 +324,19 @@ const timelineData = [
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('orbital-timeline-container')) {
+        console.log("OrbitalTimeline: Container found, starting instance...");
         new OrbitalTimeline({
             containerSelector: '#orbital-timeline-container',
             data: timelineData,
-            accentColor: '#6366f1'
+            accentColor: '#6366f1',
+            autoRotate: true,
+            rotationSpeed: 0.2,
+            autoCycle: true,
+            cycleDuration: 3000
         });
+    } else {
+        console.warn("OrbitalTimeline: Container #orbital-timeline-container not found!");
     }
+
+
 });
