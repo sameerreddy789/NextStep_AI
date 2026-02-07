@@ -9,7 +9,8 @@
     <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="css/auth-modern.css">
     <link rel="stylesheet" href="css/ui-utils.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <script src="js/ui-utils.js"></script>
     <script src="js/error-handler.js"></script>
 </head>
@@ -86,6 +87,14 @@
                         <div class="footer-link">
                             Don't have an account? <a href="#" onclick="toggleView('signup')">Sign up</a>
                         </div>
+
+                        <!-- Demo Mode for Team Testing -->
+                        <div class="divider" style="margin-top: 1.5rem;"><span>For Hackathon Demo</span></div>
+                        <button class="btn btn-outline"
+                            style="background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.4); color: #22c55e;"
+                            onclick="enterDemoMode()">
+                            🚀 Enter Demo Mode (No Login)
+                        </button>
                     </div>
 
                     <!-- Signup View -->
@@ -161,6 +170,47 @@
         </div>
     </div>
 
+    <script>
+        // Demo Mode - Bypasses Firebase auth for team testing
+        function enterDemoMode() {
+            // Set demo user data
+            const demoUser = {
+                uid: 'demo-user-001',
+                email: 'demo@nextstep.ai',
+                displayName: 'Demo User',
+                isDemo: true
+            };
+
+            // Set demo resume data
+            const demoResume = {
+                skills: {
+                    present: ['JavaScript', 'React', 'Node.js', 'Python', 'Git'],
+                    partial: ['TypeScript', 'AWS', 'Docker'],
+                    missing: ['Kubernetes', 'GraphQL', 'System Design']
+                },
+                experience: [
+                    { title: 'Software Developer', company: 'Tech Corp', duration: '2 years' }
+                ],
+                projects: [
+                    { name: 'E-commerce Platform', tech: 'React, Node.js, MongoDB' }
+                ],
+                score: 75,
+                coverage: 68,
+                readiness: 62,
+                atsScore: { overall: 72, keyword: 70, experience: 75, format: 80, suggestions: ['Add more keywords', 'Quantify achievements'] }
+            };
+
+            // Save to localStorage
+            localStorage.setItem('nextStep_user', JSON.stringify(demoUser));
+            localStorage.setItem('nextStep_resume', JSON.stringify(demoResume));
+            localStorage.setItem('userProfile', JSON.stringify({ targetRole: 'sde', name: 'Demo User' }));
+            localStorage.setItem('demoMode', 'true');
+
+            // Redirect to resume page
+            alert('🎉 Demo Mode Activated!\n\nYou can now explore all features without Firebase login.');
+            window.location.href = 'resume.html';
+        }
+    </script>
     <script type="module" src="js/auth-modern.js"></script>
 </body>
 
