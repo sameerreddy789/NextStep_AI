@@ -1714,7 +1714,7 @@ img {
 /* Primary Button Glow */
 .btn-primary.glow-btn {
     position: relative;
-    overflow: hidden;
+    z-index: 0;
 }
 
 .btn-primary.glow-btn::before {
@@ -1733,9 +1733,16 @@ img {
     transition: opacity 0.3s ease;
 }
 
+.btn-primary.glow-btn:hover {
+    transform: none;
+}
+
 .btn-primary.glow-btn:hover::before {
     opacity: 0.7;
 }
+
+
+
 
 /* Pulse Glow Effect */
 .glow-pulse {
