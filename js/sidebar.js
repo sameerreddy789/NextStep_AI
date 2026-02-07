@@ -5,16 +5,36 @@
 
 const SIDEBAR_CONFIG = {
     logo: {
-        icon: '🚀',
+        icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2s-7 2-9 6a22 22 0 0 1-4 2"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5c1.08 1.45 4 2 4 2s-1.08-3.38 0-5c.9-.71 2-1 2-1"></path></svg>',
         text: 'NextStep AI',
         href: 'index.html'
     },
     mainNav: [
-        { icon: '📊', text: 'Dashboard', href: 'dashboard.html' },
-        { icon: '📄', text: 'Resume', href: 'resume.html' },
-        { icon: '🎯', text: 'Skill Gap', href: 'skill-gap.html' },
-        { icon: '🎤', text: 'Interview', href: 'interview.html' },
-        { icon: '🗺️', text: 'Roadmap', href: 'roadmap.html' }
+        {
+            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>',
+            text: 'Dashboard',
+            href: 'dashboard.html'
+        },
+        {
+            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
+            text: 'Resume',
+            href: 'resume.html'
+        },
+        {
+            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>',
+            text: 'Skill Gap',
+            href: 'skill-gap.html'
+        },
+        {
+            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>',
+            text: 'Interview',
+            href: 'interview.html'
+        },
+        {
+            icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><polyline points="10 14 12 17 14 14"></polyline><line x1="12" y1="4" x2="12" y2="17"></line></svg>',
+            text: 'Roadmap',
+            href: 'roadmap.html'
+        }
     ]
 };
 
@@ -46,6 +66,13 @@ function generateSidebar() {
 
     const sidebarHTML = `
         <div class="sidebar-header">
+            <button class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                <span class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
             <a href="${SIDEBAR_CONFIG.logo.href}" class="nav-logo">
                 <span class="nav-logo-icon">${SIDEBAR_CONFIG.logo.icon}</span>
                 <span class="nav-logo-text">${SIDEBAR_CONFIG.logo.text}</span>
@@ -319,9 +346,30 @@ window.confirmLogout = function () {
     window.location.href = 'index.html';
 };
 
+// Toggle Sidebar Collapse/Expand
+window.toggleSidebar = function () {
+    const sidebar = document.querySelector('.sidebar');
+    const isCollapsed = sidebar.classList.toggle('collapsed');
+
+    // Save state to localStorage
+    localStorage.setItem('sidebar_collapsed', isCollapsed);
+};
+
+// Initialize sidebar state from localStorage
+function initializeSidebarState() {
+    const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+    const sidebar = document.querySelector('.sidebar');
+
+    if (isCollapsed && sidebar) {
+        sidebar.classList.add('collapsed');
+    }
+}
+
 // Initialize on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
     generateSidebar();
+    // Wait a tick for sidebar to be rendered
+    setTimeout(initializeSidebarState, 0);
 });
 
 // Export for use
