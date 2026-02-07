@@ -88,8 +88,15 @@ class PillNav {
 
     setupAnimations() {
         const pills = document.querySelectorAll('.pill');
+        const totalPills = pills.length;
 
         pills.forEach((pill, i) => {
+            // Skip animation for the last item (CTA button)
+            if (i === totalPills - 1) {
+                this.timelines[i] = null;
+                return;
+            }
+
             const circle = pill.querySelector('.hover-circle');
             const label = pill.querySelector('.pill-label');
             const hoverLabel = pill.querySelector('.pill-label-hover');
@@ -149,6 +156,7 @@ class PillNav {
             this.timelines[i] = tl;
         });
     }
+
 
     setupEventListeners() {
         // Pill hover events
