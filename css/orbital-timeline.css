@@ -92,17 +92,19 @@
 .orbital-node {
     position: absolute;
     cursor: pointer;
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 0;
     height: 0;
     overflow: visible;
-    pointer-events: auto;
+    pointer-events: none;
 }
 
-.orbital-node.ready {
-    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+/* Disable transition during auto-rotation */
+.orbital-timeline-wrapper.is-rotating .orbital-node {
+    transition: none;
 }
 
 .node-circle {
@@ -141,7 +143,7 @@
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
     transition: all 0.3s ease;
-    cursor: pointer;
+    pointer-events: none;
 }
 
 /* Node States */
