@@ -982,40 +982,105 @@ pre {
 
 /* Collapsed Sidebar State */
 .sidebar.collapsed {
-    width: 70px;
+    width: 72px;
 }
 
+/* Hide text elements in collapsed state */
 .sidebar.collapsed .nav-logo-text,
-.sidebar.collapsed .sidebar-link:not(.sidebar-link-icon),
 .sidebar.collapsed .sidebar-progress-card,
-.sidebar.collapsed .user-details-widget {
+.sidebar.collapsed .user-details-widget,
+.sidebar.collapsed .progress-action-btn {
     opacity: 0;
     visibility: hidden;
     width: 0;
     overflow: hidden;
+    padding: 0;
+    margin: 0;
 }
 
+/* Header adjustments for collapsed */
 .sidebar.collapsed .sidebar-header {
     justify-content: center;
     padding: var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .sidebar.collapsed .nav-logo {
-    width: 0;
-    overflow: hidden;
+    justify-content: center;
+    width: 100%;
+}
+
+.sidebar.collapsed .nav-logo-icon {
+    margin: 0;
+}
+
+/* Navigation links - icon only, centered */
+.sidebar.collapsed .sidebar-nav {
+    padding: var(--spacing-sm) 8px;
 }
 
 .sidebar.collapsed .sidebar-link {
     justify-content: center;
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: 12px;
+    margin: 4px auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    position: relative;
 }
 
+/* Hide the text inside links - we need to wrap text in span */
+.sidebar.collapsed .sidebar-link-text {
+    display: none;
+}
+
+/* Icon stays visible */
+.sidebar.collapsed .sidebar-link-icon {
+    margin: 0;
+}
+
+/* Active state highlight for icon-only mode */
+.sidebar.collapsed .sidebar-link.active {
+    background: rgba(99, 102, 241, 0.2);
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+/* Hover tooltip for collapsed sidebar */
+.sidebar.collapsed .sidebar-link:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 100%;
+    margin-left: 12px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Footer adjustments for collapsed */
 .sidebar.collapsed .sidebar-footer {
-    padding: var(--spacing-md);
+    padding: 12px 8px;
+    display: flex;
+    justify-content: center;
 }
 
 .sidebar.collapsed .user-info-widget {
     justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+}
+
+.sidebar.collapsed .user-avatar-widget {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
 }
 
 /* Smooth Transitions */
@@ -1024,11 +1089,11 @@ pre {
 }
 
 .sidebar * {
-    transition: opacity 0.3s ease, visibility 0.3s ease, width 0.3s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease, width 0.2s ease, padding 0.2s ease;
 }
 
 .nav-logo-text,
-.sidebar-link,
+.sidebar-link-text,
 .user-details-widget {
     white-space: nowrap;
 }

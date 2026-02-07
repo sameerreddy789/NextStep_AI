@@ -81,9 +81,9 @@ function generateSidebar() {
         <nav class="sidebar-nav">
             ${SIDEBAR_CONFIG.mainNav.map(item => `
 
-                <a href="${item.href}" class="sidebar-link ${currentPage === item.href ? 'active' : ''}">
+                <a href="${item.href}" class="sidebar-link ${currentPage === item.href ? 'active' : ''}" data-tooltip="${item.text}">
                     <span class="sidebar-link-icon">${item.icon}</span>
-                    ${item.text}
+                    <span class="sidebar-link-text">${item.text}</span>
                 </a>
             `).join('')}
         </nav>
