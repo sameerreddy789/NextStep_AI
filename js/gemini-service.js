@@ -27,9 +27,9 @@ const GeminiService = {
     },
 
     /**
-     * Make API request to Gemini with optional file data
+     * Make API request to Gemini with optional file data and retry logic
      */
-    async _request(prompt, fileData = null) {
+    async _request(prompt, fileData = null, retries = 3, delay = 2000) {
         if (!this.apiKey) {
             throw new Error('Gemini API key not configured');
         }
@@ -69,8 +69,16 @@ const GeminiService = {
 
             if (!response.ok) {
                 const error = await response.json();
+
+                // Handle rate limits with retries
+                if (response.status === 429 && retries > 0) {
+                    console.warn(`[GeminiService] ⏳ Rate limit hit. Retrying in ${delay / 1000}s... (${retries} retries left)`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this._request(prompt, fileData, retries - 1, delay * 2);
+                }
+
                 if (response.status === 429) {
-                    throw new Error('AI Rate Limit Exceeded (429). Please wait a few seconds and try again. Google Free Tier has limits on how fast you can scan resumes.');
+                    throw new Error('AI Rate Limit Exceeded (429). Please wait 30-60 seconds and try again. Google Free Tier has strict limits.');
                 }
                 throw new Error(error.error?.message || 'Gemini API request failed');
             }
@@ -79,6 +87,11 @@ const GeminiService = {
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
             return text;
         } catch (error) {
+            if (error.message.includes('Rate Limit') && retries > 0) {
+                console.warn(`[GeminiService] ⏳ Network error/Rate limit. Retrying in ${delay / 1000}s...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                return this._request(prompt, fileData, retries - 1, delay * 2);
+            }
             console.error('[GeminiService] ❌ API Error:', error);
             throw error;
         }
@@ -330,6 +343,112 @@ Respond with ONLY a JSON object:
             console.error('[GeminiService] ❌ Evaluation failed:', error);
             throw error;
         }
+    },
+
+    async analyzeMarketSkills(role, marketSearchData, userSkills) {
+        console.log('[GeminiService] 🔍 Categorizing market skills');
+
+        const prompt = `You are a career expert. Analyze these market search results for the role "${role}" and compare them with the user's current skills.
+Market Trends context:
+${JSON.stringify(marketSearchData)}
+
+User's current skills (from resume):
+${JSON.stringify(userSkills)}
+
+Task: Identify the top 12 most relevant skills for this role and categorize them.
+Status categorization rules:
+- "present": User has this skill clearly on their resume.
+- "partial": User has related skills but might lack specific depth or tool knowledge.
+- "missing": Skill is mentioned in market trends but not found in user skills.
+
+Respond with ONLY a JSON object:
+{
+    "mustHave": [
+        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "Critical"|"Essential", "desc": "Short market relevance justification" }
+    ],
+    "goodToHave": [
+        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "High"|"Medium", "desc": "Short market relevance justification" }
+    ],
+    "futureProof": [
+        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "Growing"|"Emerging", "desc": "Short market relevance justification" }
+    ]
+}`;
+
+        try {
+            const response = await this._request(prompt);
+            const parsed = this._parseJSON(response);
+            if (parsed) {
+                console.log('[GeminiService] ✅ Market skills analyzed');
+                return parsed;
+            }
+            throw new Error('Failed to parse market analysis');
+        } catch (error) {
+            console.warn('[GeminiService] ⚠️ Market analysis failed, using fallback:', error.message);
+            return this._getFallbackMarketSkills(role, userSkills);
+        }
+    },
+
+    /**
+     * Provides high-quality static fallback when AI analysis fails
+     */
+    _getFallbackMarketSkills(role, userSkills) {
+        // Ensure userSkills is an array to avoid .map error
+        const skillsArray = Array.isArray(userSkills) ? userSkills : [];
+        const userSkillSet = new Set(skillsArray.map(s => (typeof s === 'string' ? s : s.name).toLowerCase()));
+
+        const checkStatus = (skill) => {
+            const lowerSkill = skill.toLowerCase();
+            if (userSkillSet.has(lowerSkill)) return 'present';
+            // Simple partial check
+            for (const s of userSkillSet) {
+                if (s.includes(lowerSkill) || lowerSkill.includes(s)) return 'partial';
+            }
+            return 'missing';
+        };
+
+        const roleLower = role.toLowerCase();
+
+        // Comprehensive fallback data
+        const data = {
+            mustHave: [
+                { name: 'Core Language Proficiency', priority: 'Critical', desc: 'Deep knowledge of primary language required for the role' },
+                { name: 'Data Structures & Algorithms', priority: 'Critical', desc: 'Essential for technical problem solving and performance' },
+                { name: 'Version Control (Git)', priority: 'Essential', desc: 'Standard for team collaboration and code management' },
+                { name: 'System Design Basics', priority: 'Essential', desc: 'Understanding of how software components interact' }
+            ],
+            goodToHave: [
+                { name: 'Cloud Services (AWS/Azure)', priority: 'High', desc: 'Modern deployment and infrastructure knowledge' },
+                { name: 'Docker & Containerization', priority: 'High', desc: 'Standard for reproducible environments' },
+                { name: 'Unit Testing & Quality', priority: 'Medium', desc: 'Ensures code reliability and maintainability' },
+                { name: 'API Design (REST/GraphQL)', priority: 'Medium', desc: 'Communication between distributed systems' }
+            ],
+            futureProof: [
+                { name: 'AI/ML Integration', priority: 'Growing', desc: 'Ability to leverage AI models in applications' },
+                { name: 'Microservices Architecture', priority: 'Growing', desc: 'Scaling applications for high availability' },
+                { name: 'Prompts Engineering', priority: 'Emerging', desc: 'Effectively working with LLMs' },
+                { name: 'Edge Computing', priority: 'Emerging', desc: 'Reducing latency for real-time applications' }
+            ]
+        };
+
+        // Customizations for specific roles
+        if (roleLower.includes('frontend') || roleLower.includes('ui')) {
+            data.mustHave[0].name = 'Modern JS Frameworks (React/Vue)';
+            data.goodToHave[3].name = 'TypeScript & State Management';
+        } else if (roleLower.includes('backend')) {
+            data.mustHave[0].name = 'Server-side Logic & DBs';
+            data.goodToHave[0].name = 'Distributed Systems';
+        }
+
+        // Apply dynamic status based on user resume
+        const applyStatus = (category) => {
+            category.forEach(s => { s.status = checkStatus(s.name); });
+        };
+
+        applyStatus(data.mustHave);
+        applyStatus(data.goodToHave);
+        applyStatus(data.futureProof);
+
+        return data;
     }
 };
 

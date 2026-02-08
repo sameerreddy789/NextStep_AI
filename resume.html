@@ -729,6 +729,41 @@
 
             } catch (error) {
                 console.error('[Resume] Analysis error:', error);
+
+                // Handle 429 specifically with a fallback
+                if (error.message.includes('429') || error.message.includes('Rate Limit')) {
+                    console.warn('[Resume] AI Rate limited, falling back to local analysis');
+                    statusText.textContent = 'AI busy. Using local analysis engine...';
+
+                    // Force a delay to make it feel intentional
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    const extractedText = await extractTextFromPDF(file);
+                    const localResult = calculateATSScore(extractedText || "", targetRole);
+
+                    // Adapt local result to the same schema
+                    const result = {
+                        skills: {
+                            present: localResult.matchedKeywords.slice(0, 10),
+                            partial: [],
+                            missing: [] // We don't have enough data locally for a full gaps list
+                        },
+                        experience: [],
+                        projects: [],
+                        score: localResult.overall,
+                        coverage: localResult.keyword,
+                        readiness: localResult.overall,
+                        atsScore: localResult,
+                        _aiGenerated: false,
+                        _fallback: true
+                    };
+
+                    progressBar.style.width = '100%';
+                    setTimeout(() => showResults(result), 500);
+                    return;
+                }
+
+                // If not handled by fallback, show error to user
                 alert('Analysis Error: ' + error.message);
                 // Reset UI for retry
                 document.getElementById('upload-section').classList.remove('hidden');
