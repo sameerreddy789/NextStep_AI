@@ -672,7 +672,11 @@
             if (user) {
                 await ProfileService.saveProfile(user.uid, data);
             } else {
-                localStorage.setItem('nextStep_user', JSON.stringify(data));
+                // Sync all keys for guest
+                const current = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+                const merged = { ...current, ...data };
+                localStorage.setItem('nextStep_user', JSON.stringify(merged));
+                localStorage.setItem('nextStep_profile', JSON.stringify(merged));
             }
 
             // Update UI
@@ -684,20 +688,43 @@
 
             window.toggleEdit('personal');
             showNotification('Personal information saved!');
+
+            // Refresh sidebar immediately
+            if (window.SidebarComponent) window.SidebarComponent.generate();
         }
 
         window.saveCareer = async function () {
             const user = auth.currentUser;
+            const newRole = document.getElementById('edit-role').value;
             const data = {
-                targetRole: document.getElementById('edit-role').value,
+                targetRole: newRole,
                 status: document.getElementById('edit-status').value,
                 industry: document.getElementById('edit-industry').value
             };
 
+            // Detect role change to clear relevant caches
+            const oldData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const isRoleChanged = oldData.targetRole !== newRole;
+
             if (user) {
                 await ProfileService.saveProfile(user.uid, data);
             } else {
-                localStorage.setItem('nextStep_user', JSON.stringify(data));
+                const merged = { ...oldData, ...data };
+                localStorage.setItem('nextStep_user', JSON.stringify(merged));
+                localStorage.setItem('nextStep_profile', JSON.stringify(merged));
+            }
+
+            // If role changed, invalidate roadmap and market discovery caches
+            if (isRoleChanged) {
+                console.log('[Profile] Role changed. Invalidating roadmap and search caches...');
+                localStorage.removeItem('nextStep_roadmap');
+                // Remove all serp_cache keys
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('serp_cache_')) localStorage.removeItem(key);
+                });
+                showNotification('Role changed! Your roadmap and skill gap analysis will be refreshed.');
+            } else {
+                showNotification('Career information saved!');
             }
 
             const roleNames = {
@@ -715,7 +742,9 @@
             document.getElementById('profile-role').textContent = roleNames[data.targetRole] || data.targetRole;
 
             window.toggleEdit('career');
-            showNotification('Career information saved!');
+
+            // Refresh sidebar immediately
+            if (window.SidebarComponent) window.SidebarComponent.generate();
         }
 
         function showNotification(message) {

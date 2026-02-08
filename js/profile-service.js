@@ -16,8 +16,9 @@ const ProfileService = {
             const profileDoc = await getDoc(doc(db, "users", uid, "profile", "data"));
             if (profileDoc.exists()) {
                 const data = profileDoc.data();
-                // Sync to localStorage as well
+                // Sync to localStorage keys used across the app
                 localStorage.setItem('nextStep_profile', JSON.stringify(data));
+                localStorage.setItem('nextStep_user', JSON.stringify(data));
                 return data;
             }
             return null;
@@ -35,17 +36,22 @@ const ProfileService = {
     async saveProfile(uid, profileData) {
         if (!uid) return;
         try {
+            // Get current local data to merge
+            const currentProfile = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+            const mergedData = { ...currentProfile, ...profileData };
+
             const dataToSave = {
-                ...profileData,
+                ...mergedData,
                 updatedAt: serverTimestamp()
             };
 
             await setDoc(doc(db, "users", uid, "profile", "data"), dataToSave, { merge: true });
 
-            // Also update local storage for immediate access
-            localStorage.setItem('nextStep_profile', JSON.stringify(profileData));
+            // Also update local storage for immediate access across all keys
+            localStorage.setItem('nextStep_profile', JSON.stringify(mergedData));
+            localStorage.setItem('nextStep_user', JSON.stringify(mergedData));
 
-            console.log('[ProfileService] Profile saved to Firestore successfully');
+            console.log('[ProfileService] Profile saved and synced locally');
             return true;
         } catch (error) {
             console.error('[ProfileService] Error saving profile:', error);
