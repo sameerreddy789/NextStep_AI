@@ -2,24 +2,12 @@
  * Interview Engine - Manages the state and logic for AI Interviews
  */
 
-const QUESTIONS = {
-    mixed: [
-        { type: 'code', category: 'Data Structures', text: 'Implement a function to check if a string is a palindrome.' },
-        { type: 'text', category: 'Behavioral', text: 'Tell me about a time you had a conflict with a team member. How did you resolve it?' },
-        { type: 'code', category: 'Algorithms', text: 'Write a function to find the first non-repeating character in a string.' },
-        { type: 'text', category: 'System Design', text: 'How would you design a URL shortening service like bit.ly? Explain the key components.' },
-        { type: 'code', category: 'JavaScript', text: 'Write a function that flattens a nested array of any depth.' },
-        { type: 'text', category: 'Leadership', text: 'Describe a situation where you had to lead a project under tight deadlines.' },
-        { type: 'code', category: 'Problem Solving', text: 'Given an array of integers, find two numbers that add up to a specific target.' },
-        { type: 'text', category: 'Databases', text: 'Explain the difference between SQL and NoSQL databases. When would you choose one over the other?' }
-    ]
-};
+
 
 const BOILERPLATES = {
-    javascript: "// Write your solution here\nfunction solution() {\n    \n}",
-    python: "# Write your solution here\ndef solution():\n    pass",
-    java: "// Write your solution here\nclass Solution {\n    public void solve() {\n        \n    }\n}",
-    cpp: "// Write your solution here\n#include <iostream>\n\nvoid solution() {\n    \n}"
+    c: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello World");\n    return 0;\n}`,
+    java: `public class Solution {\n    public static void main(String[] args) {\n        // Write your solution here\n        System.out.println("Hello World");\n    }\n}`,
+    python: `def solution():\n    # Write your solution here\n    print("Hello World")`
 };
 
 let currentMode = 'mixed';
@@ -161,27 +149,9 @@ function updateTimerDisplay() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const timerDisplay = document.getElementById('timer');
-    const progressCircle = document.querySelector('.timer-progress');
 
     if (timerDisplay) {
         timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-        // Update circular progress
-        if (progressCircle) {
-            const circumference = 2 * Math.PI * 45; // r=45
-            const offset = circumference - (timeLeft / initialTime) * circumference;
-            progressCircle.style.strokeDashoffset = offset;
-
-            // Dynamic color
-            const percent = (timeLeft / initialTime) * 100;
-            if (percent < 20) {
-                progressCircle.style.stroke = '#ef4444'; // Red
-            } else if (percent < 50) {
-                progressCircle.style.stroke = 'var(--accent-gold)'; // Yellow/Gold
-            } else {
-                progressCircle.style.stroke = 'var(--accent-primary)'; // Blue
-            }
-        }
 
         if (timeLeft <= 30) {
             timerDisplay.style.color = '#ef4444';
@@ -204,7 +174,7 @@ window.startInterview = async function (mode) {
     document.getElementById('interview-mode-badge').textContent = 'Adaptive Interview';
 
     // Show video slot
-    const videoSlot = document.querySelector('.floating-cam');
+    const videoSlot = document.getElementById('video-slot');
     if (videoSlot) videoSlot.classList.remove('hidden');
 
     const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
@@ -268,6 +238,63 @@ window.toggleSpeech = function () {
     }
 };
 
+const QUESTIONS = {
+    mixed: [
+        {
+            type: 'code',
+            category: 'Data Structures',
+            text: 'Palindrome Check',
+            description: 'Implement a function to check if a string is a palindrome. A palindrome is a word, phrase, number, or other sequence of characters that reads the same forward and backward. Ignore capitalization and punctuation.',
+            examples: [
+                { input: '"racecar"', output: 'true', explanation: 'Reads "racecar" backwards.' },
+                { input: '"A man, a plan, a canal: Panama"', output: 'true', explanation: 'After cleaning: "amanaplanacanalpanama"' },
+                { input: '"hello"', output: 'false', explanation: 'Backwards is "olleh".' }
+            ]
+        },
+        {
+            type: 'text',
+            category: 'Behavioral',
+            text: 'Conflict Resolution',
+            description: 'Tell me about a time you had a conflict with a team member. How did you resolve it? Focus on your specific actions and the outcome.',
+            examples: []
+        },
+        {
+            type: 'code',
+            category: 'Algorithms',
+            text: 'First Unique Character',
+            description: 'Given a string efficiently find the first non-repeating character in it and return its index. If it does not exist, return -1.',
+            examples: [
+                { input: '"leetcode"', output: '0', explanation: '"l" is the first unique char.' },
+                { input: '"loveleetcode"', output: '2', explanation: '"v" is the first unique char.' },
+                { input: '"aabb"', output: '-1', explanation: 'No unique characters.' }
+            ]
+        },
+        { type: 'text', category: 'System Design', text: 'URL Shortener Design', description: 'How would you design a URL shortening service like bit.ly? Explain the key components, data model, and API endpoints.', examples: [] },
+        {
+            type: 'code',
+            category: 'JavaScript',
+            text: 'Flatten Array',
+            description: 'Write a function that flattens a nested array of any depth. Do not use Array.prototype.flat().',
+            examples: [
+                { input: '[1, [2, [3, 4], 5], 6]', output: '[1, 2, 3, 4, 5, 6]', explanation: 'Flattens all nested levels.' },
+                { input: '[[1], [2], [3]]', output: '[1, 2, 3]', explanation: 'Flattens one level.' }
+            ]
+        },
+        { type: 'text', category: 'Leadership', text: 'Leading Under Pressure', description: 'Describe a situation where you had to lead a project under tight deadlines. What strategies did you use?', examples: [] },
+        {
+            type: 'code',
+            category: 'Problem Solving',
+            text: 'Two Sum',
+            description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`. You may assume that each input would have exactly one solution, and you may not use the same element twice.',
+            examples: [
+                { input: 'nums = [2,7,11,15], target = 9', output: '[0, 1]', explanation: '2 + 7 = 9' },
+                { input: 'nums = [3,2,4], target = 6', output: '[1, 2]', explanation: '2 + 4 = 6' }
+            ]
+        },
+        { type: 'text', category: 'Databases', text: 'SQL vs NoSQL', description: 'Explain the difference between SQL and NoSQL databases. When would you choose one over the other? Provide specific use cases.', examples: [] }
+    ]
+};
+
 window.getQuestions = function () { return AI_QUESTIONS || QUESTIONS[currentMode]; };
 
 window.jumpToQuestion = function (index) { currentQuestionIndex = index; showQuestion(); };
@@ -282,10 +309,38 @@ window.showQuestion = function () {
     });
 
     document.getElementById('question-category').textContent = q.category;
-    document.getElementById('question-text').textContent = q.text;
+
+    // Build Rich Question Content
+    let contentHtml = `<h2 class="question-title">${q.text}</h2>`;
+    if (q.description) {
+        contentHtml += `<div class="question-description">${q.description}</div>`;
+    }
+
+    if (q.examples && q.examples.length > 0) {
+        contentHtml += `<div class="examples-section"><h3>Examples:</h3>`;
+        q.examples.forEach((ex, idx) => {
+            contentHtml += `
+                <div class="example-block">
+                    <h4>Example ${idx + 1}:</h4>
+                    <div class="code-block"><strong>Input:</strong> ${ex.input}</div>
+                    <div class="code-block"><strong>Output:</strong> ${ex.output}</div>
+                    ${ex.explanation ? `<div class="explanation"><strong>Explanation:</strong> ${ex.explanation}</div>` : ''}
+                </div>`;
+        });
+        contentHtml += `</div>`;
+    }
+
+    // Inject content into question-text element (which we will likely rename/refactor in HTML to be a container)
+    // Ideally, we should target a container, but 'question-text' is a convenient existing ID.
+    // Ensure CSS handles div children correctly.
+    document.getElementById('question-text').innerHTML = contentHtml;
 
     const pulse = document.querySelector('.ai-pulse');
-    window.interviewMedia.speak(q.text, () => pulse.classList.add('speaking'), () => pulse.classList.remove('speaking'));
+    // Speak only the text description for brevity
+    window.interviewMedia.speak(q.description || q.text,
+        () => pulse && pulse.classList.add('speaking'),
+        () => pulse && pulse.classList.remove('speaking')
+    );
 
     const textContainer = document.getElementById('text-input-container');
     const codeContainer = document.getElementById('code-input-container');
@@ -296,23 +351,19 @@ window.showQuestion = function () {
         textContainer.classList.add('hidden');
         codeContainer.classList.remove('hidden');
         micBtn.classList.add('hidden');
-        document.getElementById('language-select').classList.remove('hidden');
         document.getElementById('answer-label').textContent = 'Your Solution';
         aiInterviewer.classList.add('hidden');
 
         if (window.EditorManager) {
-            const topLangSelect = document.getElementById('language-select');
             const editorLangSelect = document.getElementById('editor-lang-select');
             setTimeout(() => {
                 window.EditorManager.init('monaco-editor-host');
-                let lang = 'javascript';
+                let lang = 'c';
                 const cat = q.category.toLowerCase();
                 if (cat.includes('python')) lang = 'python';
                 else if (cat.includes('java')) lang = 'java';
-                else if (cat.includes('c++')) lang = 'cpp';
 
                 window.EditorManager.setLanguage(lang);
-                if (topLangSelect) topLangSelect.value = lang;
                 if (editorLangSelect) editorLangSelect.value = lang;
 
                 const checkAndSet = () => {
@@ -330,10 +381,21 @@ window.showQuestion = function () {
         textContainer.classList.remove('hidden');
         codeContainer.classList.add('hidden');
         micBtn.classList.remove('hidden');
-        document.getElementById('language-select').classList.add('hidden');
         document.getElementById('answer-label').textContent = 'Your Answer';
         aiInterviewer.classList.remove('hidden');
-        document.getElementById('answer-input').value = '';
+
+        // Auto-resize logic for text input
+        const answerInput = document.getElementById('answer-input');
+        answerInput.value = '';
+        answerInput.style.height = 'auto'; // Reset height
+
+        const autoResize = () => {
+            answerInput.style.height = 'auto';
+            answerInput.style.height = (answerInput.scrollHeight + 10) + 'px';
+        };
+        answerInput.removeEventListener('input', autoResize); // Prevent duplicates
+        answerInput.addEventListener('input', autoResize);
+
         const transcriptPreview = document.getElementById('transcript-preview');
         if (transcriptPreview) transcriptPreview.textContent = '';
     }
@@ -404,6 +466,6 @@ window.completeInterview = function () {
     document.getElementById('complete-section').classList.remove('hidden');
 
     // Hide video slot
-    const videoSlot = document.querySelector('.floating-cam');
+    const videoSlot = document.getElementById('video-slot');
     if (videoSlot) videoSlot.classList.add('hidden');
 };

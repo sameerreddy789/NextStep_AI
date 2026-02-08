@@ -6,11 +6,11 @@
 // Editor State
 const EditorState = {
     editor: null,
-    currentLanguage: 'javascript',
+    currentLanguage: 'c',
     languages: {
-        'javascript': { id: 'javascript', label: 'JavaScript', defaultCode: '// Write your JavaScript code here\nconsole.log("Hello World!");\n' },
-        'python': { id: 'python', label: 'Python', defaultCode: '# Write your Python code here\nprint("Hello World!")\n' },
-        'java': { id: 'java', label: 'Java', defaultCode: '// Write your Java code here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}\n' }
+        'c': { id: 'c', label: 'C', defaultCode: '#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello World");\n    return 0;\n}' },
+        'python': { id: 'python', label: 'Python', defaultCode: '# Write your solution here\ndef solution():\n    print("Hello World!")\n' },
+        'java': { id: 'java', label: 'Java', defaultCode: '// Write your solution here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}' }
     }
 };
 
@@ -42,8 +42,8 @@ function createEditor(containerId) {
 
     // Create Editor
     EditorState.editor = monaco.editor.create(container, {
-        value: getSavedCode() || EditorState.languages.javascript.defaultCode,
-        language: 'javascript',
+        value: getSavedCode() || EditorState.languages.c.defaultCode,
+        language: 'c',
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: false },
@@ -125,26 +125,8 @@ async function runCode() {
     let output = '';
 
     try {
-        if (EditorState.currentLanguage === 'javascript') {
-            // Unsafe eval for demo purposes ONLY
-            // In production, send to backend sandbox
-            let logs = [];
-            const originalLog = console.log;
-            console.log = (...args) => logs.push(args.join(' '));
-
-            try {
-                // Wrap in closure
-                new Function(code)();
-                output = logs.join('\n');
-                if (!output) output = '<span style="color: #9ca3af">// Code ran successfully (no output)</span>';
-            } catch (e) {
-                output = `<span style="color: #ef4444">Error: ${e.message}</span>`;
-            } finally {
-                console.log = originalLog;
-            }
-        } else {
-            output = `<span style="color: #fbbf24"> Note: ${EditorState.languages[EditorState.currentLanguage].label} execution is mocked.</span>\n\n> Hello World!`;
-        }
+        // C/Java/Python execution is mocked in the local version
+        output = `<span style="color: #fbbf24"> Note: ${EditorState.languages[EditorState.currentLanguage].label} execution is mocked.</span>\n\n> Hello World! (Execution for ${EditorState.languages[EditorState.currentLanguage].label})`;
     } catch (e) {
         output = `<span style="color: #ef4444">Error: ${e.message}</span>`;
     }
