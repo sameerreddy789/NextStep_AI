@@ -30,107 +30,301 @@
 
             <!-- Target Role Card -->
             <div class="card mb-lg"
-                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));">
-                <div
-                    style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-                    <div>
-                        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">Target Role</div>
-                        <div style="font-size: 24px; font-weight: 700;" id="target-role-display">Analyzing...</div>
-                    </div>
+                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.2);">
+                <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">Your Career Goal</div>
+                <div class="role-input-container">
+                    <input type="text" id="role-input" class="role-input"
+                        placeholder="Enter target role (e.g. Data Analyst)...">
+                    <button id="update-role-btn" class="refresh-btn">Update Analysis</button>
                 </div>
             </div>
 
             <!-- Loading Overlay -->
-            <div id="loading-overlay" style="text-align: center; padding: 40px;">
+            <div id="loading-overlay" class="hidden" style="text-align: center; padding: 60px;">
                 <div class="loader-spinner"
-                    style="width: 40px; height: 40px; border: 3px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
+                    style="width: 48px; height: 48px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 24px;">
                 </div>
-                <p style="color: var(--accent-primary); font-weight: 600;">Analyzing market trends for your role...</p>
-                <p class="text-muted" style="font-size: 14px;">Comparing your resume with industry standard requirements
-                </p>
+                <p style="font-size: 18px; color: var(--text-primary); font-weight: 700; margin-bottom: 8px;">Analyzing
+                    Market Trends...</p>
+                <p class="text-muted" style="font-size: 14px;">Our AI is scanning live industry requirements for your
+                    role</p>
             </div>
 
-            <!-- Skill Categories (Hidden initially) -->
-            <div id="skills-results" class="skills-grid hidden" style="grid-template-columns: 1fr;">
+            <!-- Skill Categories -->
+            <div id="skills-results" class="skills-grid" style="grid-template-columns: 1fr;">
+
                 <!-- Must-Have Skills -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">🔴 Must-Have Skills</h2>
-                        <span class="badge badge-red">High Priority</span>
+                <div class="card skill-section" id="section-must-have">
+                    <div class="collapsible-trigger" onclick="toggleSection('section-must-have')">
+                        <div class="trigger-left">
+                            <h2 class="card-title" style="margin:0">🔴 Must-Have Skills</h2>
+                            <span class="badge badge-red">High Priority</span>
+                        </div>
+                        <div class="collapse-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
                     </div>
-                    <div id="must-have-skills" class="skill-gap-list"></div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div id="must-have-skills" class="skill-gap-list"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Good-to-Have Skills -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">🟡 Good-to-Have Skills</h2>
-                        <span class="badge badge-gold">Medium Priority</span>
+                <div class="card skill-section" id="section-good-to-have">
+                    <div class="collapsible-trigger" onclick="toggleSection('section-good-to-have')">
+                        <div class="trigger-left">
+                            <h2 class="card-title" style="margin:0">🟡 Good-to-Have Skills</h2>
+                            <span class="badge badge-gold">Medium Priority</span>
+                        </div>
+                        <div class="collapse-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
                     </div>
-                    <div id="good-to-have-skills" class="skill-gap-list"></div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div id="good-to-have-skills" class="skill-gap-list"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Future-Proof Skills -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">🟢 Future-Proof Skills</h2>
-                        <span class="badge badge-green">Growing Demand</span>
+                <div class="card skill-section" id="section-future-proof">
+                    <div class="collapsible-trigger" onclick="toggleSection('section-future-proof')">
+                        <div class="trigger-left">
+                            <h2 class="card-title" style="margin:0">🟢 Future-Proof Skills</h2>
+                            <span class="badge badge-green">Growing Demand</span>
+                        </div>
+                        <div class="collapse-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
                     </div>
-                    <div id="future-proof-skills" class="skill-gap-list"></div>
+                    <div class="collapsible-content">
+                        <div class="collapsible-inner">
+                            <div id="future-proof-skills" class="skill-gap-list"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <style>
+        .role-input-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            background: rgba(15, 20, 25, 0.4);
+            padding: 10px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .role-input-container:focus-within {
+            border-color: var(--accent-primary);
+            background: rgba(15, 20, 25, 0.6);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .role-input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            outline: none;
+            width: 100%;
+            letter-spacing: -0.01em;
+        }
+
+        .role-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .refresh-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        .skill-section {
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .skill-section:hover {
+            border-color: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .skill-section.open {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .collapsible-trigger {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 24px 28px;
+            user-select: none;
+            background: transparent;
+            transition: background 0.3s ease;
+        }
+
+        .collapsible-trigger:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .trigger-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .trigger-left h2 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .collapse-icon-wrapper {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .skill-section.open .collapse-icon-wrapper {
+            background: rgba(59, 130, 246, 0.1);
+            transform: rotate(180deg);
+        }
+
+        .collapse-icon-wrapper svg {
+            width: 12px;
+            height: 12px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            color: var(--text-muted);
+        }
+
+        .skill-section.open .collapse-icon-wrapper svg {
+            color: var(--accent-primary);
+        }
+
+        .collapsible-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .skill-section.open .collapsible-content {
+            grid-template-rows: 1fr;
+        }
+
+        .collapsible-inner {
+            min-height: 0;
+            padding: 0 28px 28px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .skill-section.open .collapsible-inner {
+            opacity: 1;
+            transform: translateY(0);
+            transition-delay: 0.1s;
+        }
+
         .skill-gap-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 16px;
+            gap: 14px;
         }
 
         .skill-gap-item {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            transition: all 0.2s ease;
+            gap: 18px;
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .skill-gap-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            transform: translateX(4px);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateX(6px);
         }
 
         .skill-gap-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 20px;
             flex-shrink: 0;
             font-weight: 800;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
         }
 
         .skill-gap-icon.present {
-            background: rgba(16, 185, 129, 0.15);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
             color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
         }
 
         .skill-gap-icon.partial {
-            background: rgba(245, 158, 11, 0.15);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
             color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
         }
 
         .skill-gap-icon.missing {
-            background: rgba(239, 68, 68, 0.15);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.05));
             color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
         }
 
         .skill-gap-content {
@@ -138,28 +332,42 @@
         }
 
         .skill-gap-name {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 2px;
+            margin-bottom: 4px;
+            color: white;
         }
 
         .skill-gap-desc {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.4;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 500px;
         }
 
         .skill-gap-status {
             text-align: right;
             flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
         }
 
         .skill-gap-priority {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         .hidden {
@@ -176,57 +384,114 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}') || {};
-            const resumeDataRaw = localStorage.getItem('nextStep_resume');
-            const resumeData = (resumeDataRaw && resumeDataRaw !== 'undefined' && resumeDataRaw !== 'null') ? JSON.parse(resumeDataRaw) : { skills: [] };
+            const initialRole = userData.targetRole || 'Software Developer';
+            const roleInput = document.getElementById('role-input');
+            const updateBtn = document.getElementById('update-role-btn');
 
-            const userSkills = Array.isArray(resumeData?.skills) ? resumeData.skills : [];
-            const role = userData.targetRole || 'Software Developer';
-            document.getElementById('target-role-display').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+            roleInput.value = initialRole;
+
+            // Initial Analysis
+            performAnalysis(initialRole);
+
+            // Manual Refresh
+            updateBtn.addEventListener('click', () => {
+                const newRole = roleInput.value.trim();
+                if (newRole) performAnalysis(newRole);
+            });
+
+            // Enter Key Support
+            roleInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const newRole = roleInput.value.trim();
+                    if (newRole) performAnalysis(newRole);
+                }
+            });
+        });
+
+        async function performAnalysis(role) {
+            const loading = document.getElementById('loading-overlay');
+            const results = document.getElementById('skills-results');
+
+            // Show Loading with backdrop effect
+            loading.classList.remove('hidden');
+            results.style.opacity = '0.3';
+            results.style.pointerEvents = 'none';
+
+            // Reset all sections to closed for fresh start
+            document.querySelectorAll('.skill-section').forEach(s => s.classList.remove('open'));
 
             try {
+                const resumeDataRaw = localStorage.getItem('nextStep_resume');
+                const resumeData = (resumeDataRaw && resumeDataRaw !== 'undefined' && resumeDataRaw !== 'null') ? JSON.parse(resumeDataRaw) : { skills: [] };
+                const userSkills = Array.isArray(resumeData?.skills) ? resumeData.skills : [];
+
                 // 1. Fetch real market context via SERP
                 const marketData = await window.SerpService.fetchRoleContext(role);
 
                 // 2. Analyze gaps via Gemini
-                const analysis = await window.GeminiService.analyzeMarketSkills(
-                    role,
-                    marketData,
-                    userSkills
-                );
+                const analysis = await window.GeminiService.analyzeMarketSkills(role, marketData, userSkills);
 
                 // 3. Render results
                 renderSkillList('must-have-skills', analysis.mustHave);
                 renderSkillList('good-to-have-skills', analysis.goodToHave);
                 renderSkillList('future-proof-skills', analysis.futureProof);
 
-                // 4. Show results
-                document.getElementById('loading-overlay').classList.add('hidden');
-                document.getElementById('skills-results').classList.remove('hidden');
+                // 4. Update UI
+                loading.classList.add('hidden');
+                results.style.opacity = '1';
+                results.style.pointerEvents = 'auto';
+
+                // Update localStorage preference
+                const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+                userData.targetRole = role;
+                localStorage.setItem('nextStep_user', JSON.stringify(userData));
 
             } catch (error) {
                 console.error('Skill Gap Analysis Failed:', error);
-                document.getElementById('loading-overlay').innerHTML = `
-                    <div style="color: #ef4444; padding: 20px;">
-                        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
-                        <h3 style="margin-bottom: 8px;">Analysis Failed</h3>
-                        <p style="font-size:14px; opacity:0.8;">${error.message}</p>
-                        <button onclick="location.reload()" class="btn btn-secondary btn-sm" style="margin-top:20px;">Try Again</button>
+                loading.classList.remove('hidden');
+                loading.innerHTML = `
+                    <div style="color: #ef4444; padding: 40px; text-align:center;">
+                        <h3 style="margin-bottom: 12px; font-size: 20px;">Analysis Interrupted</h3>
+                        <p style="font-size:14px; opacity:0.8; margin-bottom: 24px;">${error.message}</p>
+                        <button onclick="location.reload()" class="btn btn-secondary">Retry Analysis</button>
                     </div>
                 `;
             }
-        });
+        }
+
+        window.toggleSection = function (sectionId) {
+            const section = document.getElementById(sectionId);
+            const isOpen = section.classList.contains('open');
+
+            // Focus mode: Close other sections
+            document.querySelectorAll('.skill-section').forEach(s => {
+                if (s.id !== sectionId) s.classList.remove('open');
+            });
+
+            section.classList.toggle('open');
+        };
 
         function renderSkillList(containerId, skills) {
             const container = document.getElementById(containerId);
             if (!skills || skills.length === 0) {
-                container.innerHTML = '<p class="text-muted" style="padding: 20px; text-align: center;">No specific skills identified in this category.</p>';
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; background: rgba(255,255,255,0.01); border: 2px dashed rgba(255,255,255,0.05); border-radius: 16px;">
+                        <p class="text-muted" style="font-size: 14px;">No specific skills identified for this category yet.</p>
+                    </div>
+                `;
                 return;
             }
 
             container.innerHTML = skills.map(skill => {
                 const statusIcon = skill.status === 'present' ? '✓' : skill.status === 'partial' ? '◐' : '✗';
-                const statusLabel = skill.status === 'present' ? 'Demonstrated' : skill.status === 'partial' ? 'Partial' : 'Missing';
-                const badgeClass = skill.status === 'present' ? 'badge-primary' : skill.status === 'partial' ? 'badge-gold' : 'badge-red';
+                const statusLabel = skill.status === 'present' ? 'Demonstrated' : skill.status === 'partial' ? 'Partial Match' : 'Gap Identified';
+
+                const statusColors = {
+                    present: { bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981' },
+                    partial: { bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b' },
+                    missing: { bg: 'rgba(239, 68, 68, 0.1)', text: '#ef4444' }
+                };
+                const colors = statusColors[skill.status] || statusColors.missing;
 
                 return `
                     <div class="skill-gap-item">
@@ -236,7 +501,7 @@
                             <div class="skill-gap-desc">${skill.desc}</div>
                         </div>
                         <div class="skill-gap-status">
-                            <span class="badge ${badgeClass}">${statusLabel}</span>
+                            <span class="badge-status" style="background: ${colors.bg}; color: ${colors.text}">${statusLabel}</span>
                             <div class="skill-gap-priority">${skill.priority}</div>
                         </div>
                     </div>

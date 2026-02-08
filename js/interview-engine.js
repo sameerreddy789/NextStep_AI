@@ -22,6 +22,7 @@ let timeLeft = 2700; // 45 minutes global
 let initialTime = 2700;
 let autoSaveInterval = null;
 let AI_QUESTIONS = null;
+let isSpeakerEnabled = localStorage.getItem('nextStep_speaker_enabled') !== 'false'; // Default to true
 
 // Initialize on DOM Load
 document.addEventListener('DOMContentLoaded', () => {
@@ -99,6 +100,53 @@ window.showAlert = function (message, icon = '⚠️', title = 'Alert') {
         confirmBtn.addEventListener('click', handleConfirm);
     });
 };
+
+// Speaker Toggle Logic
+window.toggleSpeaker = function () {
+    isSpeakerEnabled = !isSpeakerEnabled;
+    localStorage.setItem('nextStep_speaker_enabled', isSpeakerEnabled);
+    updateSpeakerUI();
+
+    if (!isSpeakerEnabled) {
+        if (window.interviewMedia) window.interviewMedia.cancelSpeech();
+    } else {
+        // If turned ON, read the current question description
+        const questions = getQuestions();
+        const q = questions[currentQuestionIndex];
+        if (q && window.interviewMedia) {
+            const pulse = document.querySelector('.ai-pulse');
+            const btn = document.getElementById('speaker-toggle-btn');
+            window.interviewMedia.speak(q.description || q.text,
+                () => {
+                    if (pulse) pulse.classList.add('speaking');
+                    if (btn) btn.classList.add('speaking');
+                },
+                () => {
+                    if (pulse) pulse.classList.remove('speaking');
+                    if (btn) btn.classList.remove('speaking');
+                }
+            );
+        }
+    }
+};
+
+function updateSpeakerUI() {
+    const btn = document.getElementById('speaker-toggle-btn');
+    const icon = document.getElementById('speaker-icon');
+    if (btn && icon) {
+        if (isSpeakerEnabled) {
+            btn.classList.add('on');
+            btn.classList.remove('off');
+            icon.textContent = '🔊';
+            btn.title = 'Mute AI Voice';
+        } else {
+            btn.classList.add('off');
+            btn.classList.remove('on');
+            icon.textContent = '🔇';
+            btn.title = 'Unmute AI Voice';
+        }
+    }
+}
 
 window.showConfirm = function (message, icon = '❓', title = 'Confirm') {
     return new Promise((resolve) => {
@@ -224,6 +272,8 @@ async function startInterview(mode) {
             }
         }
     });
+
+    updateSpeakerUI();
 };
 
 function toggleSpeech() {
@@ -299,6 +349,13 @@ const QUESTIONS = {
                 { input: '"racecar"', output: 'true', explanation: 'Reads "racecar" backwards.' },
                 { input: '"A man, a plan, a canal: Panama"', output: 'true', explanation: 'After cleaning: "amanaplanacanalpanama"' },
                 { input: '"hello"', output: 'false', explanation: 'Backwards is "olleh".' }
+            ],
+            testCases: [
+                { input: '"racecar"', expected: 'true', isHidden: false, label: 'Standard Palindrome' },
+                { input: '"A man, a plan, a canal: Panama"', expected: 'true', isHidden: false, label: 'Palindrome with Punctuation' },
+                { input: '"hello"', expected: 'false', isHidden: false, label: 'Non-palindrome' },
+                { input: '"RaceCar"', expected: 'true', isHidden: true, label: 'Mixed Case' },
+                { input: '"12321"', expected: 'true', isHidden: true, label: 'Numeric Palindrome' }
             ]
         },
         {
@@ -317,6 +374,13 @@ const QUESTIONS = {
                 { input: '"leetcode"', output: '0', explanation: '"l" is the first unique char.' },
                 { input: '"loveleetcode"', output: '2', explanation: '"v" is the first unique char.' },
                 { input: '"aabb"', output: '-1', explanation: 'No unique characters.' }
+            ],
+            testCases: [
+                { input: '"leetcode"', expected: '0', isHidden: false, label: 'Basic Case' },
+                { input: '"loveleetcode"', expected: '2', isHidden: false, label: 'Middle Match' },
+                { input: '"aabb"', expected: '-1', isHidden: false, label: 'No Unique' },
+                { input: '"abcabc"', expected: '-1', isHidden: true, label: 'All Repeaters' },
+                { input: '"z"', expected: '0', isHidden: true, label: 'Single Character' }
             ]
         },
         { type: 'text', category: 'System Design', text: 'URL Shortener Design', description: 'How would you design a URL shortening service like bit.ly? Explain the key components, data model, and API endpoints.', examples: [] },
@@ -328,6 +392,12 @@ const QUESTIONS = {
             examples: [
                 { input: '[1, [2, [3, 4], 5], 6]', output: '[1, 2, 3, 4, 5, 6]', explanation: 'Flattens all nested levels.' },
                 { input: '[[1], [2], [3]]', output: '[1, 2, 3]', explanation: 'Flattens one level.' }
+            ],
+            testCases: [
+                { input: '[1, [2, [3, 4], 5], 6]', expected: '[1, 2, 3, 4, 5, 6]', isHidden: false, label: 'Mixed Depths' },
+                { input: '[[1], [2], [3]]', expected: '[1, 2, 3]', isHidden: false, label: 'Shallow Nesting' },
+                { input: '[]', expected: '[]', isHidden: true, label: 'Empty Array' },
+                { input: '[1, [2, [3, [4, [5]]]]]', expected: '[1, 2, 3, 4, 5]', isHidden: true, label: 'Deep Nesting' }
             ]
         },
         { type: 'text', category: 'Leadership', text: 'Leading Under Pressure', description: 'Describe a situation where you had to lead a project under tight deadlines. What strategies did you use?', examples: [] },
@@ -339,6 +409,12 @@ const QUESTIONS = {
             examples: [
                 { input: 'nums = [2,7,11,15], target = 9', output: '[0, 1]', explanation: '2 + 7 = 9' },
                 { input: 'nums = [3,2,4], target = 6', output: '[1, 2]', explanation: '2 + 4 = 6' }
+            ],
+            testCases: [
+                { input: 'nums = [2,7,11,15], target = 9', expected: '[0, 1]', isHidden: false, label: 'Basic Case' },
+                { input: 'nums = [3,2,4], target = 6', expected: '[1, 2]', isHidden: false, label: 'Non-Adjacent' },
+                { input: 'nums = [3,3], target = 6', expected: '[0, 1]', isHidden: true, label: 'Duplicate Values' },
+                { input: 'nums = [-1, -8, 10], target = 2', expected: '[1, 2]', isHidden: true, label: 'Negative Values' }
             ]
         },
         { type: 'text', category: 'Databases', text: 'SQL vs NoSQL', description: 'Explain the difference between SQL and NoSQL databases. When would you choose one over the other? Provide specific use cases.', examples: [] }
@@ -391,11 +467,21 @@ function showQuestion() {
     document.getElementById('question-text').innerHTML = contentHtml;
 
     const pulse = document.querySelector('.ai-pulse');
-    // Speak only the text description for brevity
-    window.interviewMedia.speak(q.description || q.text,
-        () => pulse && pulse.classList.add('speaking'),
-        () => pulse && pulse.classList.remove('speaking')
-    );
+    const speakerBtn = document.getElementById('speaker-toggle-btn');
+
+    // Speak only if enabled
+    if (isSpeakerEnabled && window.interviewMedia) {
+        window.interviewMedia.speak(q.description || q.text,
+            () => {
+                if (pulse) pulse.classList.add('speaking');
+                if (speakerBtn) speakerBtn.classList.add('speaking');
+            },
+            () => {
+                if (pulse) pulse.classList.remove('speaking');
+                if (speakerBtn) speakerBtn.classList.remove('speaking');
+            }
+        );
+    }
 
     const textContainer = document.getElementById('text-input-container');
     const codeContainer = document.getElementById('code-input-container');
@@ -407,7 +493,8 @@ function showQuestion() {
         codeContainer.classList.remove('hidden');
         micBtn.classList.add('hidden');
         document.getElementById('answer-label').textContent = 'Your Solution';
-        aiInterviewer.classList.add('hidden');
+
+        renderTestCases(q);
 
         if (window.EditorManager) {
             const editorLangSelect = document.getElementById('editor-lang-select');
@@ -440,7 +527,6 @@ function showQuestion() {
         codeContainer.classList.add('hidden');
         micBtn.classList.remove('hidden');
         document.getElementById('answer-label').textContent = 'Your Answer';
-        aiInterviewer.classList.remove('hidden');
 
         // Auto-resize logic for text input
         const answerInput = document.getElementById('answer-input');
@@ -475,7 +561,7 @@ function showQuestion() {
     }
 }
 
-async function submitAnswer() {
+async function submitAnswer(skipEvaluation = false) {
     const questions = getQuestions();
     const q = questions[currentQuestionIndex];
     let answer = q.type === 'code' ? (window.EditorManager ? window.EditorManager.getValue() : '') : document.getElementById('answer-input').value.trim();
@@ -485,7 +571,13 @@ async function submitAnswer() {
         if (!confirmSkip) return;
     }
 
-    const submitBtn = document.querySelector('.interview-actions .btn-primary');
+    // For coding questions, we run evaluation first unless skipEvaluation is true
+    if (q.type === 'code' && !skipEvaluation && q.testCases && q.testCases.length > 0) {
+        executeGlobal();
+        return;
+    }
+
+    const submitBtn = document.getElementById('submit-btn');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '✓ Submitted';
     submitBtn.disabled = true;
@@ -791,6 +883,141 @@ async function saveInterviewToDatabase(data) {
         console.error('[Database] ❌ Error saving interview results:', error);
     }
 }
+
+// Test Case Interaction Logic
+window.switchTestTab = function (tabId) {
+    document.querySelectorAll('.test-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${tabId}'`));
+    });
+    document.querySelectorAll('.test-view').forEach(view => {
+        view.classList.toggle('active', view.id === `${tabId}-tests-view`);
+    });
+};
+
+function renderTestCases(q) {
+    const sampleView = document.getElementById('sample-tests-view');
+    if (!sampleView) return;
+
+    if (!q.testCases || q.testCases.length === 0) {
+        sampleView.innerHTML = '<div class="empty-state">No test cases required for this question.</div>';
+        return;
+    }
+
+    const publicTests = q.testCases.filter(tc => !tc.isHidden);
+    sampleView.innerHTML = publicTests.map((tc, i) => `
+        <div class="test-case-item">
+            <div class="test-case-header">
+                <span class="test-case-label">${tc.label || `Test Case ${i + 1}`}</span>
+            </div>
+            <div class="test-case-data">
+                <span class="data-label">Input:</span>
+                <span class="data-value">${tc.input}</span>
+                <span class="data-label">Expected:</span>
+                <span class="data-value">${tc.expected}</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Clear previous results
+    document.getElementById('detailed-results').innerHTML = '<div class="empty-state" style="margin-top:20px">Click "Run Code" to see results</div>';
+    document.getElementById('tests-passed').textContent = '0';
+    document.getElementById('tests-failed').textContent = '0';
+    document.getElementById('execution-status').textContent = 'Ready';
+}
+
+window.executeLocal = async function () {
+    const questions = getQuestions();
+    const q = questions[currentQuestionIndex];
+    const code = window.EditorManager ? window.EditorManager.getValue() : '';
+
+    if (!code || code.length < 5) {
+        showAlert('Please write some code first.', '⚠️', 'Empty Solution');
+        return;
+    }
+
+    switchTestTab('results');
+    const statusEl = document.getElementById('execution-status');
+    statusEl.innerHTML = '<span style="color:var(--accent-primary)">⏳ Running Samples...</span>';
+
+    const sampleTests = q.testCases.filter(tc => !tc.isHidden);
+    await runExecutionFlow(code, sampleTests);
+};
+
+window.executeGlobal = async function () {
+    const questions = getQuestions();
+    const q = questions[currentQuestionIndex];
+    const code = window.EditorManager ? window.EditorManager.getValue() : '';
+
+    if (!code || code.length < 5) {
+        showAlert('Please write some code first.', '⚠️', 'Empty Solution');
+        return;
+    }
+
+    switchTestTab('results');
+    const statusEl = document.getElementById('execution-status');
+    statusEl.innerHTML = '<span style="color:var(--accent-primary)">⏳ evaluating all tests...</span>';
+
+    await runExecutionFlow(code, q.testCases, true);
+};
+
+async function runExecutionFlow(code, tests, isGlobal = false) {
+    const resultsContainer = document.getElementById('detailed-results');
+    const passedEl = document.getElementById('tests-passed');
+    const failedEl = document.getElementById('tests-failed');
+    const statusEl = document.getElementById('execution-status');
+
+    try {
+        const langCode = document.getElementById('editor-lang-select').value;
+        const results = await window.GeminiService.executeCode(code, langCode, tests);
+
+        let passed = 0;
+        let failed = 0;
+
+        resultsContainer.innerHTML = results.map(res => {
+            const isPassed = res.status === 'passed';
+            if (isPassed) passed++; else failed++;
+
+            return `
+                <div class="test-case-item">
+                    <div class="test-case-header">
+                        <span class="test-case-label">${res.label}</span>
+                        <span class="test-case-status ${isPassed ? 'status-passed' : 'status-failed'}">${res.status.toUpperCase()}</span>
+                    </div>
+                    <div class="test-case-data">
+                        <span class="data-label">Input:</span>
+                        <span class="data-value">${res.input}</span>
+                        <span class="data-label">Expected:</span>
+                        <span class="data-value">${res.expected}</span>
+                        <span class="data-label">Actual:</span>
+                        <span class="data-value" style="color: ${isPassed ? '#10b981' : '#ef4444'}">${res.actual}</span>
+                    </div>
+                    ${res.output ? `<div style="margin-top:8px; font-size:11px; color:#64748b">Console: ${res.output}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        passedEl.textContent = passed;
+        failedEl.textContent = failed;
+        statusEl.innerHTML = failed === 0 ? '<span style="color:var(--accent-green)">✓ All Passed</span>' : `<span style="color:var(--accent-red)">✗ ${failed} Failed</span>`;
+
+        if (isGlobal && failed === 0) {
+            setTimeout(async () => {
+                const confirmSubmit = await showConfirm('All test cases passed! Do you want to submit this solution?', '🚀', 'Solution Verified');
+                if (confirmSubmit) submitAnswer(true);
+            }, 500);
+        }
+
+    } catch (error) {
+        console.error('[Execution] Error:', error);
+        statusEl.innerHTML = '<span style="color:var(--accent-red)">✗ Execution Error</span>';
+        resultsContainer.innerHTML = `<div class="error-box" style="color:#ef4444; padding:16px; background:rgba(239,68,68,0.1); border-radius:8px">${error.message}</div>`;
+    }
+}
+
+// Expose functions to window
+window.switchTestTab = switchTestTab;
+window.executeLocal = executeLocal;
+window.executeGlobal = executeGlobal;
 
 // Expose functions to window for globally defined onclick handlers
 window.startInterview = startInterview;

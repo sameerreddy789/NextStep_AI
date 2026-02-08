@@ -78,10 +78,17 @@
                                 <div class="privacy-overlay hidden" id="privacy-overlay">
                                     <div class="avatar-placeholder">👤</div>
                                 </div>
-                                <button class="privacy-toggle-mini" onclick="window.interviewMedia.togglePrivacyMode()"
-                                    title="Toggle Privacy">
-                                    <span id="privacy-icon">👁️</span>
-                                </button>
+
+                                <div class="camera-controls">
+                                    <button class="control-btn-mini privacy-toggle"
+                                        onclick="window.interviewMedia.togglePrivacyMode()" title="Toggle Privacy">
+                                        <span id="privacy-icon">👁️</span>
+                                    </button>
+                                    <button class="control-btn-mini speaker-toggle" id="speaker-toggle-btn"
+                                        onclick="window.toggleSpeaker()" title="Toggle AI Voice">
+                                        <span id="speaker-icon">🔊</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Right: Timer -->
@@ -214,6 +221,32 @@
                                                 </div>
                                                 <div id="console-output" class="console-output"></div>
                                             </div>
+
+                                            <!-- New Test Cases Panel -->
+                                            <div class="test-cases-panel">
+                                                <div class="test-tabs">
+                                                    <button class="test-tab-btn active"
+                                                        onclick="switchTestTab('sample')">Sample Test Cases</button>
+                                                    <button class="test-tab-btn" onclick="switchTestTab('results')">Test
+                                                        Results</button>
+                                                </div>
+                                                <div id="sample-tests-view" class="test-view active">
+                                                    <!-- Sample tests injected here -->
+                                                    <div class="empty-state">No test cases loaded</div>
+                                                </div>
+                                                <div id="test-results-view" class="test-view">
+                                                    <div class="test-stat-bar">
+                                                        <span class="stat-item"><span id="tests-passed">0</span>
+                                                            Passed</span>
+                                                        <span class="stat-item"><span id="tests-failed">0</span>
+                                                            Failed</span>
+                                                        <span class="stat-item" id="execution-status">Ready</span>
+                                                    </div>
+                                                    <div id="detailed-results" class="detailed-results">
+                                                        <!-- Detailed results injected here -->
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -221,11 +254,11 @@
 
                             <!-- Moved User Actions Inside Right Panel -->
                             <div class="interview-actions"
-                                style="margin-top: auto; padding-top: 20px; display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+                                style="margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; gap: 12px; align-items: center;">
                                 <button class="btn btn-secondary btn-sm" onclick="skipQuestion()">
                                     Skip Question
                                 </button>
-                                <button class="btn btn-primary" onclick="submitAnswer()">
+                                <button id="submit-btn" class="btn btn-primary" onclick="submitAnswer()">
                                     Submit Answer →
                                 </button>
                             </div>
@@ -234,10 +267,6 @@
                 </div>
 
             </div>
-
-
-            <!-- AI Interviewer (Hidden) -->
-            <div class="ai-interviewer hidden" id="ai-interviewer"></div>
         </main>
     </div>
 
@@ -562,18 +591,68 @@
             z-index: 5;
         }
 
-        .header-camera .privacy-toggle-mini {
+        .camera-controls {
             position: absolute;
-            bottom: 4px;
-            right: 4px;
+            bottom: 6px;
+            right: 6px;
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+        }
+
+        .control-btn-mini {
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
-            padding: 3px;
-            border-radius: 4px;
-            font-size: 10px;
+            padding: 4px;
+            border-radius: 6px;
+            font-size: 12px;
             cursor: pointer;
-            z-index: 10;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+        }
+
+        .control-btn-mini:hover {
+            background: rgba(99, 102, 241, 0.8);
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .control-btn-mini:active {
+            transform: translateY(0);
+        }
+
+        .speaker-toggle.off {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        .speaker-toggle.on {
+            color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.2);
+            border-color: var(--accent-primary);
+        }
+
+        @keyframes speaker-pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .speaker-toggle.speaking {
+            animation: speaker-pulse 1s infinite ease-in-out;
         }
 
         /* ===== HEADER TIMER ===== */
@@ -984,46 +1063,139 @@
         .monaco-editor-host {
             flex: 1;
             min-height: 400px;
-            max-height: 600px;
-            /* Enable scroll if content exceeds */
+            max-height: 500px;
             overflow: hidden;
-            /* Monaco handles internal scroll */
         }
 
         .editor-console {
-            background: #121212;
-            height: 180px;
-            border-top: 1px solid #333;
+            background: #0f172a;
+            height: 120px;
+            border-top: 1px solid #334155;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
         }
 
-
-        .ai-interviewer {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-        }
-
-        .ai-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            border-radius: 50%;
+        /* ===== TEST CASE PANEL ===== */
+        .test-cases-panel {
+            background: #1e293b;
+            border-top: 1px solid #334155;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 16px;
-            position: relative;
+            flex-direction: column;
+            height: 250px;
         }
 
-        .ai-pulse {
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
-            border: 2px solid var(--accent-primary);
-            opacity: 0;
+        .test-tabs {
+            display: flex;
+            background: #0f172a;
+            padding: 0 16px;
+            gap: 2px;
+        }
+
+        .test-tab-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 10px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .test-tab-btn:hover {
+            color: #f1f5f9;
+        }
+
+        .test-tab-btn.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .test-view {
+            display: none;
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .test-view.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .test-stat-bar {
+            display: flex;
+            gap: 24px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #334155;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        #tests-passed {
+            color: var(--accent-green);
+        }
+
+        #tests-failed {
+            color: var(--accent-red);
+        }
+
+        .test-case-item {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .test-case-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .test-case-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .test-case-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .status-passed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .test-case-data {
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 8px;
+        }
+
+        .data-label {
+            color: #64748b;
+        }
+
+        .data-value {
+            color: #f1f5f9;
         }
 
         .ai-status {

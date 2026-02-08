@@ -345,6 +345,58 @@ Respond with ONLY a JSON object:
         }
     },
 
+    /**
+     * Simulate code execution against multiple test cases
+     */
+    async executeCode(code, language, testCases) {
+        console.log(`[GeminiService] ⚙️ Executing ${language} code against ${testCases.length} tests`);
+
+        const testsJson = JSON.stringify(testCases);
+        const prompt = `You are a highly accurate code execution engine and compiler for ${language}.
+Your task is to execute the provided code against multiple test cases and return the results.
+
+CODE:
+${code}
+
+LANGUAGE: ${language}
+
+TEST CASES:
+${testsJson}
+
+For each test case, determine the expected output vs actual output of the code.
+Consider standard rules for ${language} (syntax, logic, common libraries).
+
+Respond with ONLY a JSON array of results:
+[
+    {
+        "label": "Test Case Label",
+        "input": "Input provided",
+        "expected": "Expected output",
+        "actual": "What the code actually produced",
+        "status": "passed" | "failed",
+        "output": "Any console output or error messages if applicable"
+    }
+]
+
+IMPORTANT: 
+- Be precise. If the code is correct, marks as "passed".
+- If there's a syntax error, provide it in the "output" field and mark all as "failed".
+- Return ONLY the JSON array.`;
+
+        try {
+            const response = await this._request(prompt);
+            const parsed = this._parseJSON(response);
+            if (parsed && Array.isArray(parsed)) {
+                console.log('[GeminiService] ✅ Code execution simulation complete');
+                return parsed;
+            }
+            throw new Error('Failed to parse execution results');
+        } catch (error) {
+            console.error('[GeminiService] ❌ Execution simulation failed:', error);
+            throw error;
+        }
+    },
+
     async analyzeMarketSkills(role, marketSearchData, userSkills) {
         console.log('[GeminiService] 🔍 Categorizing market skills');
 

@@ -38,6 +38,319 @@
         rel="stylesheet">
     <!-- GSAP for animations -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <style>
+        .faq-section {
+            padding: 80px 0;
+            background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.05));
+        }
+
+        .faq-section .section-title {
+            font-size: 64px !important;
+            letter-spacing: -0.04em;
+            margin-bottom: 12px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .faq-section .section-badge {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            color: var(--text-muted);
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .faq-section .section-subtitle {
+            font-size: 13px;
+            opacity: 0.5;
+            margin-top: 4px;
+        }
+
+        .faq-container {
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .faq-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.03);
+            transform: translateX(4px);
+        }
+
+        .faq-item.open {
+            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .faq-trigger {
+            width: 100%;
+            padding: 16px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            text-align: left;
+        }
+
+        .faq-question {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: -0.01em;
+            padding-right: 32px;
+        }
+
+        .faq-icon-wrapper {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+        }
+
+        .faq-item.open .faq-icon-wrapper {
+            background: rgba(99, 102, 241, 0.15);
+            transform: rotate(180deg);
+        }
+
+        .faq-icon-wrapper svg {
+            width: 12px;
+            height: 12px;
+            fill: none;
+            stroke: var(--text-muted);
+            stroke-width: 3;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item.open .faq-icon-wrapper svg {
+            stroke: var(--accent-primary);
+        }
+
+        .faq-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-item.open .faq-content {
+            grid-template-rows: 1fr;
+        }
+
+        .faq-inner {
+            min-height: 0;
+            padding: 0 22px 20px;
+            opacity: 0;
+            transform: translateY(-8px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .faq-item.open .faq-inner {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .faq-answer {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            opacity: 0.8;
+        }
+
+        /* Feature Highlights Section */
+        .features-highlights {
+            padding: 80px 0;
+            background: transparent;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .feat-card {
+            background: linear-gradient(180deg, rgba(20, 25, 35, 0.8) 0%, rgba(30, 35, 45, 0.4) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .feat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .feat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: linear-gradient(180deg, rgba(25, 30, 40, 0.9) 0%, rgba(35, 40, 50, 0.5) 100%);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--glow-color);
+        }
+
+        .feat-card.blue {
+            --glow-color: rgba(59, 130, 246, 0.15);
+            --accent: #3b82f6;
+        }
+
+        .feat-card.purple {
+            --glow-color: rgba(139, 92, 246, 0.15);
+            --accent: #8b5cf6;
+        }
+
+        .feat-card.orange {
+            --glow-color: rgba(249, 115, 22, 0.15);
+            --accent: #f97316;
+        }
+
+        .feat-header {
+            padding: 32px 32px 10px;
+        }
+
+        .feat-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--accent), rgba(255, 255, 255, 0.1));
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .feat-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .feat-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .feat-body {
+            padding: 0 32px 32px;
+            flex-grow: 1;
+        }
+
+        .feat-bullets {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feat-bullet {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .feat-bullet-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            flex-shrink: 0;
+            font-size: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (max-width: 992px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Icon Hover Animations - Smoother & Slower */
+        .nav-logo-icon,
+        .feat-icon-box,
+        .feat-bullet-icon,
+        .footer-social-icon,
+        .faq-icon-wrapper,
+        .node-circle {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-logo-icon:hover,
+        .logo-emoji:hover,
+        .feat-icon-box:hover,
+        .footer-social-icon:hover,
+        .faq-icon-wrapper:hover,
+        .node-circle:hover {
+            transform: rotate(360deg) scale(1.15) !important;
+        }
+
+        /* Special case for bullet icons - rotate but keep small scale */
+        .feat-bullet:hover .feat-bullet-icon {
+            transform: rotate(360deg) scale(1.1);
+        }
+
+        /* Ensure FAQ arrow rotation doesn't look weird on hover */
+        .faq-item.open .faq-icon-wrapper:hover {
+            transform: rotate(540deg) scale(1.1) !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -73,18 +386,75 @@
 
 
 
-    <!-- How It Works - Stepper UI -->
-    <section class="section" id="how-it-works"
-        style="background: linear-gradient(180deg, rgba(99, 102, 241, 0.05), transparent);">
+    <!-- Feature Highlights Section -->
+    <section class="features-highlights" id="features-showcase">
         <div class="container">
             <div class="section-header">
-                <div class="section-badge">How It Works</div>
-                <h2 class="section-title">Your Path to Success</h2>
-                <p class="section-subtitle">Navigate through each step to see how we transform your career</p>
+                <div class="section-badge">Platform Highlights</div>
+                <h2 class="section-title">Master Your Career Journey</h2>
+                <p class="section-subtitle" style="font-size: 14px; opacity: 0.6; max-width: 600px; margin: 0 auto;">
+                    Everything you need to go from preparation to placement in one powerful AI platform.</p>
             </div>
 
-            <!-- CardStack Component -->
-            <div id="card-stack-container"></div>
+            <div class="features-grid">
+                <!-- Feature 1: AI Resume & Skill Analysis -->
+                <div class="feat-card blue">
+                    <div class="feat-header">
+                        <div class="feat-icon-box">📄</div>
+                        <h3 class="feat-title">AI Resume & Skill Analysis</h3>
+                        <p class="feat-desc">Analyze resumes to identify strengths, gaps, and industry job readiness
+                            using advanced ATS models.</p>
+                    </div>
+                    <div class="feat-body">
+                        <ul class="feat-bullets">
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Resume score & ATS
+                                compatibility</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Skill coverage & missing
+                                skills detection</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Job readiness insights</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Feature 2: Adaptive AI Interviews -->
+                <div class="feat-card purple">
+                    <div class="feat-header">
+                        <div class="feat-icon-box">🤖</div>
+                        <h3 class="feat-title">Adaptive AI Interviews</h3>
+                        <p class="feat-desc">Practice real interview scenarios with adaptive AI questions that evolve
+                            based on your responses.</p>
+                    </div>
+                    <div class="feat-body">
+                        <ul class="feat-bullets">
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> MCQs & coding questions</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Easy, medium & hard
+                                difficulty levels</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Performance tracking &
+                                feedback</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Feature 3: Personalized Learning Roadmap -->
+                <div class="feat-card orange">
+                    <div class="feat-header">
+                        <div class="feat-icon-box">🗺️</div>
+                        <h3 class="feat-title">Personalized Roadmap</h3>
+                        <p class="feat-desc">Follow a structured roadmap tailored to your career goals, designed to
+                            bridge your specific skill gaps.</p>
+                    </div>
+                    <div class="feat-body">
+                        <ul class="feat-bullets">
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Aptitude, DSA & CS
+                                fundamentals</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Curated learning & practice
+                                links</li>
+                            <li class="feat-bullet"><span class="feat-bullet-icon">✓</span> Progress tracking & status
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -100,6 +470,123 @@
             </div>
 
             <div id="orbital-timeline-container"></div>
+        </div>
+    </section>
+
+    <!-- How It Works - Stepper UI -->
+    <section class="section" id="how-it-works"
+        style="background: linear-gradient(180deg, rgba(99, 102, 241, 0.05), transparent);">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-badge">How It Works</div>
+                <h2 class="section-title">Your Path to Success</h2>
+                <p class="section-subtitle">Navigate through each step to see how we transform your career</p>
+            </div>
+
+            <!-- CardStack Component -->
+            <div id="card-stack-container"></div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">FAQ'S</h2>
+                <p class="section-subtitle">Find answers to the most frequent inquiries about NextStep AI</p>
+            </div>
+
+            <div class="faq-container">
+                <!-- FAQ 1 -->
+                <div class="faq-item">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <div class="faq-question">What is NextStep AI?</div>
+                        <div class="faq-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="faq-answer">NextStep AI is an AI-powered career guidance platform that helps users
+                                assess skills, prepare for interviews, and follow a personalized learning roadmap.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <div class="faq-question">Who can use NextStep AI?</div>
+                        <div class="faq-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="faq-answer">Students, freshers, career switchers, and professionals looking to
+                                upgrade their skills can use NextStep AI.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <div class="faq-question">How does the interview assessment work?</div>
+                        <div class="faq-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="faq-answer">The platform conducts adaptive interviews using MCQs and coding
+                                questions to evaluate technical, aptitude, and problem-solving skills.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 4 -->
+                <div class="faq-item">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <div class="faq-question">Is NextStep AI free to use?</div>
+                        <div class="faq-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="faq-answer">Core features are free to use, with advanced features planned for
+                                future releases.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ 5 -->
+                <div class="faq-item">
+                    <div class="faq-trigger" onclick="toggleFaq(this)">
+                        <div class="faq-question">How does the learning roadmap help?</div>
+                        <div class="faq-icon-wrapper">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="faq-content">
+                        <div class="faq-inner">
+                            <p class="faq-answer">The roadmap provides a structured, role-based learning plan with
+                                resources, practice tasks, and interview preparation steps.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -125,6 +612,19 @@
             el.style.transition = 'all 0.6s ease';
             observer.observe(el);
         });
+
+        // FAQ Toggle Logic
+        window.toggleFaq = function (trigger) {
+            const item = trigger.parentElement;
+            const isOpen = item.classList.contains('open');
+
+            // Optional: Close other FAQs
+            // document.querySelectorAll('.faq-item').forEach(i => {
+            //     if (i !== item) i.classList.remove('open');
+            // });
+
+            item.classList.toggle('open');
+        };
     </script>
     <!-- Footer -->
     <footer class="footer">
