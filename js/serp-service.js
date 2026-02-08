@@ -20,10 +20,10 @@ const SerpService = {
         // Auto-init if needed
         if (!this.apiKey) this.init();
 
+        const query = params.search_query || params.q;
+
         if (!this.apiKey) {
-            console.warn('SerpApi Key missing. Using mock data.');
-            // Fix: params.search_query is used for YouTube, params.q for Google
-            const query = params.search_query || params.q;
+            console.warn('SerpApi Key missing. Using intelligent fallback.');
             return this._getMockData(params.engine, query);
         }
 
@@ -32,13 +32,25 @@ const SerpService = {
             ...params
         });
 
+        const url = `https://serpapi.com/search?${queryParams.toString()}`;
+
+        // Use a CORS proxy to bypass browser restrictions for SerpApi
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+
         try {
-            const response = await fetch(`https://serpapi.com/search?${queryParams.toString()}`);
-            if (!response.ok) throw new Error('SerpApi request failed');
+            console.log(`[SerpService] 🌐 Fetching via proxy: ${params.engine}`);
+            const response = await fetch(proxyUrl);
+
+            if (!response.ok) {
+                // If proxy fails or API returns error, fallback to mock
+                console.warn(`[SerpService] Proxy/API error (${response.status}). Falling back.`);
+                return this._getMockData(params.engine, query);
+            }
+
             return await response.json();
         } catch (error) {
-            console.error('SerpApi Error:', error);
-            const query = params.search_query || params.q;
+            console.error('SerpApi Fetch Error:', error);
+            // Fallback to mock on any network/CORS error
             return this._getMockData(params.engine, query);
         }
     },
@@ -79,6 +91,25 @@ const SerpService = {
         const formatted = (results.organic_results || []).slice(0, 8).map(r => ({
             title: r.title.replace(' - LeetCode', ''),
             link: r.link,
+            snippet: r.snippet
+        }));
+
+        this._setCache(cacheKey, formatted);
+        return formatted;
+    },
+
+    async fetchRoleContext(role) {
+        const cacheKey = `${CACHE_PREFIX}role_${role}`;
+        const cached = this._getCache(cacheKey);
+        if (cached) return cached;
+
+        const results = await this._fetch({
+            engine: 'google',
+            q: `industry standard skills for ${role} 2025 roadmap market requirements`
+        });
+
+        const formatted = (results.organic_results || []).slice(0, 10).map(r => ({
+            title: r.title,
             snippet: r.snippet
         }));
 
