@@ -23,7 +23,7 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 ### 🎤 Adaptive AI Interviews
 - **Adaptive/Adaptive Logic** — Intelligently mixes Technical (Code) and Behavioral (Speech) questions
 - **Dynamic Response Tools**:
-  - **Code Editor** — Monaco-style editor for coding questions
+  - **Code Editor** — Integrated Monaco Editor (VS Code engine) for JavaScript, Python, and Java support
   - **Speech-to-Text** — Real-time transcription for behavioral questions
 - **Live Proctoring Simulation** — Webcam feed for realistic interview pressure
 - **Timed Responses** — Adaptive timers (longer for code, shorter for speech)
@@ -86,6 +86,7 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 | **Firebase Auth** | User authentication & Identity |
 | **Cloud Firestore** | NoSQL database for user data |
 | **GSAP** | Smooth animations and transitions |
+| **Monaco Editor** | Professional code editing experience |
 | **Inter Font** | Modern, clean typography |
 | **Custom UI Systems** | Toast notifications, loading states, keyboard nav |
 
@@ -108,6 +109,7 @@ NextStep-AI/
 ├── 404.html            # Custom error page
 ├── css/
 │   ├── styles.css      # Main stylesheet
+│   ├── editor.css      # Code editor styling
 │   ├── page-transitions.css # Smooth animations
 │   ├── micro-interactions.css # Button effects
 │   ├── mobile-responsive.css # Mobile optimization
@@ -123,6 +125,8 @@ NextStep-AI/
     ├── keyboard-nav.js # Accessibility
     ├── counter-animation.js # Number animations
     ├── sidebar.js      # Sidebar component
+    ├── editor.js       # Monaco Editor integration
+    ├── interview-engine.js # AI interview logic
     └── ...other modules
 ```
 

@@ -515,6 +515,40 @@ async function handleExtractionComplete(extractionResult) {
 }
 ```
 
+### Interview Code Editor (NEW)
+
+**Responsibilities**:
+- Provide a full-featured coding environment within the interview module
+- Support syntax highlighting for multiple languages (JS, Python, Java)
+- Manage editor state and auto-save changes
+- Simulate code execution for immediate user feedback
+
+**Implementation**:
+- **Monaco Editor**: Integrated via CDN loader for lightweight performance.
+- **Split-Pane UI**: Custom CSS grid layout to show Question vs. Code.
+- **Mock Execution**: Client-side `eval()` for safe JS execution demo; mock output for other languages to simulate backend runner.
+
+```javascript
+// js/editor.js
+const EditorState = {
+    editor: null,
+    currentLanguage: 'javascript',
+    // ...
+};
+
+function initEditor(containerId) {
+    require(['vs/editor/editor.main'], function () {
+        EditorState.editor = monaco.editor.create(document.getElementById(containerId), {
+            value: EditorState.languages['javascript'].defaultCode,
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true
+        });
+        // ...
+    });
+}
+```
+
 ### Interview Validator (NEW)
 
 **Responsibilities**:

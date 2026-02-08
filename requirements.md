@@ -242,6 +242,19 @@ These features exist in the platform but are specified separately.
 5. THE System SHALL provide smooth animations and micro-interactions consistent with CareerPilot's UX guidelines
 6. THE System SHALL lazy-load heavy libraries (PDF parser) to improve initial page load time
 
+### Requirement 12: Interview Code Editor (NEW)
+
+**User Story:** As a user, I want a robust code editor during technical interviews to write, execute, and debug code in real-time.
+
+#### Acceptance Criteria
+
+1. **Monaco Editor Integration**: The system SHALL integrate the Monaco Editor (VS Code engine) for a familiar coding experience.
+2. **Language Support**: The editor SHALL support syntax highlighting and snippets for JavaScript, Python, and Java.
+3. **Split-Pane Layout**: The interview interface SHALL display the question description and code editor side-by-side.
+4. **Execution Simulation**: The system SHALL provide a "Run Code" feature that simulates execution and displays output in a console pane.
+5. **Auto-Save**: The system SHALL automatically save the user's code to LocalStorage to prevent data loss.
+6. **Theme Consistency**: The editor SHALL use a dark theme (`vs-dark`) that matches the application's design system.
+
 ### Requirement 13: Interview-First Validation (NEW)
 
 **User Story:** As a CareerPilot AI user, I want my resume claims to be validated through an instant interview, so that my roadmap is built from verified skills, not assumptions.
