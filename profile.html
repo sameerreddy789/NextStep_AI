@@ -178,18 +178,6 @@
                         <label>Preferred Industry</label>
                         <span id="view-industry">Technology</span>
                     </div>
-                    <div class="profile-field">
-                        <label>Location Preference</label>
-                        <span id="view-location-pref">Remote / Hybrid</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>Expected Salary</label>
-                        <span id="view-salary">₹8-12 LPA</span>
-                    </div>
-                    <div class="profile-field">
-                        <label>Notice Period</label>
-                        <span id="view-notice">Immediate</span>
-                    </div>
                 </div>
                 <div class="profile-grid edit-mode hidden" id="career-edit">
                     <div class="form-group">
@@ -216,28 +204,6 @@
                     <div class="form-group">
                         <label class="form-label">Preferred Industry</label>
                         <input type="text" class="form-input" id="edit-industry" value="Technology">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Location Preference</label>
-                        <select class="form-select" id="edit-location-pref">
-                            <option value="remote">Remote Only</option>
-                            <option value="hybrid" selected>Remote / Hybrid</option>
-                            <option value="onsite">On-site Only</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Expected Salary</label>
-                        <input type="text" class="form-input" id="edit-salary" value="₹8-12 LPA">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Notice Period</label>
-                        <select class="form-select" id="edit-notice">
-                            <option value="immediate" selected>Immediate</option>
-                            <option value="15days">15 Days</option>
-                            <option value="1month">1 Month</option>
-                            <option value="2months">2 Months</option>
-                            <option value="3months">3 Months</option>
-                        </select>
                     </div>
                     <div class="edit-actions">
                         <button class="btn btn-secondary" onclick="toggleEdit('career')">Cancel</button>
@@ -574,71 +540,70 @@
         }
     </style>
 
-    <script>
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import ProfileService from './js/profile-service.js';
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadProfile();
-            renderHeatmap();
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    loadProfile(user.uid);
+                    renderHeatmap();
+                } else {
+                    // Fallback to local storage or redirect
+                    loadProfile();
+                    renderHeatmap();
+                }
+            });
         });
 
         function renderHeatmap() {
             const heatmap = document.getElementById('heatmap');
+            if (!heatmap) return;
+            heatmap.innerHTML = '';
             const boxCount = 12 * 7; // 12 weeks
 
-            // Random data for demo
             for (let i = 0; i < boxCount; i++) {
                 const day = document.createElement('div');
                 day.className = 'day-box';
-
-                // Random intensity
                 const intensity = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0;
                 day.className += ` l${intensity}`;
-
-                // Tooltip
                 day.title = `Activity level: ${intensity}`;
-
                 heatmap.appendChild(day);
             }
         }
 
-        function loadProfile() {
-            // Check authentication
-            // Relaxed Auth Check for Debugging/Demo
-            let userDataStr = localStorage.getItem('nextStep_user');
-
-            if (!userDataStr) {
-                // Seed default data if missing so the page works
-                const defaultUser = {
-                    name: "Learner User",
-                    email: "learner@nextstep.ai",
-                    targetRole: "sde",
-                    experienceLevel: "fresher"
-                };
-                userDataStr = JSON.stringify(defaultUser);
-                localStorage.setItem('nextStep_user', userDataStr);
+        async function loadProfile(uid) {
+            let profileData = null;
+            if (uid) {
+                profileData = await ProfileService.loadProfile(uid);
             }
 
-            // Legacy support (optional, can be ignored)
-            // const userProfile = localStorage.getItem('userProfile');
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-            const profileData = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+            // Fallback to local storage if not in DB or no UID
+            if (!profileData) {
+                const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+                const extraProfile = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+                profileData = { ...userData, ...extraProfile };
+            }
 
-            // Set defaults from user signup
-            if (userData.name) {
-                const nameParts = userData.name.split(' ');
-                document.getElementById('profile-name').textContent = userData.name;
-                document.getElementById('avatar-initial').textContent = userData.name.charAt(0).toUpperCase();
+            // Populate UI
+            if (profileData.name) {
+                const nameParts = profileData.name.split(' ');
+                document.getElementById('profile-name').textContent = profileData.name;
+                document.getElementById('avatar-initial').textContent = profileData.name.charAt(0).toUpperCase();
                 document.getElementById('view-firstname').textContent = nameParts[0] || 'User';
                 document.getElementById('view-lastname').textContent = nameParts.slice(1).join(' ') || '';
                 document.getElementById('edit-firstname').value = nameParts[0] || '';
                 document.getElementById('edit-lastname').value = nameParts.slice(1).join(' ') || '';
             }
 
-            if (userData.email) {
-                document.getElementById('view-email').textContent = userData.email;
-                document.getElementById('edit-email').value = userData.email;
+            if (profileData.email) {
+                document.getElementById('view-email').textContent = profileData.email;
+                document.getElementById('edit-email').value = profileData.email;
             }
 
-            if (userData.targetRole) {
+            if (profileData.targetRole) {
                 const roleNames = {
                     'sde': 'Software Developer',
                     'frontend': 'Frontend Developer',
@@ -651,11 +616,13 @@
                     'product': 'Product Manager',
                     'designer': 'UI/UX Designer'
                 };
-                document.getElementById('profile-role').textContent = roleNames[userData.targetRole] || userData.targetRole;
-                document.getElementById('view-role').textContent = roleNames[userData.targetRole] || userData.targetRole;
+                const displayName = roleNames[profileData.targetRole] || profileData.targetRole;
+                document.getElementById('profile-role').textContent = displayName;
+                document.getElementById('view-role').textContent = displayName;
+                document.getElementById('edit-role').value = profileData.targetRole;
             }
 
-            if (userData.experienceLevel) {
+            if (profileData.experienceLevel) {
                 const expNames = {
                     'student': 'Student',
                     'fresher': 'Fresher (0-1 years)',
@@ -663,51 +630,75 @@
                     'mid': 'Mid-Level (3-5 years)',
                     'senior': 'Senior (5+ years)'
                 };
-                document.getElementById('view-experience').textContent = expNames[userData.experienceLevel] || userData.experienceLevel;
+                document.getElementById('view-experience').textContent = expNames[profileData.experienceLevel] || profileData.experienceLevel;
+                document.getElementById('edit-experience').value = profileData.experienceLevel;
             }
 
-            // Load additional profile data
-            if (profileData.city) {
-                document.getElementById('profile-location').textContent = `${profileData.city}, ${profileData.country || ''}`;
-                document.getElementById('view-city').textContent = profileData.city;
-                document.getElementById('view-country').textContent = profileData.country || 'Not set';
+            if (profileData.status) {
+                const statusNames = {
+                    'active': 'Actively Looking',
+                    'passive': 'Open to Opportunities',
+                    'employed': 'Employed, Not Looking'
+                };
+                document.getElementById('view-status').textContent = statusNames[profileData.status] || profileData.status;
+                document.getElementById('edit-status').value = profileData.status;
+            }
+
+            if (profileData.industry) {
+                document.getElementById('view-industry').textContent = profileData.industry;
+                document.getElementById('edit-industry').value = profileData.industry;
             }
         }
 
-        function toggleEdit(section) {
+        window.toggleEdit = function (section) {
             const viewEl = document.getElementById(`${section}-view`);
             const editEl = document.getElementById(`${section}-edit`);
-
-            viewEl.classList.toggle('hidden');
-            editEl.classList.toggle('hidden');
+            if (viewEl && editEl) {
+                viewEl.classList.toggle('hidden');
+                editEl.classList.toggle('hidden');
+            }
         }
 
-        function savePersonal() {
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+        window.savePersonal = async function () {
+            const user = auth.currentUser;
             const firstname = document.getElementById('edit-firstname').value;
             const lastname = document.getElementById('edit-lastname').value;
+            const data = {
+                name: `${firstname} ${lastname}`.trim(),
+                email: document.getElementById('edit-email').value,
+                experienceLevel: document.getElementById('edit-experience').value
+            };
 
-            userData.name = `${firstname} ${lastname}`.trim();
-            userData.email = document.getElementById('edit-email').value;
-            userData.experienceLevel = document.getElementById('edit-experience').value;
+            if (user) {
+                await ProfileService.saveProfile(user.uid, data);
+            } else {
+                localStorage.setItem('nextStep_user', JSON.stringify(data));
+            }
 
-            localStorage.setItem('nextStep_user', JSON.stringify(userData));
-
-            // Update view
+            // Update UI
             document.getElementById('view-firstname').textContent = firstname;
             document.getElementById('view-lastname').textContent = lastname;
-            document.getElementById('view-email').textContent = userData.email;
-            document.getElementById('profile-name').textContent = userData.name;
-            document.getElementById('avatar-initial').textContent = userData.name.charAt(0).toUpperCase();
+            document.getElementById('view-email').textContent = data.email;
+            document.getElementById('profile-name').textContent = data.name;
+            document.getElementById('avatar-initial').textContent = data.name.charAt(0).toUpperCase();
 
-            toggleEdit('personal');
+            window.toggleEdit('personal');
             showNotification('Personal information saved!');
         }
 
-        function saveCareer() {
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-            userData.targetRole = document.getElementById('edit-role').value;
-            localStorage.setItem('nextStep_user', JSON.stringify(userData));
+        window.saveCareer = async function () {
+            const user = auth.currentUser;
+            const data = {
+                targetRole: document.getElementById('edit-role').value,
+                status: document.getElementById('edit-status').value,
+                industry: document.getElementById('edit-industry').value
+            };
+
+            if (user) {
+                await ProfileService.saveProfile(user.uid, data);
+            } else {
+                localStorage.setItem('nextStep_user', JSON.stringify(data));
+            }
 
             const roleNames = {
                 'sde': 'Software Developer',
@@ -720,27 +711,11 @@
                 'devops': 'DevOps Engineer'
             };
 
-            document.getElementById('view-role').textContent = roleNames[userData.targetRole];
-            document.getElementById('profile-role').textContent = roleNames[userData.targetRole];
+            document.getElementById('view-role').textContent = roleNames[data.targetRole] || data.targetRole;
+            document.getElementById('profile-role').textContent = roleNames[data.targetRole] || data.targetRole;
 
-            toggleEdit('career');
+            window.toggleEdit('career');
             showNotification('Career information saved!');
-        }
-
-        function saveAddress() {
-            const profileData = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
-            profileData.country = document.getElementById('edit-country').value;
-            profileData.city = document.getElementById('edit-city').value;
-            profileData.postal = document.getElementById('edit-postal').value;
-            localStorage.setItem('nextStep_profile', JSON.stringify(profileData));
-
-            document.getElementById('view-country').textContent = profileData.country;
-            document.getElementById('view-city').textContent = profileData.city;
-            document.getElementById('view-postal').textContent = profileData.postal;
-            document.getElementById('profile-location').textContent = `${profileData.city}, ${profileData.country}`;
-
-            toggleEdit('address');
-            showNotification('Address saved!');
         }
 
         function showNotification(message) {
@@ -776,23 +751,22 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
-        // Logout function
-        function logout() {
+        window.logout = function () {
             if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userType');
-                localStorage.removeItem('userProfile');
-                localStorage.removeItem('nextStep_user');
-                localStorage.removeItem('nextStep_resume');
-                localStorage.removeItem('nextStep_profile');
-                window.location.href = 'index.html';
+                auth.signOut().then(() => {
+                    localStorage.clear();
+                    window.location.href = 'index.html';
+                });
             }
         }
-
-        // Make logout available globally
-        window.logout = logout;
     </script>
     <script src="js/sidebar.js"></script>
     <script src="js/click-spark.js"></script>
+</body>
+
+</html>
+<script src="js/sidebar.js"></script>
+<script src="js/click-spark.js"></script>
 </body>
 
 </html>
