@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="css/celebration-modal.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="js/env-config.js"></script>
     <script src="js/route-guard.js"></script>
     <script src="js/gemini-service.js"></script>
 </head>
@@ -93,14 +94,6 @@
                     <input type="file" id="file-input" accept=".pdf,.doc,.docx" style="display: none;">
                 </div>
 
-                <div style="text-align: center; margin-top: 24px;">
-                    <button class="btn btn-secondary" onclick="useDemoResume()">
-                        🎯 Use Demo Resume
-                    </button>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
-                        Don't have a resume ready? Try our demo to see how it works
-                    </p>
-                </div>
             </div>
 
             <!-- Analysis Results (hidden initially) -->
@@ -472,27 +465,14 @@
         }
     </style>
 
-    <script>
-        // Demo resume data
-        const DEMO_RESUME_DATA = {
-            skills: {
-                present: ['JavaScript', 'Python', 'HTML/CSS', 'React', 'Node.js', 'Git', 'SQL', 'REST APIs'],
-                partial: ['System Design', 'Docker', 'AWS'],
-                missing: ['Kubernetes', 'GraphQL', 'Redis', 'CI/CD', 'Microservices', 'TypeScript']
-            },
-            experience: [
-                { title: 'Software Intern', company: 'TechCorp', duration: '6 months' },
-                { title: 'Freelance Developer', company: 'Self-employed', duration: '1 year' }
-            ],
-            projects: [
-                { name: 'E-commerce Website', tech: 'React, Node.js, MongoDB' },
-                { name: 'Task Management App', tech: 'Python, Flask, PostgreSQL' },
-                { name: 'Portfolio Website', tech: 'HTML, CSS, JavaScript' }
-            ],
-            score: 72,
-            coverage: 65,
-            readiness: 58
-        };
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Expose functions to window since we're in a module now
+        window.reUploadResume = reUploadResume;
+        window.analyzeResume = analyzeResume;
 
         // Role-specific ATS Keywords Database
         const ATS_KEYWORDS = {
@@ -661,6 +641,28 @@
             if (file) analyzeResume(file);
         });
 
+        // Initialize PDF.js
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
+        async function extractTextFromPDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                let text = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    text += content.items.map(item => item.str).join(" ") + "\n";
+                }
+                return text;
+            } catch (error) {
+                console.error('[PDF] Extraction failed:', error);
+                return null;
+            }
+        }
+
         async function analyzeResume(file) {
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('analyzing-section').classList.remove('hidden');
@@ -674,7 +676,7 @@
             const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
 
             try {
-                // Use Gemini AI if available
+                // Use Gemini AI
                 if (file && window.GeminiService && window.GeminiService.isAvailable()) {
                     const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
@@ -683,22 +685,37 @@
 
                     let aiResult;
                     if (isPDF) {
-                        aiResult = await window.GeminiService.analyzePDF(file, targetRole);
+                        statusText.textContent = 'Extracting text from PDF...';
+                        const extractedText = await extractTextFromPDF(file);
+
+                        if (extractedText && extractedText.trim().length > 100) {
+                            console.log('[Resume] Using extracted text for analysis');
+                            statusText.textContent = 'AI analyzing resume text...';
+                            aiResult = await window.GeminiService.analyzeResume(extractedText, targetRole);
+                        } else {
+                            console.log('[Resume] Falling back to multimodal PDF analysis');
+                            statusText.textContent = 'AI analyzing PDF layout...';
+                            aiResult = await window.GeminiService.analyzePDF(file, targetRole);
+                        }
                     } else {
                         const text = await file.text();
                         aiResult = await window.GeminiService.analyzeResume(text, targetRole);
+                    }
+
+                    if (!aiResult) {
+                        throw new Error('AI failed to produce a valid analysis. Please try again or check your API key.');
                     }
 
                     progressBar.style.width = '90%';
                     statusText.textContent = 'Finalizing analysis...';
 
                     const result = {
-                        skills: aiResult.skills || DEMO_RESUME_DATA.skills,
-                        experience: aiResult.experience || DEMO_RESUME_DATA.experience,
-                        projects: aiResult.projects || DEMO_RESUME_DATA.projects,
-                        score: aiResult.score || 70,
-                        coverage: aiResult.coverage || 60,
-                        readiness: aiResult.readiness || 55,
+                        skills: aiResult.skills,
+                        experience: aiResult.experience,
+                        projects: aiResult.projects,
+                        score: aiResult.score || 0,
+                        coverage: aiResult.coverage || 0,
+                        readiness: aiResult.readiness || 0,
                         atsScore: aiResult.atsScore || null,
                         _aiGenerated: true
                     };
@@ -706,49 +723,26 @@
                     progressBar.style.width = '100%';
                     setTimeout(() => showResults(result), 500);
                     return;
+                } else {
+                    throw new Error('AI Service not available. Check your configuration.');
                 }
-
-                // Fallback: Simulated analysis
-                console.log('[Resume] No Gemini API - using demo data');
-                simulateAnalysis(statusText, progressBar);
 
             } catch (error) {
                 console.error('[Resume] Analysis error:', error);
-                simulateAnalysis(statusText, progressBar);
+                alert('Analysis Error: ' + error.message);
+                // Reset UI for retry
+                document.getElementById('upload-section').classList.remove('hidden');
+                document.getElementById('analyzing-section').classList.add('hidden');
             }
         }
 
-        function simulateAnalysis(statusText, progressBar) {
-            const steps = [
-                { p: 15, t: "Scanning PDF Document..." },
-                { p: 40, t: "Extracting Technical Skills..." },
-                { p: 70, t: "Analyzing Job Fit..." },
-                { p: 90, t: "Calculating ATS Score..." },
-                { p: 100, t: "Finalizing Report..." }
-            ];
-            let progress = 0, stepIndex = 0;
-
-            const interval = setInterval(() => {
-                progress += 1;
-                progressBar.style.width = progress + '%';
-                if (stepIndex < steps.length && progress >= steps[stepIndex].p) {
-                    statusText.textContent = steps[stepIndex].t;
-                    stepIndex++;
-                }
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    setTimeout(() => showResults(DEMO_RESUME_DATA), 500);
-                }
-            }, 30);
-        }
-
-        function useDemoResume() {
-            analyzeResume(null);
-        }
 
         function showResults(data) {
             // Save to localStorage
             localStorage.setItem('nextStep_resume', JSON.stringify(data));
+
+            // Save to Firestore if user is logged in
+            saveResumeToDatabase(data);
 
             document.getElementById('upload-section').classList.add('hidden');
             document.getElementById('analyzing-section').classList.add('hidden');
@@ -760,19 +754,23 @@
             const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
 
             // Calculate ATS Score
+            const presentSkills = data?.skills?.present || [];
+            const partialSkills = data?.skills?.partial || [];
+            const projects = data?.projects || [];
+
             const resumeText = `
-                Skills: ${[...data.skills.present, ...data.skills.partial].join(', ')}
+                Skills: ${[...presentSkills, ...partialSkills].join(', ')}
                 Experience: Software Development, Programming, Coding
                 Education: Computer Science
-                Projects: ${data.projects.map(p => p.name + ' ' + p.tech).join(', ')}
+                Projects: ${projects.map(p => (p?.name || '') + ' ' + (p?.tech || '')).join(', ')}
             `;
             const atsResult = calculateATSScore(resumeText, targetRole);
 
             // Update stats
-            document.getElementById('resume-score').textContent = data.score + '/100';
-            document.getElementById('skill-coverage').textContent = data.coverage + '%';
-            document.getElementById('missing-count').textContent = data.skills.missing.length;
-            document.getElementById('readiness').textContent = data.readiness + '%';
+            document.getElementById('resume-score').textContent = (data?.score || 0) + '/100';
+            document.getElementById('skill-coverage').textContent = (data?.coverage || 0) + '%';
+            document.getElementById('missing-count').textContent = data?.skills?.missing?.length || 0;
+            document.getElementById('readiness').textContent = (data?.readiness || 0) + '%';
 
             // Update ATS Score with animation
             setTimeout(() => {
@@ -853,7 +851,38 @@
             // Show notification
             alert('🔄 Ready to upload a new resume!');
         }
+        // Database Integration
+        async function saveResumeToDatabase(data) {
+            try {
+                // Wait for auth to initialize if it hasn't yet
+                const user = await new Promise((resolve) => {
+                    if (auth.currentUser) return resolve(auth.currentUser);
+                    const unsubscribe = onAuthStateChanged(auth, (user) => {
+                        unsubscribe();
+                        resolve(user);
+                    });
+                    // Timeout after 3 seconds if auth still hasn't settled
+                    setTimeout(() => resolve(auth.currentUser), 3000);
+                });
+
+                if (!user) {
+                    console.log('[Database] ⚠️ User not logged in to Firebase Auth, skipping cloud save');
+                    return;
+                }
+
+                console.log('[Database] Saving resume analysis to Firestore (UID: ' + user.uid + ')...');
+                await setDoc(doc(db, "users", user.uid, "analysis", "resume"), {
+                    ...data,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                console.log('[Database] ✅ Resume analysis saved successfully');
+            } catch (error) {
+                console.error('[Database] ❌ Error saving resume:', error);
+            }
+        }
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/click-spark.js"></script>
 </body>
