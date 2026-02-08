@@ -57,14 +57,71 @@ function renderStats() {
 
 function renderCharts() {
     // 1. Pie Chart (Skills Breakdown)
-    if (window.drawPieChart && window.SkillStore) {
+    if (window.SkillStore) {
         const skills = SkillStore.getSkills();
         const completed = skills.filter(s => s.level === 'Expert').length;
         const inProgress = skills.filter(s => s.level === 'Intermediate' || s.level === 'Beginner').length;
         const pending = skills.filter(s => s.level === 'Missing').length;
 
-        // Use the global function defined in inline script (or move it here)
-        window.drawPieChart(completed, inProgress, pending);
+        drawPieChart(completed, inProgress, pending);
+    }
+}
+
+// Draw Pie Chart
+function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
+    const total = completed + inProgress + pending;
+    if (total === 0) return; // Prevent division by zero
+
+    // Helper function to create SVG path for pie segment
+    function createPieSegment(startAngle, endAngle) {
+        const radius = 80;
+        const cx = 100;
+        const cy = 100;
+
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+
+        const x1 = cx + radius * Math.cos(startRad);
+        const y1 = cy + radius * Math.sin(startRad);
+        const x2 = cx + radius * Math.cos(endRad);
+        const y2 = cy + radius * Math.sin(endRad);
+
+        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    }
+
+    let currentAngle = 0;
+
+    // Draw completed segment
+    const completedAngle = (completed / total) * 360;
+    if (completed > 0) {
+        const el = document.getElementById('segment-completed');
+        if (el) el.setAttribute('d', createPieSegment(currentAngle, currentAngle + completedAngle));
+    }
+    currentAngle += completedAngle;
+
+    // Draw in-progress segment
+    const progressAngle = (inProgress / total) * 360;
+    if (inProgress > 0) {
+        const el = document.getElementById('segment-progress');
+        if (el) el.setAttribute('d', createPieSegment(currentAngle, currentAngle + progressAngle));
+    }
+    currentAngle += progressAngle;
+
+    // Draw pending segment
+    const pendingAngle = (pending / total) * 360;
+    if (pending > 0) {
+        const el = document.getElementById('segment-pending');
+        if (el) el.setAttribute('d', createPieSegment(currentAngle, currentAngle + pendingAngle));
+    }
+
+    // Update center text (Initial view)
+    const valueEl = document.getElementById('readiness-value');
+    if (valueEl) {
+        // Calculate readiness score
+        const readiness = Math.round((completed / total) * 100) || 0;
+        valueEl.textContent = `${readiness}%`;
     }
 }
 
