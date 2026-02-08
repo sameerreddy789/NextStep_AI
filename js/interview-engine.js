@@ -161,10 +161,33 @@ function updateTimerDisplay() {
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const timerDisplay = document.getElementById('timer');
+    const progressCircle = document.querySelector('.timer-progress');
+
     if (timerDisplay) {
         timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        if (timeLeft > 30) {
-            timerDisplay.style.color = 'var(--accent-gold)';
+
+        // Update circular progress
+        if (progressCircle) {
+            const circumference = 2 * Math.PI * 45; // r=45
+            const offset = circumference - (timeLeft / initialTime) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+
+            // Dynamic color
+            const percent = (timeLeft / initialTime) * 100;
+            if (percent < 20) {
+                progressCircle.style.stroke = '#ef4444'; // Red
+            } else if (percent < 50) {
+                progressCircle.style.stroke = 'var(--accent-gold)'; // Yellow/Gold
+            } else {
+                progressCircle.style.stroke = 'var(--accent-primary)'; // Blue
+            }
+        }
+
+        if (timeLeft <= 30) {
+            timerDisplay.style.color = '#ef4444';
+            timerDisplay.style.animation = 'pulse 1s infinite';
+        } else {
+            timerDisplay.style.color = 'var(--text-primary)';
             timerDisplay.style.animation = 'none';
         }
     }
