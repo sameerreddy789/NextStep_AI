@@ -44,6 +44,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper: Check Onboarding Status & Redirect
     async function handlePostAuth(user) {
+        // Clear demo mode if it was active
+        localStorage.removeItem('demoMode');
+
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
         let userData = {

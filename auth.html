@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/ui-utils.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <script src="js/env-config.js"></script>
     <script src="js/ui-utils.js"></script>
     <script src="js/error-handler.js"></script>
 </head>
@@ -88,13 +89,6 @@
                             Don't have an account? <a href="#" onclick="toggleView('signup')">Sign up</a>
                         </div>
 
-                        <!-- Demo Mode for Team Testing -->
-                        <div class="divider" style="margin-top: 1.5rem;"><span>For Hackathon Demo</span></div>
-                        <button class="btn btn-outline"
-                            style="background: rgba(34, 197, 94, 0.1); border-color: rgba(34, 197, 94, 0.4); color: #22c55e;"
-                            onclick="enterDemoMode()">
-                            🚀 Enter Demo Mode (No Login)
-                        </button>
                     </div>
 
                     <!-- Signup View -->
@@ -171,44 +165,35 @@
     </div>
 
     <script>
-        // Demo Mode - Bypasses Firebase auth for team testing
-        function enterDemoMode() {
-            // Set demo user data
-            const demoUser = {
-                uid: 'demo-user-001',
-                email: 'demo@nextstep.ai',
-                displayName: 'Demo User',
-                isDemo: true
-            };
+        function toggleView(view) {
+            const loginView = document.getElementById('login-view');
+            const signupView = document.getElementById('signup-view');
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
 
-            // Set demo resume data
-            const demoResume = {
-                skills: {
-                    present: ['JavaScript', 'React', 'Node.js', 'Python', 'Git'],
-                    partial: ['TypeScript', 'AWS', 'Docker'],
-                    missing: ['Kubernetes', 'GraphQL', 'System Design']
-                },
-                experience: [
-                    { title: 'Software Developer', company: 'Tech Corp', duration: '2 years' }
-                ],
-                projects: [
-                    { name: 'E-commerce Platform', tech: 'React, Node.js, MongoDB' }
-                ],
-                score: 75,
-                coverage: 68,
-                readiness: 62,
-                atsScore: { overall: 72, keyword: 70, experience: 75, format: 80, suggestions: ['Add more keywords', 'Quantify achievements'] }
-            };
+            if (view === 'login') {
+                loginView.classList.remove('hidden');
+                signupView.classList.add('hidden');
+                toggleBtns[0].classList.add('active');
+                toggleBtns[1].classList.remove('active');
+            } else {
+                loginView.classList.add('hidden');
+                signupView.classList.remove('hidden');
+                toggleBtns[0].classList.remove('active');
+                toggleBtns[1].classList.add('active');
+            }
+        }
 
-            // Save to localStorage
-            localStorage.setItem('nextStep_user', JSON.stringify(demoUser));
-            localStorage.setItem('nextStep_resume', JSON.stringify(demoResume));
-            localStorage.setItem('userProfile', JSON.stringify({ targetRole: 'sde', name: 'Demo User' }));
-            localStorage.setItem('demoMode', 'true');
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('svg');
 
-            // Redirect to resume page
-            alert('🎉 Demo Mode Activated!\n\nYou can now explore all features without Firebase login.');
-            window.location.href = 'resume.html';
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerHTML = '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/>';
+            } else {
+                input.type = 'password';
+                icon.innerHTML = '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>';
+            }
         }
     </script>
     <script type="module" src="js/auth-modern.js"></script>
