@@ -908,16 +908,31 @@
 
             // Language Select Listener
             const langSelect = document.getElementById('language-select');
-            if (langSelect) {
-                langSelect.addEventListener('change', (e) => {
-                    const lang = e.target.value;
-                    const codeArea = document.getElementById('code-area');
-                    // Only inject if empty or contains other boilerplate
-                    // For now, simpliest is just inject
-                    if (BOILERPLATES[lang]) {
-                        codeArea.value = BOILERPLATES[lang];
+            const editorLangSelect = document.getElementById('editor-lang-select');
+
+            const handleLangChange = (lang) => {
+                if (window.EditorManager) {
+                    window.EditorManager.setLanguage(lang);
+                    // Sync selectors
+                    if (langSelect) langSelect.value = lang;
+                    if (editorLangSelect) editorLangSelect.value = lang;
+
+                    // Inject boilerplate if editor is empty or just has hello world
+                    if (window.MonacoEditor) {
+                        const currentVal = window.MonacoEditor.getValue();
+                        if (!currentVal || currentVal.includes('Hello World')) {
+                            const newCode = BOILERPLATES[lang];
+                            if (newCode) window.MonacoEditor.setValue(newCode);
+                        }
                     }
-                });
+                }
+            };
+
+            if (langSelect) {
+                langSelect.addEventListener('change', (e) => handleLangChange(e.target.value));
+            }
+            if (editorLangSelect) {
+                editorLangSelect.addEventListener('change', (e) => handleLangChange(e.target.value));
             }
         });
 
@@ -1224,6 +1239,10 @@
 
                 // Initialize Editor if not already done (lazy load)
                 if (window.EditorManager) {
+                    // Sync top selector with editor selector
+                    const topLangSelect = document.getElementById('language-select');
+                    const editorLangSelect = document.getElementById('editor-lang-select');
+
                     setTimeout(() => {
                         window.EditorManager.init('monaco-editor-host');
 
@@ -1235,17 +1254,24 @@
                         else if (cat.includes('c++')) lang = 'cpp';
 
                         window.EditorManager.setLanguage(lang);
-                        if (document.getElementById('editor-lang-select')) {
-                            document.getElementById('editor-lang-select').value = lang;
-                        }
+                        if (topLangSelect) topLangSelect.value = lang;
+                        if (editorLangSelect) editorLangSelect.value = lang;
 
                         // Inject custom boilerplate if first time
-                        if (!window.MonacoEditor.getValue() || window.MonacoEditor.getValue().includes('Hello World')) {
-                            const customBoilerplate = BOILERPLATES[lang];
-                            if (customBoilerplate) {
-                                window.MonacoEditor.setValue(customBoilerplate);
+                        // Use safe check for MonacoEditor
+                        const checkAndSet = () => {
+                            if (window.MonacoEditor) {
+                                if (!window.MonacoEditor.getValue() || window.MonacoEditor.getValue().includes('Hello World')) {
+                                    const customBoilerplate = BOILERPLATES[lang];
+                                    if (customBoilerplate) {
+                                        window.MonacoEditor.setValue(customBoilerplate);
+                                    }
+                                }
+                            } else {
+                                setTimeout(checkAndSet, 50); // Retry if not ready
                             }
-                        }
+                        };
+                        checkAndSet();
                     }, 100);
                 }
             } else {

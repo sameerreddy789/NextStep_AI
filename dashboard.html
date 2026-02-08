@@ -130,12 +130,19 @@
                     </div>
                     <div class="readiness-chart">
                         <div class="pie-chart-container">
-                            <div class="pie-donut" id="readiness-donut"></div>
+                            <!-- SVG Pie Chart (Targets for js/dashboard.js) -->
+                            <svg class="pie-svg" viewBox="0 0 200 200">
+                                <path id="segment-completed" class="pie-segment segment-completed"
+                                    d="M 100 100 L 100 20 Z"></path>
+                                <path id="segment-progress" class="pie-segment segment-progress"
+                                    d="M 100 100 L 100 20 Z"></path>
+                                <path id="segment-pending" class="pie-segment segment-pending" d="M 100 100 L 100 20 Z">
+                                </path>
+                            </svg>
                             <div class="pie-center-text">
                                 <span id="readiness-value" class="pie-value">0%</span>
                                 <span class="pie-label">Readiness</span>
                             </div>
-
                         </div>
                         <div class="readiness-legend">
                             <div class="legend-item">
@@ -536,6 +543,43 @@
             background: var(--text-muted);
         }
 
+        /* SVG Pie Chart Styles */
+        .pie-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .pie-segment {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .segment-completed {
+            fill: var(--accent-green);
+        }
+
+        .segment-progress {
+            fill: var(--accent-gold);
+        }
+
+        .segment-pending {
+            fill: rgba(255, 255, 255, 0.1);
+        }
+
+        .pie-donut-hole {
+            fill: var(--bg-card);
+        }
+
+        /* Task Item Transitions & Classes */
+        .task-item.completed {
+            opacity: 0.6;
+        }
+
+        .task-title.completed {
+            text-decoration: line-through;
+        }
+
         .task-list {
             display: flex;
             flex-direction: column;
@@ -924,387 +968,183 @@
         }
     </style>
 
-<<<<<<< HEAD
-    <script>
+    <<<<<<< HEAD <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Check authentication
-            const userDataString = localStorage.getItem('nextStep_user');
-            const userType = localStorage.getItem('userType');
+        // Check authentication
+        const userDataString = localStorage.getItem('nextStep_user');
+        const userType = localStorage.getItem('userType');
 
-            if (!userDataString) {
-                // Not logged in, redirect to auth
-                alert('Please login first');
-                window.location.href = 'auth.html';
-                return;
-            }
-
-            const userData = JSON.parse(userDataString || '{}');
-            const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
-
-            // Display personalized greeting
-            const userName = userData.name || 'User';
-            const firstName = userName.split(' ')[0];
-            document.getElementById('user-greeting-name').textContent = firstName;
-
-            // Display role-based features
-            if (userType === 'careerGap') {
-                // Show career gap section for career gap users
-                document.getElementById('career-gap-section').style.display = 'block';
-            }
-
-            // Draw Pie Chart
-            function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
-                const total = completed + inProgress + pending;
-
-                // Helper function to create SVG path for pie segment
-                function createPieSegment(startAngle, endAngle) {
-                    const radius = 80;
-                    const cx = 100;
-                    const cy = 100;
-
-                    const startRad = (startAngle * Math.PI) / 180;
-                    const endRad = (endAngle * Math.PI) / 180;
-
-                    const x1 = cx + radius * Math.cos(startRad);
-                    const y1 = cy + radius * Math.sin(startRad);
-                    const x2 = cx + radius * Math.cos(endRad);
-                    const y2 = cy + radius * Math.sin(endRad);
-
-                    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-
-                    return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-                }
-
-                let currentAngle = 0;
-
-                // Draw completed segment
-                const completedAngle = (completed / total) * 360;
-                if (completed > 0) {
-                    document.getElementById('segment-completed').setAttribute('d',
-                        createPieSegment(currentAngle, currentAngle + completedAngle));
-                }
-                currentAngle += completedAngle;
-
-                // Draw in-progress segment
-                const progressAngle = (inProgress / total) * 360;
-                if (inProgress > 0) {
-                    document.getElementById('segment-progress').setAttribute('d',
-                        createPieSegment(currentAngle, currentAngle + progressAngle));
-                }
-                currentAngle += progressAngle;
-
-                // Draw pending segment
-                const pendingAngle = (pending / total) * 360;
-                if (pending > 0) {
-                    document.getElementById('segment-pending').setAttribute('d',
-                        createPieSegment(currentAngle, currentAngle + pendingAngle));
-                }
-            }
-
-            // Initialize pie chart with default or stored values
-            let pieData = { completed: 35, inProgress: 25, pending: 40 };
-
-            if (resumeData.readiness) {
-                const readiness = resumeData.readiness;
-                pieData = { completed: readiness, inProgress: 25, pending: 100 - readiness - 25 };
-                drawPieChart(pieData.completed, pieData.inProgress, pieData.pending);
-            } else {
-                drawPieChart(pieData.completed, pieData.inProgress, pieData.pending);
-            }
-
-            // Add click handlers to pie segments
-            function updateCenterText(label, percentage, color) {
-                const valueEl = document.getElementById('readiness-value');
-                const labelEl = document.querySelector('.pie-label');
-
-                valueEl.textContent = percentage;
-                valueEl.style.color = color;
-                labelEl.textContent = label;
-            }
-
-            // Completed segment click
-            document.getElementById('segment-completed').addEventListener('click', () => {
-                const total = pieData.completed + pieData.inProgress + pieData.pending;
-                const percent = Math.round((pieData.completed / total) * 100);
-                updateCenterText('Completed', percent + '%', 'var(--accent-green)');
-            });
-
-            // In Progress segment click
-            document.getElementById('segment-progress').addEventListener('click', () => {
-                const total = pieData.completed + pieData.inProgress + pieData.pending;
-                const percent = Math.round((pieData.inProgress / total) * 100);
-                updateCenterText('In Progress', percent + '%', 'var(--accent-gold)');
-            });
-
-            // Pending segment click
-            document.getElementById('segment-pending').addEventListener('click', () => {
-                const total = pieData.completed + pieData.inProgress + pieData.pending;
-                const percent = Math.round((pieData.pending / total) * 100);
-                updateCenterText('Pending', percent + '%', 'rgba(255, 255, 255, 0.5)');
-            });
-
-            // Render interactive tasks
-            function renderTasks() {
-                const tasks = window.SkillStore.getTasks();
-                document.getElementById('task-list').innerHTML = tasks.map(t => `
-                    <div class="task-item" style="opacity: ${t.completed ? '0.6' : '1'}">
-                        <div class="task-icon ${t.color}">${t.icon}</div>
-                        <div class="task-content">
-                            <div class="task-title" style="text-decoration: ${t.completed ? 'line-through' : 'none'}">${t.title}</div>
-                            <div class="task-due">${t.due}</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div class="task-check-circle" onclick="toggleTask('${t.id}')" style="
-                                width: 22px; 
-                                height: 22px; 
-                                border: 2px solid ${t.completed ? 'var(--accent-green)' : 'var(--border-color)'}; 
-                                border-radius: 50%; 
-                                display: flex; 
-                                cursor: pointer;
-                                align-items: center; 
-                                justify-content: center;
-                                background: ${t.completed ? 'var(--accent-green)' : 'transparent'}
-                            ">
-                                ${t.completed ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
-                            </div>
-                            <div onclick="deleteTask('${t.id}')" style="cursor: pointer; color: var(--text-muted); font-size: 18px;">✕</div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            function renderPrioritySkills() {
-                const skills = window.SkillStore.getPrioritySkills();
-                document.getElementById('skill-gaps').innerHTML = skills.map(s => `
-                    <div class="skill-mini-item">
-                        <div class="skill-mini-icon">${s.icon || '🚀'}</div>
-                        <div class="skill-mini-name">${s.name}</div>
-                        <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
-                        <div onclick="deletePrioritySkill('${s.id}')" style="margin-left: auto; cursor: pointer; color: var(--text-muted); padding: 4px;">✕</div>
-                    </div>
-                `).join('');
-            }
-
-            // Initial render
-            renderTasks();
-            renderPrioritySkills();
-
-            // Toggle function
-            window.toggleTask = function (id) {
-                window.SkillStore.toggleTask(id);
-                renderTasks();
-            };
-
-            window.deleteTask = function (id) {
-                if (confirm('Delete this task?')) {
-                    window.SkillStore.deleteTask(id);
-                    renderTasks();
-                }
-            };
-
-            window.deletePrioritySkill = function (id) {
-                if (confirm('Remove from priority?')) {
-                    window.SkillStore.deletePrioritySkill(id);
-                    renderPrioritySkills();
-                }
-            };
-
-            // Modal Logic
-            let currentModalType = '';
-
-            window.openAddModal = function (type) {
-                currentModalType = type;
-                const modal = document.querySelector('.modal-overlay');
-                const title = document.getElementById('modal-title');
-                const select = document.getElementById('item-select');
-
-                title.textContent = type === 'task' ? 'Add New Task' : 'Add Priority Skill';
-                select.innerHTML = '<option value="">Select a topic...</option>';
-
-                // Populate from RoadmapEngine
-                const roadmap = window.RoadmapEngine ? window.RoadmapEngine.generateFullRoadmap('sde', []) : [];
-                roadmap.forEach(section => {
-                    section.topics.forEach(module => {
-                        module.items.forEach(item => {
-                            const opt = document.createElement('option');
-                            opt.value = item;
-                            opt.textContent = item;
-                            select.appendChild(opt);
-                        });
-                    });
-                });
-
-                modal.classList.add('active');
-            };
-
-            window.closeModal = function () {
-                document.querySelector('.modal-overlay').classList.remove('active');
-            };
-
-            window.saveNewItem = function () {
-                const select = document.getElementById('item-select');
-                const value = select.value;
-                if (!value) return;
-
-                if (currentModalType === 'task') {
-                    window.SkillStore.addTask({
-                        title: value,
-                        due: 'This Week',
-                        icon: '📝',
-                        color: 'blue'
-                    });
-                    renderTasks();
-                } else {
-                    window.SkillStore.addPrioritySkill({
-                        name: value,
-                        priority: 'High',
-                        icon: '🔥'
-                    });
-                    renderPrioritySkills();
-                }
-                closeModal();
-            };
-
-            // Weekly Progress Logic
-            function updateWeeklyProgress() {
-                const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
-                const topicsDone = progressData.length;
-                const questionsSolved = topicsDone * 5; // Start with 15 if topicsDone > 0 for demo feel
-                const timeSpent = Math.max(0, Math.round(topicsDone * 0.75));
-
-                // Animate Numbers
-                animateValue('weekly-topics', 0, topicsDone, 1000);
-                animateValue('weekly-questions', 0, Math.max(topicsDone > 0 ? 15 : 0, questionsSolved), 1200);
-                animateValue('weekly-time', 0, timeSpent, 1000, 'h');
-
-                // Chart Bars (Randomized for visual effect as we don't have date data)
-                const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-                const today = new Date().getDay();
-                const chartHtml = days.map((day, i) => {
-                    // Make current day active with some height, others random small
-                    let height = 15 + Math.random() * 30;
-                    let isActive = false;
-                    if (i === today) {
-                        height = 40 + (topicsDone > 0 ? 30 : 0);
-                        isActive = topicsDone > 0;
-                    } else if (i < today && topicsDone > 0) {
-                        height = 20 + Math.random() * 40;
-                    }
-
-                    return `
-                    <div class="chart-bar-wrapper">
-                        <div class="chart-bar ${isActive ? 'active' : ''}" style="height: ${height}%;"></div>
-                        <span class="chart-day">${day}</span>
-                    </div>`;
-                }).join('');
-                document.getElementById('weekly-chart-bars').innerHTML = chartHtml;
-
-                // Recent Activity
-                const recentList = document.getElementById('recent-activity-list');
-                if (progressData.length === 0) {
-                    recentList.innerHTML = '<div class="empty-state-text">Start learning to see activity here!</div>';
-                } else {
-                    // Helper to format ID to Name
-                    const formatName = (id) => {
-                        const parts = id.split('-');
-                        return parts[parts.length - 1].replace(/([A-Z])/g, ' $1').trim();
-                    };
-
-                    // Take last 3
-                    const recent = progressData.slice(-3).reverse();
-                    recentList.innerHTML = recent.map(id => `
-                        <div class="activity-item">
-                            <div class="activity-icon">✓</div>
-                            <div class="activity-info">
-                                <div class="activity-title">${formatName(id)}</div>
-                                <div class="activity-date">Completed Just now</div>
-                            </div>
-                            <div class="activity-badge">Done</div>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            function animateValue(id, start, end, duration, suffix = '') {
-                const range = end - start;
-                const obj = document.getElementById(id);
-                let startTimestamp = null;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    obj.innerHTML = Math.floor(progress * range + start) + suffix;
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    }
-                };
-                window.requestAnimationFrame(step);
-            }
-
-            updateWeeklyProgress();
-
-            // Job Readiness Logic
-            function updateJobReadiness() {
-                // Calculate Total Items
-                const roadmap = window.RoadmapEngine ? window.RoadmapEngine.generateFullRoadmap('sde', []) : [];
-                let totalItems = 0;
-                roadmap.forEach(s => s.topics.forEach(m => totalItems += m.items.length));
-                // Fallback if 0
-                if (totalItems === 0) totalItems = 100;
-
-                const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
-                const completed = progressData.length;
-                const percentage = Math.min(100, Math.round((completed / totalItems) * 100));
-
-                // Update Text
-                const valObj = document.getElementById('readiness-value');
-                if (valObj) valObj.textContent = `${percentage}%`;
-
-                // Update Chart
-                const donut = document.getElementById('readiness-donut');
-                if (donut) {
-                    const completedDeg = percentage * 3.6;
-                    const progressDeg = completedDeg + (5 * 3.6); // 5% In Progress simulation
-
-                    setTimeout(() => {
-                        donut.style.background = `conic-gradient(
-                            var(--accent-green) 0deg ${completedDeg}deg,
-                            var(--accent-gold) ${completedDeg}deg ${progressDeg}deg,
-                            rgba(255,255,255,0.1) ${progressDeg}deg 360deg
-                        )`;
-                    }, 500);
-                }
-            }
-            updateJobReadiness();
-        });
-
-        // Logout function (can be called from sidebar)
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.removeItem('userType');
-                localStorage.removeItem('nextStep_user');
-                localStorage.removeItem('nextStep_resume');
-                localStorage.removeItem('nextStep_skills');
-                window.location.href = 'index.html';
-            }
+        if (!userDataString) {
+        // Not logged in, redirect to auth
+        alert('Please login first');
+        window.location.href = 'auth.html';
+        return;
         }
 
-        // Make logout available globally
+        const userData = JSON.parse(userDataString || '{}');
+        const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
+
+        // Display personalized greeting
+        const userName = userData.name || 'User';
+        const firstName = userName.split(' ')[0];
+        document.getElementById('user-greeting-name').textContent = firstName;
+
+        // Display role-based features
+        if (userType === 'careerGap') {
+        // Show career gap section for career gap users
+        document.getElementById('career-gap-section').style.display = 'block';
+        }
+
+        // Draw Pie Chart
+        function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
+        const total = completed + inProgress + pending;
+
+        // Helper function to create SVG path for pie segment
+        function createPieSegment(startAngle, endAngle) {
+        const radius = 80;
+        const cx = 100;
+        const cy = 100;
+
+        const startRad = (startAngle * Math.PI) / 180;
+        const endRad = (endAngle * Math.PI) / 180;
+
+        const x1 = cx + radius * Math.cos(startRad);
+        const y1 = cy + radius * Math.sin(startRad);
+        const x2 = cx + radius * Math.cos(endRad);
+        const y2 = cy + radius * Math.sin(endRad);
+
+        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+
+        return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+        }
+
+        let currentAngle = 0;
+
+        // Draw completed segment
+        const completedAngle = (completed / total) * 360;
+        if (completed > 0) {
+        document.getElementById('segment-completed').setAttribute('d',
+        createPieSegment(currentAngle, currentAngle + completedAngle));
+        }
+        currentAngle += completedAngle;
+
+        // Draw in-progress segment
+        const progressAngle = (inProgress / total) * 360;
+        if (inProgress > 0) {
+        document.getElementById('segment-progress').setAttribute('d',
+        createPieSegment(currentAngle, currentAngle + progressAngle));
+        }
+        currentAngle += progressAngle;
+
+        // Draw pending segment
+        const pendingAngle = (pending / total) * 360;
+        if (pending > 0) {
+        document.getElementById('segment-pending').setAttribute('d',
+        createPieSegment(currentAngle, currentAngle + pendingAngle));
+        }
+        }
+
+        // Initialize pie chart with default or stored values
+        const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
+        let pieData = { completed: 35, inProgress: 25, pending: 40 };
+
+        if (resumeData.readiness) {
+        const readiness = resumeData.readiness;
+        pieData = { completed: readiness, inProgress: 25, pending: 100 - readiness - 25 };
+        }
+
+        // Add click handlers to pie segments
+        function updateCenterText(label, percentage, color) {
+        const valueEl = document.getElementById('readiness-value');
+        const labelEl = document.querySelector('.pie-label');
+        if (valueEl) {
+        valueEl.textContent = percentage;
+        valueEl.style.color = color;
+        }
+        if (labelEl) labelEl.textContent = label;
+        }
+
+        document.getElementById('segment-completed').addEventListener('click', () => {
+        const total = pieData.completed + pieData.inProgress + pieData.pending;
+        const percent = Math.round((pieData.completed / total) * 100);
+        updateCenterText('Completed', percent + '%', 'var(--accent-green)');
+        });
+
+        document.getElementById('segment-progress').addEventListener('click', () => {
+        const total = pieData.completed + pieData.inProgress + pieData.pending;
+        const percent = Math.round((pieData.inProgress / total) * 100);
+        updateCenterText('In Progress', percent + '%', 'var(--accent-gold)');
+        });
+
+        document.getElementById('segment-pending').addEventListener('click', () => {
+        const total = pieData.completed + pieData.inProgress + pieData.pending;
+        const percent = Math.round((pieData.pending / total) * 100);
+        updateCenterText('Pending', percent + '%', 'rgba(255, 255, 255, 0.5)');
+        });
+
+        // Task Items Logic
+        function renderTasks() {
+        if (!window.SkillStore) return;
+        const tasks = SkillStore.getTasks();
+        document.getElementById('task-list').innerHTML = tasks.map(t => `
+        <div class="task-item ${t.completed ? 'completed' : ''}">
+            <div class="task-icon ${t.color}">${t.icon}</div>
+            <div class="task-content">
+                <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
+                <div class="task-due">${t.due}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" ${t.completed ? 'checked' : '' } onclick="toggleTask('${t.id}')">
+                <div onclick="deleteTask('${t.id}')" style="cursor: pointer; color: var(--text-muted);">✕</div>
+            </div>
+        </div>
+        `).join('');
+        }
+
+        function renderPrioritySkills() {
+        if (!window.SkillStore) return;
+        const skills = SkillStore.getPrioritySkills();
+        document.getElementById('skill-gaps').innerHTML = skills.map(s => `
+        <div class="skill-mini-item">
+            <div class="skill-mini-icon">${s.icon || '🚀'}</div>
+            <div class="skill-mini-name">${s.name}</div>
+            <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
+            <div onclick="deletePrioritySkill('${s.id}')" style="margin-left: auto; cursor: pointer;">✕</div>
+        </div>
+        `).join('');
+        }
+
+        window.toggleTask = id => { SkillStore.toggleTask(id); renderTasks(); };
+        window.deleteTask = id => { if(confirm('Delete?')) { SkillStore.deleteTask(id); renderTasks(); } };
+
+        function updateWeeklyProgress() {
+        const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
+        const topicsDone = progressData.length;
+        document.getElementById('weekly-topics').textContent = topicsDone;
+        document.getElementById('weekly-questions').textContent = topicsDone * 5;
+        document.getElementById('weekly-time').textContent = Math.round(topicsDone * 0.75) + 'h';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+        renderTasks();
+        renderPrioritySkills();
+        updateWeeklyProgress();
+        });
+
+        function logout() {
+        if (confirm('Are you sure you want to logout?')) {
+        localStorage.clear();
+        window.location.href = 'index.html';
+        }
+        }
         window.logout = logout;
-    </script>
-    <script src="js/store.js"></script>
-    <script src="js/roadmap-engine.js"></script>
-=======
-    <script src="js/firebase-config.js" type="module"></script>
->>>>>>> c35537711daf5233a996b58f63f1b3a60d91e1cd
-    <script src="js/sidebar.js"></script>
-    <script src="js/store.js"></script>
-    <script src="js/toast-notifications.js"></script>
-    <script src="js/loading-states.js"></script>
-    <script src="js/mobile-menu.js"></script>
-    <script src="js/keyboard-nav.js"></script>
-    <script src="js/counter-animation.js"></script>
-    <script src="js/click-spark.js"></script>
-    <script src="js/dashboard.js"></script>
+        </script>
+        <script src="js/firebase-config.js" type="module"></script>
+        <script src="js/roadmap-engine.js"></script>
+        <script src="js/sidebar.js"></script>
+        <script src="js/store.js"></script>
+        <script src="js/toast-notifications.js"></script>
+        <script src="js/dashboard.js"></script>
 </body>
 
 </html>
