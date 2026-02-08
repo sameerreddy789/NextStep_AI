@@ -43,23 +43,40 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Helper: Check Onboarding Status & Redirect
-    async function checkAndRedirect(user) {
+    async function handlePostAuth(user) {
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
+        let userData = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName || user.email.split('@')[0],
+            photoURL: user.photoURL
+        };
 
         if (docSnap.exists()) {
             const data = docSnap.data();
+            // Sync Firestore state to LocalStorage for route-guard.js compatibility
+            localStorage.setItem('nextStep_user', JSON.stringify({ ...userData, ...data }));
+
+            if (data.onboardingCompleted) {
+                localStorage.setItem('nextStep_onboardingCompleted', 'true');
+            }
+
             if (data.roadmapGenerated) {
                 window.location.href = "dashboard.html";
             } else if (data.onboardingCompleted) {
-                // If onboarding is done but roadmap isn't, go to resume/interview flow
                 window.location.href = "resume.html";
             } else {
-                // New user or incomplete onboarding
                 window.location.href = "onboarding.html";
             }
         } else {
-            // No doc should implies new user, but just in case
+            // First time user (likely Google)
+            userData.onboardingCompleted = false;
+            userData.roadmapGenerated = false;
+            userData.createdAt = new Date().toISOString();
+
+            await setDoc(docRef, userData);
+            localStorage.setItem('nextStep_user', JSON.stringify(userData));
             window.location.href = "onboarding.html";
         }
     }
@@ -77,14 +94,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             btn.disabled = true;
-            btn.innerHTML = `<span class="loading-spinner"></span> Signing in...`; // Optional spinner CSS
+            btn.innerHTML = `<span class="loading-spinner"></span> Signing in...`;
 
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            await checkAndRedirect(userCredential.user);
+            await handlePostAuth(userCredential.user);
 
         } catch (error) {
             console.error(error);
-            FirebaseErrorHandler.handleFirebaseError(error, 'Login failed');
+            // FirebaseErrorHandler.handleFirebaseError(error, 'Login failed');
+            if (window.Toast) {
+                window.Toast.show(error.message || 'Login failed', 'error');
+            } else {
+                alert(error.message || 'Login failed');
+            }
             btn.disabled = false;
             btn.textContent = "Sign In";
         }
@@ -102,24 +124,30 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
             btn.textContent = "Creating Account...";
 
-            // 1. Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // 2. Initialize Firestore Doc (Empty but exists)
-            await setDoc(doc(db, "users", user.uid), {
+            const userData = {
                 email: email,
+                name: email.split('@')[0],
                 createdAt: new Date().toISOString(),
                 onboardingCompleted: false,
                 roadmapGenerated: false
-            });
+            };
 
-            // 3. Redirect to Onboarding
+            await setDoc(doc(db, "users", user.uid), userData);
+            localStorage.setItem('nextStep_user', JSON.stringify(userData));
+
             window.location.href = "onboarding.html";
 
         } catch (error) {
             console.error(error);
-            FirebaseErrorHandler.handleFirebaseError(error, 'Signup failed');
+            // FirebaseErrorHandler.handleFirebaseError(error, 'Signup failed');
+            if (window.Toast) {
+                window.Toast.show(error.message || 'Signup failed', 'error');
+            } else {
+                alert(error.message || 'Signup failed');
+            }
             btn.disabled = false;
             btn.textContent = "Create Account";
         }
@@ -130,36 +158,16 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            // Check if user doc exists
-            const docRef = doc(db, "users", user.uid);
-            const docSnap = await getDoc(docRef);
-
-            if (!docSnap.exists()) {
-                // First time user -> Create doc -> Onboarding
-                await setDoc(doc(db, "users", user.uid), {
-                    email: user.email,
-                    name: user.displayName,
-                    createdAt: new Date().toISOString(),
-                    onboardingCompleted: false, // Legacy flag
-                    roadmapGenerated: false
-                });
-                window.location.href = "onboarding.html";
-            } else {
-                // Existing user -> Check status
-                if (docSnap.data().roadmapGenerated) {
-                    window.location.href = "dashboard.html";
-                } else if (docSnap.data().onboardingCompleted) {
-                    window.location.href = "resume.html";
-                } else {
-                    window.location.href = "onboarding.html";
-                }
-            }
+            await handlePostAuth(result.user);
 
         } catch (error) {
             console.error(error);
-            FirebaseErrorHandler.handleFirebaseError(error, 'Google sign-in failed');
+            // FirebaseErrorHandler.handleFirebaseError(error, 'Google sign-in failed');
+            if (window.Toast) {
+                window.Toast.show(error.message || 'Google sign-in failed', 'error');
+            } else {
+                alert(error.message || 'Google sign-in failed');
+            }
         }
     };
 });
