@@ -108,8 +108,34 @@ const RoadmapEngine = {
         }));
     },
 
-    generateFullRoadmap(role, skillGaps) {
+    generateFullRoadmap(role, skillGaps = []) {
         const data = JSON.parse(JSON.stringify(this.getRoleData(role))); // Deep copy
+
+        // Inject skill gaps if provided
+        if (skillGaps && skillGaps.length > 0) {
+            // Find or create an 'Evaluation Focus' section
+            let focusSection = data.find(s => s.title.includes('Focus Area'));
+            if (!focusSection) {
+                focusSection = {
+                    title: '🎯 Interview Focus Areas',
+                    icon: '🚀',
+                    topics: []
+                };
+                data.unshift(focusSection); // Add to beginning
+            }
+
+            // Group skill gaps into topics
+            skillGaps.forEach(gap => {
+                focusSection.topics.push({
+                    name: gap.name,
+                    items: [
+                        gap.reason === 'low_score' ? `Improve score (current: ${gap.score}%)` : `Master ${gap.name}`,
+                        `Demonstrated in: ${gap.addedFrom}`,
+                        'Review related conceptual modules'
+                    ]
+                });
+            });
+        }
 
         // Inject custom topics
         this.customTopics.forEach(custom => {
