@@ -13,7 +13,7 @@ window.ENV = {
     VITE_FIREBASE_APP_ID: '1:287110693541:web:ffa0f18467b98eadb1c34c',
     VITE_FIREBASE_MEASUREMENT_ID: 'G-6V2YXFPCD5',
     VITE_SERP_API_KEY: '88d8886347c403796d943a3a925ff87fcf93fa4cd085b8d76a69f7a606f3cb39',
-    VITE_GEMINI_API_KEY: 'AIzaSyCGOJ9A3o7SqljiikOkhPOJP4gf232zu0s'
+    VITE_GEMINI_API_KEY: 'AIzaSyBp8IHwLH0GCm0jWsJwN4Ht0u1rJKM0p4E'
 };
 
 console.log('🌍 Environment variables loaded locally');
