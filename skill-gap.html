@@ -12,6 +12,8 @@
         rel="stylesheet">
     <script src="js/env-config.js"></script>
     <script src="js/route-guard.js"></script>
+    <script src="js/serp-service.js"></script>
+    <script src="js/gemini-service.js"></script>
 </head>
 
 <body>
@@ -33,35 +35,30 @@
                     style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <div>
                         <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">Target Role</div>
-                        <div style="font-size: 24px; font-weight: 700;" id="target-role-display">Software Developer
-                        </div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 4px;">Your Readiness</div>
-                        <div style="font-size: 32px; font-weight: 700; color: var(--accent-gold);" id="readiness-score">
-                            58%</div>
-                    </div>
-                </div>
-                <div style="margin-top: 16px;">
-                    <div class="progress-bar" style="height: 10px;">
-                        <div class="progress-fill" id="readiness-bar" style="width: 58%;"></div>
+                        <div style="font-size: 24px; font-weight: 700;" id="target-role-display">Analyzing...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Skill Categories -->
-            <div class="skills-grid" style="grid-template-columns: 1fr;">
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" style="text-align: center; padding: 40px;">
+                <div class="loader-spinner"
+                    style="width: 40px; height: 40px; border: 3px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
+                </div>
+                <p style="color: var(--accent-primary); font-weight: 600;">Analyzing market trends for your role...</p>
+                <p class="text-muted" style="font-size: 14px;">Comparing your resume with industry standard requirements
+                </p>
+            </div>
+
+            <!-- Skill Categories (Hidden initially) -->
+            <div id="skills-results" class="skills-grid hidden" style="grid-template-columns: 1fr;">
                 <!-- Must-Have Skills -->
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">🔴 Must-Have Skills</h2>
                         <span class="badge badge-red">High Priority</span>
                     </div>
-                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Essential skills that most job
-                        postings require</p>
-                    <div id="must-have-skills" class="skill-gap-list">
-                        <!-- Skills will be injected -->
-                    </div>
+                    <div id="must-have-skills" class="skill-gap-list"></div>
                 </div>
 
                 <!-- Good-to-Have Skills -->
@@ -70,11 +67,7 @@
                         <h2 class="card-title">🟡 Good-to-Have Skills</h2>
                         <span class="badge badge-gold">Medium Priority</span>
                     </div>
-                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Skills that make you stand out
-                        from other candidates</p>
-                    <div id="good-to-have-skills" class="skill-gap-list">
-                        <!-- Skills will be injected -->
-                    </div>
+                    <div id="good-to-have-skills" class="skill-gap-list"></div>
                 </div>
 
                 <!-- Future-Proof Skills -->
@@ -83,19 +76,8 @@
                         <h2 class="card-title">🟢 Future-Proof Skills</h2>
                         <span class="badge badge-green">Growing Demand</span>
                     </div>
-                    <p class="text-muted" style="margin-bottom: 16px; font-size: 14px;">Emerging skills that will be
-                        valuable in the future</p>
-                    <div id="future-proof-skills" class="skill-gap-list">
-                        <!-- Skills will be injected -->
-                    </div>
+                    <div id="future-proof-skills" class="skill-gap-list"></div>
                 </div>
-            </div>
-
-            <!-- CTA -->
-            <div style="text-align: center; margin-top: 32px;">
-                <a href="roadmap.html" class="btn btn-primary btn-lg">
-                    Generate My Roadmap →
-                </a>
             </div>
         </main>
     </div>
@@ -105,6 +87,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-top: 16px;
         }
 
         .skill-gap-item {
@@ -112,37 +95,42 @@
             align-items: center;
             gap: 16px;
             padding: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-color);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            transition: var(--transition-fast);
+            transition: all 0.2s ease;
         }
 
         .skill-gap-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateX(4px);
         }
 
         .skill-gap-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 20px;
             flex-shrink: 0;
+            font-weight: 800;
         }
 
         .skill-gap-icon.present {
             background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
         }
 
         .skill-gap-icon.partial {
             background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
         }
 
         .skill-gap-icon.missing {
             background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
         }
 
         .skill-gap-content {
@@ -150,14 +138,15 @@
         }
 
         .skill-gap-name {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .skill-gap-desc {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-muted);
+            line-height: 1.4;
         }
 
         .skill-gap-status {
@@ -165,84 +154,79 @@
             flex-shrink: 0;
         }
 
-        .skill-gap-status .badge {
-            margin-bottom: 4px;
+        .skill-gap-priority {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
         }
 
-        .skill-gap-priority {
-            font-size: 12px;
-            color: var(--text-muted);
+        .hidden {
+            display: none;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 
     <script>
-        // Skill gap data based on target role
-        const SKILL_GAP_DATA = {
-            sde: {
-                mustHave: [
-                    { name: 'Data Structures & Algorithms', status: 'partial', priority: 'Critical', desc: 'Foundation for technical interviews' },
-                    { name: 'System Design', status: 'missing', priority: 'Critical', desc: 'Required for senior roles' },
-                    { name: 'JavaScript/TypeScript', status: 'present', priority: 'Essential', desc: 'Core language proficiency' },
-                    { name: 'SQL & Databases', status: 'present', priority: 'Essential', desc: 'Data management skills' },
-                    { name: 'Git & Version Control', status: 'present', priority: 'Essential', desc: 'Collaboration and code management' }
-                ],
-                goodToHave: [
-                    { name: 'Docker', status: 'partial', priority: 'High', desc: 'Containerization for deployment' },
-                    { name: 'AWS/Cloud Services', status: 'partial', priority: 'High', desc: 'Cloud infrastructure knowledge' },
-                    { name: 'CI/CD Pipelines', status: 'missing', priority: 'Medium', desc: 'Automation and deployment' },
-                    { name: 'Redis/Caching', status: 'missing', priority: 'Medium', desc: 'Performance optimization' }
-                ],
-                futureProof: [
-                    { name: 'Kubernetes', status: 'missing', priority: 'Growing', desc: 'Container orchestration' },
-                    { name: 'GraphQL', status: 'missing', priority: 'Growing', desc: 'Modern API design' },
-                    { name: 'AI/ML Basics', status: 'missing', priority: 'Emerging', desc: 'AI integration skills' },
-                    { name: 'Microservices', status: 'missing', priority: 'Growing', desc: 'Scalable architecture' }
-                ]
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}') || {};
+            const resumeDataRaw = localStorage.getItem('nextStep_resume');
+            const resumeData = (resumeDataRaw && resumeDataRaw !== 'undefined' && resumeDataRaw !== 'null') ? JSON.parse(resumeDataRaw) : { skills: [] };
+
+            const userSkills = Array.isArray(resumeData?.skills) ? resumeData.skills : [];
+            const role = userData.targetRole || 'Software Developer';
+            document.getElementById('target-role-display').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+
+            try {
+                // 1. Fetch real market context via SERP
+                const marketData = await window.SerpService.fetchRoleContext(role);
+
+                // 2. Analyze gaps via Gemini
+                const analysis = await window.GeminiService.analyzeMarketSkills(
+                    role,
+                    marketData,
+                    userSkills
+                );
+
+                // 3. Render results
+                renderSkillList('must-have-skills', analysis.mustHave);
+                renderSkillList('good-to-have-skills', analysis.goodToHave);
+                renderSkillList('future-proof-skills', analysis.futureProof);
+
+                // 4. Show results
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('skills-results').classList.remove('hidden');
+
+            } catch (error) {
+                console.error('Skill Gap Analysis Failed:', error);
+                document.getElementById('loading-overlay').innerHTML = `
+                    <div style="color: #ef4444; padding: 20px;">
+                        <div style="font-size: 40px; margin-bottom: 10px;">⚠️</div>
+                        <h3 style="margin-bottom: 8px;">Analysis Failed</h3>
+                        <p style="font-size:14px; opacity:0.8;">${error.message}</p>
+                        <button onclick="location.reload()" class="btn btn-secondary btn-sm" style="margin-top:20px;">Try Again</button>
+                    </div>
+                `;
             }
-        };
-
-        // Load user data
-        document.addEventListener('DOMContentLoaded', () => {
-            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-            const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
-
-
-
-            const roleNames = {
-                'sde': 'Software Developer',
-                'frontend': 'Frontend Developer',
-                'backend': 'Backend Developer',
-                'fullstack': 'Full Stack Developer',
-                'data-analyst': 'Data Analyst',
-                'data-scientist': 'Data Scientist',
-                'ml-engineer': 'ML Engineer',
-                'devops': 'DevOps Engineer',
-                'product': 'Product Manager',
-                'designer': 'UI/UX Designer'
-            };
-
-            const role = userData.targetRole || 'sde';
-
-            document.getElementById('target-role-display').textContent = roleNames[role] || 'Software Developer';
-
-            if (resumeData.readiness) {
-                document.getElementById('readiness-score').textContent = resumeData.readiness + '%';
-                document.getElementById('readiness-bar').style.width = resumeData.readiness + '%';
-            }
-
-            // Render skill gaps
-            const data = SKILL_GAP_DATA[role] || SKILL_GAP_DATA.sde;
-            renderSkillList('must-have-skills', data.mustHave);
-            renderSkillList('good-to-have-skills', data.goodToHave);
-            renderSkillList('future-proof-skills', data.futureProof);
         });
 
         function renderSkillList(containerId, skills) {
             const container = document.getElementById(containerId);
+            if (!skills || skills.length === 0) {
+                container.innerHTML = '<p class="text-muted" style="padding: 20px; text-align: center;">No specific skills identified in this category.</p>';
+                return;
+            }
+
             container.innerHTML = skills.map(skill => {
                 const statusIcon = skill.status === 'present' ? '✓' : skill.status === 'partial' ? '◐' : '✗';
-                const statusLabel = skill.status === 'present' ? 'You Have' : skill.status === 'partial' ? 'Partial' : 'Missing';
-                const badgeClass = skill.status === 'present' ? 'badge-green' : skill.status === 'partial' ? 'badge-gold' : 'badge-red';
+                const statusLabel = skill.status === 'present' ? 'Demonstrated' : skill.status === 'partial' ? 'Partial' : 'Missing';
+                const badgeClass = skill.status === 'present' ? 'badge-primary' : skill.status === 'partial' ? 'badge-gold' : 'badge-red';
 
                 return `
                     <div class="skill-gap-item">
