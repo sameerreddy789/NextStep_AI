@@ -131,19 +131,31 @@
                         </div>
                         <div class="readiness-chart">
                             <div class="pie-chart-container">
-                                <!-- SVG Pie Chart (Targets for js/dashboard.js) -->
-                                <svg class="pie-svg" viewBox="0 0 200 200">
-                                    <path id="segment-completed" class="pie-segment segment-completed"
-                                        d="M 100 100 L 100 20 Z"></path>
-                                    <path id="segment-progress" class="pie-segment segment-progress"
-                                        d="M 100 100 L 100 20 Z"></path>
-                                    <path id="segment-pending" class="pie-segment segment-pending"
-                                        d="M 100 100 L 100 20 Z">
-                                    </path>
-                                </svg>
-                                <div class="pie-center-text">
-                                    <span id="readiness-value" class="pie-value">0%</span>
-                                    <span class="pie-label">Readiness</span>
+                                <div class="pie-donut">
+                                    <!-- SVG Pie Chart -->
+                                    <svg class="pie-svg" viewBox="0 0 200 200">
+                                        <defs>
+                                            <filter id="glow">
+                                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                                                <feMerge>
+                                                    <feMergeNode in="coloredBlur" />
+                                                    <feMergeNode in="SourceGraphic" />
+                                                </feMerge>
+                                            </filter>
+                                        </defs>
+                                        <circle cx="100" cy="100" r="80" fill="rgba(255,255,255,0.03)" />
+                                        <path id="segment-completed" class="pie-segment segment-completed"
+                                            filter="url(#glow)"></path>
+                                        <path id="segment-progress" class="pie-segment segment-progress"
+                                            filter="url(#glow)"></path>
+                                        <path id="segment-pending" class="pie-segment segment-pending"></path>
+                                        <!-- Donut Hole -->
+                                        <circle class="pie-donut-hole" cx="100" cy="100" r="60"></circle>
+                                    </svg>
+                                    <div class="pie-center-text">
+                                        <span id="readiness-value" class="pie-value">0%</span>
+                                        <span class="pie-label">Readiness</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="readiness-legend">
@@ -157,7 +169,7 @@
                                 </div>
                                 <div class="legend-item">
                                     <span class="legend-dot gray"></span>
-                                    <span>Pending</span>
+                                    <span>Not Started</span>
                                 </div>
                             </div>
                         </div>
@@ -448,24 +460,24 @@
         }
 
         .pie-donut {
-            width: 220px;
-            height: 220px;
+            width: 240px;
+            height: 240px;
             border-radius: 50%;
-            background: conic-gradient(rgba(255, 255, 255, 0.1) 0deg 360deg);
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            transition: background 1s ease;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .pie-donut::before {
-            content: "";
-            width: 160px;
-            height: 160px;
-            background: var(--bg-card);
-            border-radius: 50%;
-            position: absolute;
+        .pie-donut-hole {
+            fill: #1A1F29;
+            /* Matches card background */
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 1;
         }
 
         .pie-center-text {
@@ -479,10 +491,12 @@
 
         .pie-value {
             display: block;
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--accent-green);
+            font-size: 42px;
+            font-weight: 800;
+            color: var(--text-primary);
             line-height: 1;
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .pie-label {
@@ -490,8 +504,10 @@
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 4px;
+            letter-spacing: 2.5px;
+            margin-top: 6px;
+            font-weight: 700;
+            opacity: 0.8;
         }
 
         .readiness-legend {
@@ -543,8 +559,16 @@
         }
 
         .pie-segment {
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            stroke-linecap: round;
+        }
+
+        .pie-segment:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+            transform-origin: center;
+            filter: brightness(1.2) drop-shadow(0 0 8px currentColor);
         }
 
         .segment-completed {

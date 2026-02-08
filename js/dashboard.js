@@ -71,19 +71,30 @@ function renderStats() {
 function renderCharts() {
     if (window.SkillStore) {
         const skills = SkillStore.getSkills();
-        const completed = skills.filter(s => s.level === 'Expert').length;
-        const inProgress = skills.filter(s => s.level === 'Intermediate' || s.level === 'Beginner').length;
-        const pending = skills.filter(s => s.level === 'Missing').length;
+
+        // Categorize skills based on growth stages
+        let completed = 0;
+        let inProgress = 0;
+        let pending = 0;
+
+        skills.forEach(s => {
+            if (s.progress >= 90) completed++;
+            else if (s.progress > 0) inProgress++;
+            else pending++;
+        });
+
         drawPieChart(completed, inProgress, pending);
     }
 }
 
 // Draw Pie Chart
-function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
+function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
     const total = completed + inProgress + pending;
-    if (total === 0) return;
 
     function createPieSegment(startAngle, endAngle) {
+        // Handle full circle case
+        if (endAngle - startAngle >= 360) endAngle = startAngle + 359.99;
+
         const radius = 80;
         const cx = 100, cy = 100;
         const startRad = (startAngle * Math.PI) / 180;
@@ -92,41 +103,74 @@ function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
         const y1 = cy + radius * Math.sin(startRad);
         const x2 = cx + radius * Math.cos(endRad);
         const y2 = cy + radius * Math.sin(endRad);
-        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+        const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
         return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    }
+
+    // Default state: Clear all paths if total is 0
+    if (total === 0) {
+        ['segment-completed', 'segment-progress', 'segment-pending'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.setAttribute('d', '');
+        });
+        const pendingSeg = document.getElementById('segment-pending');
+        if (pendingSeg) pendingSeg.setAttribute('d', createPieSegment(0, 359.9));
+        return;
     }
 
     let currentAngle = 0;
     const segments = [
         { id: 'segment-completed', val: completed, color: 'var(--accent-green)', label: 'Completed' },
         { id: 'segment-progress', val: inProgress, color: 'var(--accent-gold)', label: 'In Progress' },
-        { id: 'segment-pending', val: pending, color: 'rgba(255,255,255,0.1)', label: 'Pending' }
+        { id: 'segment-pending', val: pending, color: 'rgba(255,255,255,0.1)', label: 'Not Started' }
     ];
+
+    let resetTimer = null;
+    const resetCenterText = () => {
+        const valueEl = document.getElementById('readiness-value');
+        const labelEl = document.querySelector('.pie-label');
+        const readinessPercent = window.SkillStore ? SkillStore.getReadiness() : 0;
+        if (valueEl) {
+            valueEl.textContent = `${readinessPercent}%`;
+            valueEl.style.color = 'var(--text-primary)';
+        }
+        if (labelEl) labelEl.textContent = 'Readiness';
+    };
 
     segments.forEach(seg => {
         const el = document.getElementById(seg.id);
-        if (el && seg.val > 0) {
-            const angle = (seg.val / total) * 360;
-            el.setAttribute('d', createPieSegment(currentAngle, currentAngle + angle));
+        if (el) {
+            if (seg.val > 0) {
+                const angle = (seg.val / total) * 360;
+                const pathData = createPieSegment(currentAngle, currentAngle + angle);
+                el.setAttribute('d', pathData);
 
-            // Add click interaction
-            el.onclick = () => {
-                const percent = Math.round((seg.val / total) * 100);
-                const valueEl = document.getElementById('readiness-value');
-                const labelEl = document.querySelector('.pie-label');
-                if (valueEl) {
-                    valueEl.textContent = `${percent}%`;
-                    valueEl.style.color = seg.color;
-                }
-                if (labelEl) labelEl.textContent = seg.label;
-            };
+                // Add click interaction
+                el.onclick = () => {
+                    const percent = Math.round((seg.val / total) * 100);
+                    const valueEl = document.getElementById('readiness-value');
+                    const labelEl = document.querySelector('.pie-label');
+                    if (valueEl) {
+                        valueEl.textContent = `${percent}%`;
+                        valueEl.style.color = seg.color;
+                    }
+                    if (labelEl) labelEl.textContent = seg.label;
 
-            currentAngle += angle;
+                    // Clear and restart reset timer
+                    if (resetTimer) clearTimeout(resetTimer);
+                    resetTimer = setTimeout(resetCenterText, 3000);
+                };
+
+                currentAngle += angle;
+            } else {
+                el.setAttribute('d', ''); // Hide if 0
+                el.onclick = null;
+            }
         }
     });
 
-    const readinessValue = document.getElementById('readiness-value');
-    if (readinessValue) readinessValue.textContent = `${Math.round((completed / total) * 100)}%`;
+    // Initial score display
+    resetCenterText();
 }
 
 // Task & Skill Management

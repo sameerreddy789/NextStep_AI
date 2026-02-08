@@ -409,6 +409,12 @@ function getStats() {
     };
 }
 
+function getReadiness() {
+    const stats = getStats();
+    return stats.avgProgress;
+}
+
+
 function getGrowthStage(progress) {
     return GROWTH_STAGES.find(s => progress >= s.min && progress < s.max) || GROWTH_STAGES[4];
 }
@@ -460,6 +466,7 @@ window.SkillStore = {
     logProgress,
     getStats,
     getGrowthStage,
+    getReadiness,
     getRecentActivity,
     getTopSkills,
     getUser,
