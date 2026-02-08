@@ -73,13 +73,13 @@ window.openSubtopicPractice = function (sectionTitle, topicName) {
 };
 
 // Initializer
-window.initRoadmap = function (role, isSample) {
+window.initRoadmap = function (role, isSample, skillGaps = []) {
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
 
     const sectionsData = isSample
         ? RoadmapEngine.generateSampleRoadmap(role)
-        : RoadmapEngine.generateFullRoadmap(role, []);
+        : RoadmapEngine.generateFullRoadmap(role, skillGaps);
 
     container.innerHTML = sectionsData.map((section, idx) => {
         const isDSA = section.title.includes('Data Structures') || idx === 1;
