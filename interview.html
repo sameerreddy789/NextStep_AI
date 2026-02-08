@@ -12,8 +12,10 @@
     <link rel="stylesheet" href="css/celebration-modal.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="css/editor.css">
     <script src="js/route-guard.js"></script>
     <script src="js/gemini-service.js"></script>
+    <script src="js/editor.js"></script>
 </head>
 
 <body>
@@ -137,12 +139,31 @@
                                         </div>
                                     </div>
 
-                                    <!-- Code Editor Input -->
+                                    <!-- Code Editor Input (Monaco Integration) -->
                                     <div id="code-input-container" class="hidden"
                                         style="flex: 1; display: flex; flex-direction: column;">
-                                        <div class="code-editor" id="code-editor" style="flex: 1;">
-                                            <textarea class="code-area" id="code-area" spellcheck="false"
-                                                placeholder="// Write your solution here..."></textarea>
+                                        <div class="editor-container">
+                                            <div class="editor-toolbar">
+                                                <select class="lang-select" id="editor-lang-select"
+                                                    onchange="window.EditorManager.setLanguage(this.value)">
+                                                    <option value="javascript">JavaScript</option>
+                                                    <option value="python">Python</option>
+                                                    <option value="java">Java</option>
+                                                </select>
+                                                <button class="run-btn" onclick="window.EditorManager.run()">
+                                                    ▶ Run Code
+                                                </button>
+                                            </div>
+                                            <div id="monaco-editor-host" class="monaco-editor-host"></div>
+                                            <div class="editor-console">
+                                                <div class="console-header">
+                                                    <span>Output</span>
+                                                    <span
+                                                        onclick="document.getElementById('console-output').innerHTML=''"
+                                                        style="cursor:pointer">Clear</span>
+                                                </div>
+                                                <div id="console-output" class="console-output"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1199,12 +1220,33 @@
                 document.getElementById('language-select').classList.remove('hidden');
                 document.getElementById('answer-label').textContent = 'Your Solution';
                 aiInterviewer.classList.add('hidden'); // Hide AI for code questions
+                aiInterviewer.classList.add('hidden'); // Hide AI for code questions
 
-                // Inject boilerplate if empty
-                const lang = document.getElementById('language-select').value || 'javascript';
-                const codeArea = document.getElementById('code-area');
-                if (!codeArea.value) {
-                    codeArea.value = BOILERPLATES[lang];
+                // Initialize Editor if not already done (lazy load)
+                if (window.EditorManager) {
+                    setTimeout(() => {
+                        window.EditorManager.init('monaco-editor-host');
+
+                        // Map category to language
+                        let lang = 'javascript';
+                        const cat = q.category.toLowerCase();
+                        if (cat.includes('python')) lang = 'python';
+                        else if (cat.includes('java')) lang = 'java';
+                        else if (cat.includes('c++')) lang = 'cpp';
+
+                        window.EditorManager.setLanguage(lang);
+                        if (document.getElementById('editor-lang-select')) {
+                            document.getElementById('editor-lang-select').value = lang;
+                        }
+
+                        // Inject custom boilerplate if first time
+                        if (!window.MonacoEditor.getValue() || window.MonacoEditor.getValue().includes('Hello World')) {
+                            const customBoilerplate = BOILERPLATES[lang];
+                            if (customBoilerplate) {
+                                window.MonacoEditor.setValue(customBoilerplate);
+                            }
+                        }
+                    }, 100);
                 }
             } else {
                 // Text/Speech Mode
@@ -1237,7 +1279,7 @@
 
             let answer = '';
             if (q.type === 'code') {
-                answer = document.getElementById('code-area').value.trim();
+                answer = window.EditorManager ? window.EditorManager.getValue() : '';
             } else {
                 answer = document.getElementById('answer-input').value.trim();
             }

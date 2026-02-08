@@ -96,15 +96,20 @@ class OrbitalTimeline {
     }
 
     getIcon(iconName) {
-        // Simple SVG mapping for Lucide-like icons
+        // Updated SVG mapping for more suitable navigation icons
         const icons = {
-            'Calendar': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>',
-            'FileText': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
-            'Code': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>',
-            'User': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
-            'Clock': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>'
+            // Milestone (was Calendar/Roadmap)
+            'Milestone': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"></path><path d="M12 13v8"></path><path d="M12 3v3"></path></svg>',
+            // UserSquare (was FileText/Resume)
+            'UserSquare': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="12" cy="10" r="3"></circle><path d="M7 21v-2a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"></path></svg>',
+            // Target (was Code/Skill Gap)
+            'Target': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>',
+            // Mic2 (was User/Interview)
+            'Mic2': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>',
+            // TrendingUp (was Clock/Progress)
+            'TrendingUp': '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>'
         };
-        return icons[iconName] || icons['FileText'];
+        return icons[iconName] || icons['UserSquare'];
     }
 
     setupEventListeners() {
@@ -275,7 +280,7 @@ const timelineData = [
         date: "Step 1",
         content: "Upload your resume and get AI-powered skill extraction, ATS compatibility scoring, and personalized improvement suggestions.",
         status: "completed",
-        icon: "FileText",
+        icon: "UserSquare",
         relatedIds: [2, 3],
         energy: 100
     },
@@ -285,7 +290,7 @@ const timelineData = [
         date: "Step 2",
         content: "Practice with adaptive AI mock interviews. Choose technical, behavioral, or mixed modes tailored to your target role.",
         status: "in-progress",
-        icon: "User",
+        icon: "Mic2",
         relatedIds: [1, 3, 4],
         energy: 75
     },
@@ -295,7 +300,7 @@ const timelineData = [
         date: "Step 3",
         content: "Identify missing critical skills for your dream job. Get prioritized recommendations based on market demand.",
         status: "in-progress",
-        icon: "Code",
+        icon: "Target",
         relatedIds: [1, 2, 4],
         energy: 60
     },
@@ -305,7 +310,7 @@ const timelineData = [
         date: "Step 4",
         content: "Follow a personalized 6-week learning plan with curated YouTube tutorials and LeetCode problems.",
         status: "pending",
-        icon: "Calendar",
+        icon: "Milestone",
         relatedIds: [3, 5],
         energy: 40
     },
@@ -315,7 +320,7 @@ const timelineData = [
         date: "Ongoing",
         content: "Track your daily activities, maintain streaks, and monitor your Job Readiness Score as you improve.",
         status: "pending",
-        icon: "Clock",
+        icon: "TrendingUp",
         relatedIds: [4],
         energy: 20
     }

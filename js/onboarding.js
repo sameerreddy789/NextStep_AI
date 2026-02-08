@@ -41,12 +41,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // If roadmap is already generated, go straight to dashboard
                 if (data.roadmapGenerated) {
+                    localStorage.setItem('nextStep_onboardingCompleted', 'true');
+                    localStorage.setItem('nextStep_roadmapCompleted', 'true');
+                    localStorage.setItem('nextStep_user', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        name: data.name || user.displayName || user.email.split('@')[0],
+                        ...data
+                    }));
                     window.location.href = 'dashboard.html';
                     return;
                 }
 
                 // If onboarding is done, go to next step (resume)
                 if (data.onboardingCompleted) {
+                    localStorage.setItem('nextStep_onboardingCompleted', 'true');
+                    localStorage.setItem('nextStep_user', JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        name: data.name || user.displayName || user.email.split('@')[0],
+                        ...data
+                    }));
                     window.location.href = 'resume.html';
                     return;
                 }
@@ -239,6 +254,7 @@ async function finishOnboarding() {
         }, { merge: true });
 
         // Update Local Storage for Dashboard compatibility
+        localStorage.setItem("nextStep_onboardingCompleted", "true");
         localStorage.setItem("userType", userData.careerGoal === 'Student' ? 'student' : 'careerGap');
         const nextStepUser = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
         localStorage.setItem("nextStep_user", JSON.stringify({

@@ -263,6 +263,141 @@ function initKeyboardShortcuts(shortcuts = {}) {
     });
 }
 
+/**
+ * Shows a modal with all available keyboard shortcuts
+ */
+function showKeyboardShortcutsModal() {
+    const shortcuts = [
+        { key: '?', description: 'Show keyboard shortcuts' },
+        { key: 'D', description: 'Go to Dashboard' },
+        { key: 'R', description: 'Go to Roadmap' },
+        { key: 'I', description: 'Go to Interview' },
+        { key: 'P', description: 'Go to Profile' },
+        { key: 'Esc', description: 'Close modals / Go back' },
+        { key: 'Enter', description: 'Continue / Submit' }
+    ];
+
+    const modal = document.createElement('div');
+    modal.className = 'dialog-overlay keyboard-shortcuts-modal';
+    modal.innerHTML = `
+        <div class="dialog-content" style="max-width: 400px;">
+            <div class="shortcuts-header">
+                <h3 class="dialog-title">⌨️ Keyboard Shortcuts</h3>
+                <button class="shortcuts-close" onclick="this.closest('.dialog-overlay').remove()">✕</button>
+            </div>
+            <div class="shortcuts-list">
+                ${shortcuts.map(s => `
+                    <div class="shortcut-item">
+                        <kbd class="shortcut-key">${s.key}</kbd>
+                        <span class="shortcut-desc">${s.description}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 16px; text-align: center;">
+                Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px;">Esc</kbd> to close
+            </p>
+        </div>
+    `;
+
+    // Add styles if not already present
+    if (!document.getElementById('shortcuts-modal-styles')) {
+        const style = document.createElement('style');
+        style.id = 'shortcuts-modal-styles';
+        style.textContent = `
+            .shortcuts-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .shortcuts-header .dialog-title {
+                margin: 0;
+            }
+            .shortcuts-close {
+                background: none;
+                border: none;
+                color: var(--text-muted);
+                font-size: 18px;
+                cursor: pointer;
+                padding: 4px;
+            }
+            .shortcuts-close:hover {
+                color: var(--text-primary);
+            }
+            .shortcuts-list {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            .shortcut-item {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+            }
+            .shortcut-key {
+                min-width: 50px;
+                padding: 6px 12px;
+                background: rgba(99, 102, 241, 0.2);
+                border: 1px solid rgba(99, 102, 241, 0.3);
+                border-radius: 6px;
+                font-family: 'SF Mono', 'Monaco', monospace;
+                font-size: 13px;
+                color: #a5b4fc;
+                text-align: center;
+            }
+            .shortcut-desc {
+                color: var(--text-secondary);
+                font-size: 14px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(modal);
+
+    // Close on overlay click or Escape
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+    });
+    document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', escHandler);
+        }
+    });
+}
+
+/**
+ * Shows first-visit keyboard shortcuts hint
+ */
+function showKeyboardShortcutsHint() {
+    if (localStorage.getItem('shortcuts_hint_shown')) return;
+
+    setTimeout(() => {
+        showToast('💡 Pro tip: Press ? to see keyboard shortcuts', 'info', 5000);
+        localStorage.setItem('shortcuts_hint_shown', 'true');
+    }, 2000); // Show after 2 seconds
+}
+
+// Initialize global shortcuts and hint on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Skip on landing/auth pages
+    const page = window.location.pathname.split('/').pop();
+    if (page === 'index.html' || page === 'auth.html' || page === '') return;
+
+    // Initialize keyboard shortcuts
+    initKeyboardShortcuts({
+        '?': showKeyboardShortcutsModal,
+        'd': () => window.location.href = 'dashboard.html',
+        'r': () => window.location.href = 'roadmap.html',
+        'i': () => window.location.href = 'interview.html',
+        'p': () => window.location.href = 'profile.html'
+    });
+
+    // Show first-visit hint
+    showKeyboardShortcutsHint();
+});
+
 // Export functions for use in other modules
 if (typeof window !== 'undefined') {
     window.UIUtils = {
@@ -275,7 +410,8 @@ if (typeof window !== 'undefined') {
         showConfirmDialog,
         updateProgress,
         createEmptyState,
-        initKeyboardShortcuts
+        initKeyboardShortcuts,
+        showKeyboardShortcutsModal,
+        showKeyboardShortcutsHint
     };
 }
-
