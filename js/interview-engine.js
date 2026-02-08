@@ -26,8 +26,8 @@ let currentMode = 'mixed';
 let currentQuestionIndex = 0;
 let answers = [];
 let timerInterval = null;
-let timeLeft = 600; // 10 minutes global
-let initialTime = 600;
+let timeLeft = 2700; // 45 minutes global
+let initialTime = 2700;
 let autoSaveInterval = null;
 let AI_QUESTIONS = null;
 
@@ -202,6 +202,10 @@ window.startInterview = async function (mode) {
     document.getElementById('mode-selection').classList.add('hidden');
     document.getElementById('interview-section').classList.remove('hidden');
     document.getElementById('interview-mode-badge').textContent = 'Adaptive Interview';
+
+    // Show video slot
+    const videoSlot = document.querySelector('.floating-cam');
+    if (videoSlot) videoSlot.classList.remove('hidden');
 
     const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
     const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
@@ -398,4 +402,8 @@ window.completeInterview = function () {
     localStorage.removeItem('nextStep_interview_autosave');
     document.getElementById('interview-section').classList.add('hidden');
     document.getElementById('complete-section').classList.remove('hidden');
+
+    // Hide video slot
+    const videoSlot = document.querySelector('.floating-cam');
+    if (videoSlot) videoSlot.classList.add('hidden');
 };

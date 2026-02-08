@@ -21,6 +21,7 @@
 <body>
     <div class="app-container">
         <!-- Sidebar (populated by sidebar.js) -->
+        <!-- Sidebar (populated by sidebar.js) -->
         <aside class="sidebar"></aside>
 
         <!-- Main Content -->
@@ -73,14 +74,6 @@
                                 <div id="timer" class="timer-text">10:00</div>
                             </div>
 
-                            <div class="fixed-cam-slot">
-                                <div class="video-container mini-cam">
-                                    <video id="webcam-feed" autoplay playsinline muted></video>
-                                    <div class="live-indicator">
-                                        <div class="live-dot"></div> LIVE
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="interview-progress">
@@ -99,16 +92,39 @@
                                     </h2>
                                 </div>
 
-                                <div class="answer-tips">
-                                    <span>💡 Tips:</span>
-                                    <span>Be specific</span>
-                                    <span>Use examples</span>
-                                    <span>Structure your answer</span>
-                                </div>
+                                <details class="answer-tips-accordion">
+                                    <summary>💡 Review Interview Tips</summary>
+                                    <div class="tips-content">
+                                        <ul>
+                                            <li><strong>Be specific:</strong> Use the STAR method for behavioral
+                                                questions.</li>
+                                            <li><strong>Use examples:</strong> Relate your answers to past projects.
+                                            </li>
+                                            <li><strong>Structure:</strong> Start with a summary, then dive into
+                                                details.</li>
+                                            <li><strong>Optimization:</strong> For code, discuss time/space complexity.
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </details>
                             </div>
 
                             <!-- Right Panel: Input Area -->
                             <div class="right-panel">
+                                <div class="video-container floating-cam hidden" id="video-slot">
+                                    <video id="webcam-feed" autoplay playsinline muted></video>
+                                    <div class="live-indicator">
+                                        <div class="live-dot"></div> LIVE
+                                    </div>
+                                    <div class="privacy-overlay hidden" id="privacy-overlay">
+                                        <div class="avatar-placeholder">👤</div>
+                                    </div>
+                                    <button class="privacy-toggle-mini"
+                                        onclick="window.interviewMedia.togglePrivacyMode()" title="Toggle Privacy">
+                                        <span id="privacy-icon">👁️</span>
+                                    </button>
+                                </div>
+
                                 <div class="answer-section">
                                     <div class="answer-header">
                                         <label style="font-size: 14px; font-weight: 500;" id="answer-label">Your
@@ -149,14 +165,19 @@
                                     <!-- Code Editor Input (Monaco Integration) -->
                                     <div id="code-input-container" class="hidden"
                                         style="flex: 1; display: flex; flex-direction: column;">
-                                        <div class="editor-container">
-                                            <div class="editor-toolbar">
-                                                <select class="lang-select" id="editor-lang-select"
-                                                    onchange="window.EditorManager.setLanguage(this.value)">
-                                                    <option value="javascript">JavaScript</option>
-                                                    <option value="python">Python</option>
-                                                    <option value="java">Java</option>
-                                                </select>
+                                        <div class="editor-container ide-mode">
+                                            <div class="editor-toolbar-top">
+                                                <div class="toolbar-group">
+                                                    <select class="lang-select" id="editor-lang-select"
+                                                        onchange="window.EditorManager.setLanguage(this.value)">
+                                                        <option value="javascript">JavaScript</option>
+                                                        <option value="python">Python</option>
+                                                        <option value="java">Java</option>
+                                                    </select>
+                                                    <button class="theme-toggle"
+                                                        onclick="window.EditorManager.toggleTheme()"
+                                                        title="Toggle Theme">🌓</button>
+                                                </div>
                                                 <button class="run-btn" onclick="window.EditorManager.run()">
                                                     ▶ Run Code
                                                 </button>
@@ -507,98 +528,145 @@
             }
         }
 
-        .fixed-cam-slot {
+        /* Right Side Video Slot */
+        .right-panel {
+            position: relative;
+            /* For absolute floating-cam */
+        }
+
+        .video-container.floating-cam {
             position: absolute;
             top: 24px;
             right: 24px;
             width: 180px;
-            z-index: 100;
-        }
-
-        .video-container.mini-cam {
-            width: 100%;
-            aspect-ratio: 4/3;
+            aspect-ratio: 16/9;
             border-radius: 12px;
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: #000;
             overflow: hidden;
-            position: relative;
+            z-index: 100;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
         }
 
-        #webcam-feed {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
+        .video-container.floating-cam.hidden {
+            display: none;
         }
 
-        .live-indicator {
+        .privacy-overlay {
             position: absolute;
-            top: 12px;
-            left: 12px;
+            inset: 0;
+            background: #1a1a1a;
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 4px 8px;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 800;
-            color: white;
-            letter-spacing: 0.5px;
+            justify-content: center;
+            z-index: 5;
         }
 
-        .live-dot {
-            width: 6px;
-            height: 6px;
-            background: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 8px #ef4444;
-            animation: pulse-red 1.5s infinite;
-        }
-
-        /* Circular Timer styles */
-        .timer-container-circular {
+        .privacy-toggle-mini {
             position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 80px;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .timer-svg {
+        .privacy-toggle-mini:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Master Grid Split */
+        .interview-grid {
+            display: block;
+            /* Overriding previous grid if any */
+        }
+
+        .interview-split-layout {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 24px;
             width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
+            align-items: start;
+            /* Align tops */
         }
 
-        .timer-bg {
-            fill: none;
-            stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 6;
+        .left-panel,
+        .right-panel {
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
         }
 
-        .timer-progress {
-            fill: none;
-            stroke: var(--accent-primary);
-            stroke-width: 6;
-            stroke-linecap: round;
-            stroke-dasharray: 283;
-            stroke-dashoffset: 0;
-            transition: stroke-dashoffset 1s linear, stroke 0.3s ease;
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
-        .timer-text {
-            position: absolute;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
+        /* IDE Mode Editor */
+        .editor-container.ide-mode {
+            background: #1e1e1e;
+            border-radius: 16px;
+            border: 1px solid #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .editor-toolbar-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            background: #252526;
+            border-bottom: 1px solid #333;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .monaco-editor-host {
+            flex: 1;
+            min-height: 400px;
+        }
+
+        .editor-console {
+            background: #121212;
+            height: 180px;
+            border-top: 1px solid #333;
         }
 
 
@@ -769,13 +837,53 @@
             letter-spacing: 0.5px;
         }
 
-        .transcript-preview {
+        /* Tips Accordion */
+        .answer-tips-accordion {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .answer-tips-accordion[open] {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .answer-tips-accordion summary {
+            padding: 12px 16px;
             font-size: 14px;
-            line-height: 1.6;
+            font-weight: 600;
+            color: var(--accent-primary);
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            user-select: none;
+        }
+
+        .answer-tips-accordion summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .tips-content {
+            padding: 0 16px 16px 40px;
+        }
+
+        .tips-content ul {
+            margin: 0;
+            padding: 0;
+            list-style: disc;
+        }
+
+        .tips-content li {
+            font-size: 13px;
             color: var(--text-secondary);
-            font-style: italic;
-            min-height: 20px;
-            animation: fadeIn 0.2s;
+            margin-bottom: 8px;
+            line-height: 1.5;
         }
 
         .transcript-preview:empty::before {

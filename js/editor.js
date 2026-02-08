@@ -159,5 +159,11 @@ window.EditorManager = {
     init: initEditor,
     setLanguage: setLanguage,
     run: runCode,
+    toggleTheme: () => {
+        if (!EditorState.editor) return;
+        const currentTheme = EditorState.editor._themeService._theme.id === 'vs-dark' ? 'vs' : 'vs-dark';
+        monaco.editor.setTheme(currentTheme);
+        console.log(`Editor theme set to ${currentTheme}`);
+    },
     getValue: () => EditorState.editor ? EditorState.editor.getValue() : ''
 };

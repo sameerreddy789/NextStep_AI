@@ -212,6 +212,19 @@ class InterviewMedia {
             return false; // Failed to start
         }
     }
+
+    // Privacy Mode Toggle
+    togglePrivacyMode() {
+        const overlay = document.getElementById('privacy-overlay');
+        const icon = document.getElementById('privacy-icon');
+        if (!overlay) return;
+
+        const isHidden = overlay.classList.toggle('hidden');
+        if (icon) {
+            icon.textContent = isHidden ? '👁️' : '🙈';
+        }
+        console.log(`Privacy mode ${isHidden ? 'disabled' : 'enabled'}`);
+    }
 }
 
 // Export global instance
