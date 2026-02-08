@@ -1,0 +1,101 @@
+/* Editor Layout */
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #1e1e1e;
+    border-radius: 8px;
+    border: 1px solid #333;
+    overflow: hidden;
+}
+
+.monaco-editor-host {
+    flex: 1;
+    min-height: 300px;
+    /* Ensure generic height */
+    position: relative;
+}
+
+/* Console / Output */
+.editor-console {
+    height: 120px;
+    background: #111;
+    border-top: 1px solid #333;
+    color: #fff;
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+}
+
+.console-header {
+    padding: 6px 12px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.console-output {
+    flex: 1;
+    padding: 10px 12px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    color: #d4d4d4;
+}
+
+/* Toolbar */
+.editor-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: #252526;
+    border-bottom: 1px solid #333;
+}
+
+.lang-select {
+    background: #333;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    outline: none;
+}
+
+.run-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #238636;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.run-btn:hover {
+    background: #2ea043;
+}
+
+.run-btn:active {
+    transform: translateY(1px);
+}
+
+/* Overrides for Monaco in our theme */
+.monaco-editor-background {
+    background-color: #1e1e1e !important;
+}
+
+.margin {
+    background-color: #1e1e1e !important;
+}
