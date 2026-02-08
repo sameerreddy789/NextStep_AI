@@ -16,7 +16,7 @@
     <!-- Scripts -->
     <script src="js/route-guard.js"></script>
     <!-- Load Environment Variables -->
-    <script type="module" src="js/env-loader.js"></script>
+    <script src="js/env-config.js"></script>
     <script src="js/serp-service.js"></script>
     <script src="js/roadmap-engine.js"></script>
     <script src="js/roadmap-customizer.js"></script>
@@ -120,14 +120,14 @@
             <div id="gated-modal" class="modal-overlay hidden">
                 <div class="modal-content">
                     <div class="modal-icon">🔒</div>
-                    <h2 class="modal-title">Interview Required</h2>
+                    <h2 class="modal-title">Assessment Required</h2>
                     <p class="modal-desc">
-                        Your roadmap is generated based on your real skill assessment.
-                        Complete a short AI interview to unlock your personalized roadmap.
+                        We need to know your current skills to build your path.
+                        Please upload your resume or complete an interview to unlock your roadmap.
                     </p>
                     <div class="modal-actions">
-                        <a href="interview.html" class="btn btn-primary">Take Interview Now</a>
-                        <button onclick="unlockSampleMode()" class="btn btn-secondary">View Sample Roadmap</button>
+                        <a href="resume.html" class="btn btn-primary">Upload Resume</a>
+                        <a href="interview.html" class="btn btn-secondary">Take Interview</a>
                     </div>
                 </div>
             </div>
@@ -684,14 +684,23 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             const hasInterview = localStorage.getItem('nextStep_interview');
+            const hasResume = localStorage.getItem('nextStep_resume');
+            const roadmapData = JSON.parse(localStorage.getItem('nextStep_roadmap') || '{"skills":[]}');
+            const skillGaps = roadmapData.skills || [];
+
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const userRole = userData.targetRole || 'sde';
 
-            // Gated Access Logic
-            if (!hasInterview) {
+            // Gated Access Logic: Allow if either resume OR interview is completed
+            if (!hasInterview && !hasResume) {
                 document.getElementById('gated-modal').classList.remove('hidden');
             } else {
-                initRoadmap(userRole, false);
+                initRoadmap(userRole, false, skillGaps);
+
+                // Track if we need to show a "nudge" for interview
+                if (!hasInterview) {
+                    console.log("[Roadmap] Unlocked via Resume. Suggested: Complete interview for better accuracy.");
+                }
 
                 // Fix: Mark roadmap as completed to allow dashboard access
                 localStorage.setItem('nextStep_roadmapCompleted', 'true');
@@ -702,7 +711,6 @@
                     if (user) {
                         try {
                             const userRef = doc(db, "users", user.uid);
-                            // We use updateDoc because the document should already exist (created in auth/onboarding)
                             await updateDoc(userRef, {
                                 roadmapGenerated: true
                             });
