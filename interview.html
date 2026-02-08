@@ -13,6 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="css/editor.css">
+    <script src="js/env-config.js"></script>
     <script src="js/route-guard.js"></script>
     <script src="js/gemini-service.js"></script>
     <script src="js/editor.js"></script>
@@ -114,8 +115,8 @@
 
                                 <details class="answer-tips-accordion">
                                     <summary>💡 Review Interview Tips</summary>
-                                    <div class="tips-content">
-                                        <ul>
+                                    <div class="tips-content" id="tips-content">
+                                        <ul id="tips-list">
                                             <li><strong>Be specific:</strong> Use the STAR method for behavioral
                                                 questions.</li>
                                             <li><strong>Use examples:</strong> Relate your answers to past projects.
@@ -152,6 +153,20 @@
                                             <div class="transcript-preview" id="transcript-preview"></div>
                                         </div>
 
+                                        <!-- AI Feedback Area (Correct/Wrong) -->
+                                        <div id="ai-evaluation-feedback" class="hidden"
+                                            style="margin-top: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--border-color); transition: all 0.3s ease; background: rgba(255,255,255,0.02);">
+                                            <div
+                                                style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                                <span id="feedback-icon" style="font-size: 24px;">✅</span>
+                                                <span id="feedback-status"
+                                                    style="font-size: 18px; font-weight: 700;">Correct</span>
+                                            </div>
+                                            <p id="feedback-text"
+                                                style="font-size: 14px; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                                            </p>
+                                        </div>
+
                                         <!-- Mic Button Below Transcript -->
                                         <div style="margin-top: 12px; display: flex; justify-content: center;">
                                             <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
@@ -180,13 +195,21 @@
                                                 <button class="run-btn" onclick="window.EditorManager.run()">
                                                     ▶ Run Code
                                                 </button>
+                                                <button id="validate-logic-btn" class="run-btn"
+                                                    onclick="window.validateCodingSolution()"
+                                                    style="background: var(--accent-primary); border-left: 1px solid rgba(255,255,255,0.1);">
+                                                    🧠 Validate Logic
+                                                </button>
                                             </div>
                                             <div id="monaco-editor-host" class="monaco-editor-host"></div>
                                             <div class="editor-console">
                                                 <div class="console-header">
                                                     <span>Output</span>
+                                                    <div id="logic-outcome-badge" class="hidden"
+                                                        style="margin-left: auto; margin-right: 12px; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+                                                    </div>
                                                     <span
-                                                        onclick="document.getElementById('console-output').innerHTML=''"
+                                                        onclick="document.getElementById('console-output').innerHTML=''; document.getElementById('logic-outcome-badge').classList.add('hidden');"
                                                         style="cursor:pointer">Clear</span>
                                                 </div>
                                                 <div id="console-output" class="console-output"></div>
@@ -219,15 +242,156 @@
     </div>
 
     <!-- Interview Complete -->
-    <div id="complete-section" class="hidden" style="text-align: center; padding: 60px 20px;">
-        <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
-        <h2 style="font-size: 32px; margin-bottom: 12px;">Interview Complete!</h2>
-        <p class="text-muted" style="margin-bottom: 32px;">Great job! Your responses are being analyzed by AI.
-        </p>
-        <a href="skill-gap.html" class="btn btn-primary btn-lg">
-            View Skill Analysis →
-        </a>
+    <div id="complete-section" class="hidden" style="max-width: 900px; margin: 0 auto; padding: 60px 20px;">
+        <div id="completion-header" style="text-align: center; margin-bottom: 48px;">
+            <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
+            <h2 style="font-size: 32px; margin-bottom: 12px;">Interview Complete!</h2>
+            <p class="text-muted" style="margin-bottom: 32px;">Great job! Your responses are being analyzed by AI.</p>
+        </div>
+
+        <!-- Analysis Loading State -->
+        <div id="results-loading" class="hidden" style="text-align: center; margin: 40px 0;">
+            <div class="loader-spinner"
+                style="width: 50px; height: 50px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
+            </div>
+            <p style="font-weight: 600; color: var(--accent-primary);">Analyzing your performance with AI...</p>
+            <p class="text-muted" style="font-size: 14px;">This usually takes 10-20 seconds.</p>
+        </div>
+
+        <!-- Detailed Results View -->
+        <div id="results-view" class="hidden">
+            <div class="overall-score-card"
+                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; padding: 40px; text-align: center; margin-bottom: 40px;">
+                <div
+                    style="font-size: 14px; font-weight: 600; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                    Overall Performance Score</div>
+                <div id="overall-score-value" style="font-size: 72px; font-weight: 800; color: white;">0%</div>
+                <p id="overall-summary" class="text-secondary" style="margin: 16px auto 0; max-width: 500px;"></p>
+            </div>
+
+            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: left;">Detailed Question
+                Analysis</h3>
+            <div id="results-list" style="display: grid; gap: 24px; margin-bottom: 48px; text-align: left;">
+                <!-- Result cards will be injected here -->
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 20px;">
+                <a href="skill-gap.html" class="btn btn-primary btn-lg">
+                    See Full Skill Gap Analysis →
+                </a>
+                <a href="dashboard.html" class="btn btn-secondary btn-lg">
+                    Go to Dashboard
+                </a>
+            </div>
+        </div>
     </div>
+
+    <style>
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+
+        .result-score {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .score-high {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .score-mid {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .score-low {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .result-content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-block h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .result-block p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .strength-pill {
+            background: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .improvement-pill {
+            background: rgba(99, 102, 241, 0.08);
+            color: #818cf8;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .user-answer-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-left: 3px solid var(--border-color);
+            margin-top: 8px;
+        }
+    </style>
 
     <!-- Custom Modal for Alerts & Confirmations -->
     <div id="custom-modal" class="modal-overlay hidden">
@@ -512,17 +676,19 @@
             height: auto;
         }
 
-        .question-title {
-            font-size: 24px;
+        .question-text {
+            font-size: 20px;
+            /* Reduced from 24px */
             font-weight: 700;
             margin: 0 0 16px 0;
             color: var(--text-primary);
-            line-height: 1.3;
+            line-height: 1.4;
         }
 
         .question-description {
-            font-size: 16px;
-            line-height: 1.7;
+            font-size: 14px;
+            /* Reduced from 16px */
+            line-height: 1.6;
             color: var(--text-secondary);
             margin-bottom: 24px;
         }
@@ -1065,16 +1231,109 @@
             }
         }
 
-        .modal-container {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 420px;
-            width: 90%;
+        /* AI Loading Screen */
+        .ai-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 11, 26, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: all 0.5s ease;
+        }
+
+        .ai-loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .ai-loader-content {
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            animation: modal-slide-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 400px;
+        }
+
+        .ai-pulse-large {
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--accent-primary) 0%, transparent 70%);
+            border-radius: 50%;
+            margin: 0 auto 32px;
+            animation: pulse-ring 2s infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5);
+            }
+
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 40px rgba(99, 102, 241, 0);
+            }
+
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+
+        .loading-text-glitch {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .loading-subtext {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .progress-bar-loading {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin: 24px auto 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill-loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 50%;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            animation: progress-slide 1.5s infinite ease-in-out;
+        }
+
+        @keyframes progress-slide {
+            0% {
+                left: -50%;
+            }
+
+            100% {
+                left: 100%;
+            }
         }
 
         @keyframes modal-slide-up {
@@ -1250,7 +1509,21 @@
         }
     </style>
 
-    <script src="js/interview-engine.js"></script>
+    <div class="ai-loading-overlay hidden" id="ai-loading-screen">
+        <div class="ai-loader-content">
+            <div class="ai-pulse-large">🤖</div>
+            <div class="loading-text-glitch">Generating Interview</div>
+            <div class="loading-subtext">Our AI is analyzing your skills to create a personalized assessment tailored to
+                your background...</div>
+            <div class="progress-bar-loading">
+                <div class="progress-bar-fill-loading"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script type="module" src="js/skill-gap-service.js"></script>
+    <script type="module" src="js/interview-engine.js"></script>
     <script src="js/interview-media.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/click-spark.js"></script>
