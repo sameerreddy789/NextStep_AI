@@ -6,6 +6,7 @@
 const STORAGE_KEY = 'nextStep_skills';
 const USER_KEY = 'nextStep_user';
 const TASKS_KEY = 'nextStep_tasks';
+const PRIORITY_SKILLS_KEY = 'nextStep_priority_skills';
 
 // Default skills for demo
 const DEFAULT_SKILLS = [
@@ -107,6 +108,13 @@ const DEFAULT_TASKS = [
     { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true }
 ];
 
+// Default Priority Skills
+const DEFAULT_PRIORITY_SKILLS = [
+    { id: 'ps1', name: 'System Design', priority: 'High', icon: '🏗️' },
+    { id: 'ps2', name: 'Kubernetes', priority: 'High', icon: '☸️' },
+    { id: 'ps3', name: 'CI/CD', priority: 'Medium', icon: '🚀' }
+];
+
 // Categories definition
 const CATEGORIES = {
     programming: { name: 'Programming', icon: '💻', color: '#60a5fa' },
@@ -165,6 +173,19 @@ function getTasks() {
 
 function saveTasks(tasks) {
     localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+}
+
+function getPrioritySkills() {
+    const stored = localStorage.getItem(PRIORITY_SKILLS_KEY);
+    if (!stored) {
+        localStorage.setItem(PRIORITY_SKILLS_KEY, JSON.stringify(DEFAULT_PRIORITY_SKILLS));
+        return DEFAULT_PRIORITY_SKILLS;
+    }
+    return JSON.parse(stored);
+}
+
+function savePrioritySkills(skills) {
+    localStorage.setItem(PRIORITY_SKILLS_KEY, JSON.stringify(skills));
 }
 
 // ============ Skill CRUD ============
@@ -261,6 +282,44 @@ function toggleTask(id) {
     return null;
 }
 
+function addTask(task) {
+    const tasks = getTasks();
+    const newTask = {
+        id: `task-${Date.now()}`,
+        status: 'pending',
+        completed: false,
+        ...task
+    };
+    tasks.push(newTask);
+    saveTasks(tasks);
+    return newTask;
+}
+
+function deleteTask(id) {
+    const tasks = getTasks();
+    const filtered = tasks.filter(t => t.id !== id);
+    saveTasks(filtered);
+}
+
+// ============ Priority Skills CRUD ============
+
+function addPrioritySkill(skill) {
+    const skills = getPrioritySkills();
+    const newSkill = {
+        id: `ps-${Date.now()}`,
+        ...skill
+    };
+    skills.push(newSkill);
+    savePrioritySkills(skills);
+    return newSkill;
+}
+
+function deletePrioritySkill(id) {
+    const skills = getPrioritySkills();
+    const filtered = skills.filter(s => s.id !== id);
+    savePrioritySkills(filtered);
+}
+
 // ============ Analytics ============
 
 function getStats() {
@@ -350,5 +409,10 @@ window.SkillStore = {
     CATEGORIES,
     GROWTH_STAGES,
     getTasks,
-    toggleTask
+    toggleTask,
+    addTask,
+    deleteTask,
+    getPrioritySkills,
+    addPrioritySkill,
+    deletePrioritySkill
 };

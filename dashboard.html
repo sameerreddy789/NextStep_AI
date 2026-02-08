@@ -39,7 +39,7 @@
 
             <!-- Stats Cards -->
             <div class="stats-row">
-                <div class="stat-card-new green">
+                <div class="stat-card-new">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Skills Covered</span>
                         <span class="stat-card-icon">↗</span>
@@ -85,40 +85,40 @@
             <!-- Grid Layout -->
             <div class="dashboard-grid">
                 <!-- Weekly Progress Chart -->
+                <!-- Weekly Progress & Recent Activity -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Weekly Progress</h3>
                     </div>
-                    <div class="chart-container">
-                        <div class="bar-chart">
-                            <div class="bar-item">
-                                <div class="bar" style="height: 45%;" data-value="45%"></div>
-                                <span>S</span>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar" style="height: 60%;" data-value="60%"></div>
-                                <span>M</span>
-                            </div>
-                            <div class="bar-item active">
-                                <div class="bar" style="height: 75%;" data-value="75%"></div>
-                                <span>T</span>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar" style="height: 55%;" data-value="55%"></div>
-                                <span>W</span>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar" style="height: 80%;" data-value="80%"></div>
-                                <span>T</span>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar" style="height: 65%;" data-value="65%"></div>
-                                <span>F</span>
-                            </div>
-                            <div class="bar-item">
-                                <div class="bar" style="height: 40%;" data-value="40%"></div>
-                                <span>S</span>
-                            </div>
+
+                    <!-- Key Metrics -->
+                    <div class="weekly-metrics">
+                        <div class="metric-item">
+                            <div class="metric-value" id="weekly-topics">0</div>
+                            <div class="metric-label">Topics</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="weekly-questions">0</div>
+                            <div class="metric-label">Questions</div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-item">
+                            <div class="metric-value" id="weekly-time">0h</div>
+                            <div class="metric-label">Time Spent</div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Chart (Simplified) -->
+                    <div class="simple-chart-container" id="weekly-chart-bars">
+                        <!-- Bars injected by JS -->
+                    </div>
+
+                    <!-- Recent Activity List -->
+                    <div class="recent-activity-container">
+                        <h4 class="section-subtitle">RECENTLY COMPLETED</h4>
+                        <div class="activity-list" id="recent-activity-list">
+                            <div class="empty-state-text">Start learning to see activity here!</div>
                         </div>
                     </div>
                 </div>
@@ -130,22 +130,12 @@
                     </div>
                     <div class="readiness-chart">
                         <div class="pie-chart-container">
-                            <svg viewBox="0 0 200 200" class="pie-chart">
-                                <!-- Background circle -->
-                                <circle cx="100" cy="100" r="80" fill="rgba(255, 255, 255, 0.05)" />
-
-                                <!-- Pie segments (will be updated by JS) -->
-                                <path id="segment-completed" class="pie-segment completed" d="" />
-                                <path id="segment-progress" class="pie-segment progress" d="" />
-                                <path id="segment-pending" class="pie-segment pending" d="" />
-
-                                <!-- Center hole for donut effect -->
-                                <circle cx="100" cy="100" r="50" fill="var(--bg-card)" />
-                            </svg>
+                            <div class="pie-donut" id="readiness-donut"></div>
                             <div class="pie-center-text">
-                                <span id="readiness-value" class="pie-value"></span>
-                                <span class="pie-label"></span>
+                                <span id="readiness-value" class="pie-value">0%</span>
+                                <span class="pie-label">Readiness</span>
                             </div>
+
                         </div>
                         <div class="readiness-legend">
                             <div class="legend-item">
@@ -167,7 +157,10 @@
                 <!-- Upcoming Tasks -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">My Tasks</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <h3 class="card-title">My Tasks</h3>
+                            <button class="add-icon-btn" onclick="openAddModal('task')">+</button>
+                        </div>
                         <a href="roadmap.html" class="card-action">View All</a>
                     </div>
                     <div class="task-list" id="task-list">
@@ -214,9 +207,13 @@
 
 
                 <!-- Skill Gaps -->
+                <!-- Skill Gaps -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Priority Skills</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <h3 class="card-title">Priority Skills</h3>
+                            <button class="add-icon-btn" onclick="openAddModal('priority')">+</button>
+                        </div>
                         <a href="skill-gap.html" class="card-action">View All</a>
                     </div>
                     <div class="skill-gap-mini" id="skill-gaps">
@@ -225,6 +222,23 @@
                 </div>
 
         </main>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Add Item</div>
+                <div class="modal-close" onclick="closeModal()">✕</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Select Skill/Topic</label>
+                <select class="form-select" id="item-select">
+                    <!-- Populated by JS -->
+                </select>
+            </div>
+            <button class="btn-add-item" onclick="saveNewItem()">Add Item</button>
+        </div>
     </div>
 
     <style>
@@ -315,18 +329,14 @@
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 20px;
-            transition: var(--transition-fast);
+            transition: all 0.3s ease-in-out;
         }
 
         .stat-card-new:hover {
             transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 10px 40px rgba(0, 0, 0, 0.3);
-            border-color: rgba(99, 102, 241, 0.4);
-        }
-
-        .stat-card-new.green {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
-            border-color: rgba(16, 185, 129, 0.3);
+            border-color: rgba(16, 185, 129, 0.5);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3), 0 10px 40px rgba(0, 0, 0, 0.3);
         }
 
         .stat-card-header {
@@ -358,7 +368,7 @@
             margin-bottom: 8px;
         }
 
-        .stat-card-new.green .stat-card-value {
+        .stat-card-new:hover .stat-card-value {
             color: var(--accent-green);
         }
 
@@ -438,31 +448,25 @@
             margin-bottom: 24px;
         }
 
-        .pie-chart {
-            width: 100%;
-            height: 100%;
-            transform: rotate(-90deg);
+        .pie-donut {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: conic-gradient(rgba(255, 255, 255, 0.1) 0deg 360deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: background 1s ease;
         }
 
-        .pie-segment {
-            cursor: pointer;
-            transition: opacity 0.3s ease, filter 0.3s ease;
-        }
-
-        .pie-segment:hover {
-            filter: brightness(1.2);
-        }
-
-        .pie-segment.completed {
-            fill: var(--accent-green);
-        }
-
-        .pie-segment.progress {
-            fill: var(--accent-gold);
-        }
-
-        .pie-segment.pending {
-            fill: rgba(255, 255, 255, 0.1);
+        .pie-donut::before {
+            content: "";
+            width: 160px;
+            height: 160px;
+            background: var(--bg-card);
+            border-radius: 50%;
+            position: absolute;
         }
 
         .pie-center-text {
@@ -671,6 +675,253 @@
             background: rgba(245, 158, 11, 0.2);
             color: var(--accent-gold);
         }
+
+        /* Weekly Progress Styles */
+        .weekly-metrics {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .simple-chart-container {
+            margin-bottom: 24px;
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+
+        .chart-bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .chart-bar {
+            width: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .chart-bar.active {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .chart-day {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .section-subtitle {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .activity-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .activity-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .activity-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            font-weight: 600;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .empty-state-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            padding: 20px;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            outline: none;
+        }
+
+        .form-select option {
+            background: #1a1a1a;
+        }
+
+        .btn-add-item {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .add-icon-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--accent-green);
+            transition: 0.2s;
+            text-decoration: none;
+        }
+
+        .add-icon-btn:hover {
+            background: var(--accent-green);
+            color: white;
+        }
     </style>
 
     <script>
@@ -795,30 +1046,47 @@
             function renderTasks() {
                 const tasks = window.SkillStore.getTasks();
                 document.getElementById('task-list').innerHTML = tasks.map(t => `
-                    <div class="task-item" onclick="toggleTask('${t.id}')" style="cursor: pointer; opacity: ${t.completed ? '0.6' : '1'}">
+                    <div class="task-item" style="opacity: ${t.completed ? '0.6' : '1'}">
                         <div class="task-icon ${t.color}">${t.icon}</div>
                         <div class="task-content">
                             <div class="task-title" style="text-decoration: ${t.completed ? 'line-through' : 'none'}">${t.title}</div>
                             <div class="task-due">${t.due}</div>
                         </div>
-                        <div class="task-check-circle" style="
-                            width: 20px; 
-                            height: 20px; 
-                            border: 2px solid ${t.completed ? 'var(--accent-green)' : 'var(--border-color)'}; 
-                            border-radius: 50%; 
-                            display: flex; 
-                            align-items: center; 
-                            justify-content: center;
-                            background: ${t.completed ? 'var(--accent-green)' : 'transparent'}
-                        ">
-                            ${t.completed ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="task-check-circle" onclick="toggleTask('${t.id}')" style="
+                                width: 22px; 
+                                height: 22px; 
+                                border: 2px solid ${t.completed ? 'var(--accent-green)' : 'var(--border-color)'}; 
+                                border-radius: 50%; 
+                                display: flex; 
+                                cursor: pointer;
+                                align-items: center; 
+                                justify-content: center;
+                                background: ${t.completed ? 'var(--accent-green)' : 'transparent'}
+                            ">
+                                ${t.completed ? '<span style="color: white; font-size: 12px;">✓</span>' : ''}
+                            </div>
+                            <div onclick="deleteTask('${t.id}')" style="cursor: pointer; color: var(--text-muted); font-size: 18px;">✕</div>
                         </div>
+                    </div>
+                `).join('');
+            }
+
+            function renderPrioritySkills() {
+                const skills = window.SkillStore.getPrioritySkills();
+                document.getElementById('skill-gaps').innerHTML = skills.map(s => `
+                    <div class="skill-mini-item">
+                        <div class="skill-mini-icon">${s.icon || '🚀'}</div>
+                        <div class="skill-mini-name">${s.name}</div>
+                        <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
+                        <div onclick="deletePrioritySkill('${s.id}')" style="margin-left: auto; cursor: pointer; color: var(--text-muted); padding: 4px;">✕</div>
                     </div>
                 `).join('');
             }
 
             // Initial render
             renderTasks();
+            renderPrioritySkills();
 
             // Toggle function
             window.toggleTask = function (id) {
@@ -826,20 +1094,186 @@
                 renderTasks();
             };
 
-            // Render skill gaps
-            const skillGaps = [
-                { name: 'System Design', priority: 'High' },
-                { name: 'Kubernetes', priority: 'High' },
-                { name: 'CI/CD', priority: 'Medium' }
-            ];
+            window.deleteTask = function (id) {
+                if (confirm('Delete this task?')) {
+                    window.SkillStore.deleteTask(id);
+                    renderTasks();
+                }
+            };
 
-            document.getElementById('skill-gaps').innerHTML = skillGaps.map(s => `
-                <div class="skill-mini-item">
-                    <div class="skill-mini-icon">✗</div>
-                    <div class="skill-mini-name">${s.name}</div>
-                    <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
-                </div>
-            `).join('');
+            window.deletePrioritySkill = function (id) {
+                if (confirm('Remove from priority?')) {
+                    window.SkillStore.deletePrioritySkill(id);
+                    renderPrioritySkills();
+                }
+            };
+
+            // Modal Logic
+            let currentModalType = '';
+
+            window.openAddModal = function (type) {
+                currentModalType = type;
+                const modal = document.querySelector('.modal-overlay');
+                const title = document.getElementById('modal-title');
+                const select = document.getElementById('item-select');
+
+                title.textContent = type === 'task' ? 'Add New Task' : 'Add Priority Skill';
+                select.innerHTML = '<option value="">Select a topic...</option>';
+
+                // Populate from RoadmapEngine
+                const roadmap = window.RoadmapEngine ? window.RoadmapEngine.generateFullRoadmap('sde', []) : [];
+                roadmap.forEach(section => {
+                    section.topics.forEach(module => {
+                        module.items.forEach(item => {
+                            const opt = document.createElement('option');
+                            opt.value = item;
+                            opt.textContent = item;
+                            select.appendChild(opt);
+                        });
+                    });
+                });
+
+                modal.classList.add('active');
+            };
+
+            window.closeModal = function () {
+                document.querySelector('.modal-overlay').classList.remove('active');
+            };
+
+            window.saveNewItem = function () {
+                const select = document.getElementById('item-select');
+                const value = select.value;
+                if (!value) return;
+
+                if (currentModalType === 'task') {
+                    window.SkillStore.addTask({
+                        title: value,
+                        due: 'This Week',
+                        icon: '📝',
+                        color: 'blue'
+                    });
+                    renderTasks();
+                } else {
+                    window.SkillStore.addPrioritySkill({
+                        name: value,
+                        priority: 'High',
+                        icon: '🔥'
+                    });
+                    renderPrioritySkills();
+                }
+                closeModal();
+            };
+
+            // Weekly Progress Logic
+            function updateWeeklyProgress() {
+                const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
+                const topicsDone = progressData.length;
+                const questionsSolved = topicsDone * 5; // Start with 15 if topicsDone > 0 for demo feel
+                const timeSpent = Math.max(0, Math.round(topicsDone * 0.75));
+
+                // Animate Numbers
+                animateValue('weekly-topics', 0, topicsDone, 1000);
+                animateValue('weekly-questions', 0, Math.max(topicsDone > 0 ? 15 : 0, questionsSolved), 1200);
+                animateValue('weekly-time', 0, timeSpent, 1000, 'h');
+
+                // Chart Bars (Randomized for visual effect as we don't have date data)
+                const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+                const today = new Date().getDay();
+                const chartHtml = days.map((day, i) => {
+                    // Make current day active with some height, others random small
+                    let height = 15 + Math.random() * 30;
+                    let isActive = false;
+                    if (i === today) {
+                        height = 40 + (topicsDone > 0 ? 30 : 0);
+                        isActive = topicsDone > 0;
+                    } else if (i < today && topicsDone > 0) {
+                        height = 20 + Math.random() * 40;
+                    }
+
+                    return `
+                    <div class="chart-bar-wrapper">
+                        <div class="chart-bar ${isActive ? 'active' : ''}" style="height: ${height}%;"></div>
+                        <span class="chart-day">${day}</span>
+                    </div>`;
+                }).join('');
+                document.getElementById('weekly-chart-bars').innerHTML = chartHtml;
+
+                // Recent Activity
+                const recentList = document.getElementById('recent-activity-list');
+                if (progressData.length === 0) {
+                    recentList.innerHTML = '<div class="empty-state-text">Start learning to see activity here!</div>';
+                } else {
+                    // Helper to format ID to Name
+                    const formatName = (id) => {
+                        const parts = id.split('-');
+                        return parts[parts.length - 1].replace(/([A-Z])/g, ' $1').trim();
+                    };
+
+                    // Take last 3
+                    const recent = progressData.slice(-3).reverse();
+                    recentList.innerHTML = recent.map(id => `
+                        <div class="activity-item">
+                            <div class="activity-icon">✓</div>
+                            <div class="activity-info">
+                                <div class="activity-title">${formatName(id)}</div>
+                                <div class="activity-date">Completed Just now</div>
+                            </div>
+                            <div class="activity-badge">Done</div>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            function animateValue(id, start, end, duration, suffix = '') {
+                const range = end - start;
+                const obj = document.getElementById(id);
+                let startTimestamp = null;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    obj.innerHTML = Math.floor(progress * range + start) + suffix;
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            updateWeeklyProgress();
+
+            // Job Readiness Logic
+            function updateJobReadiness() {
+                // Calculate Total Items
+                const roadmap = window.RoadmapEngine ? window.RoadmapEngine.generateFullRoadmap('sde', []) : [];
+                let totalItems = 0;
+                roadmap.forEach(s => s.topics.forEach(m => totalItems += m.items.length));
+                // Fallback if 0
+                if (totalItems === 0) totalItems = 100;
+
+                const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
+                const completed = progressData.length;
+                const percentage = Math.min(100, Math.round((completed / totalItems) * 100));
+
+                // Update Text
+                const valObj = document.getElementById('readiness-value');
+                if (valObj) valObj.textContent = `${percentage}%`;
+
+                // Update Chart
+                const donut = document.getElementById('readiness-donut');
+                if (donut) {
+                    const completedDeg = percentage * 3.6;
+                    const progressDeg = completedDeg + (5 * 3.6); // 5% In Progress simulation
+
+                    setTimeout(() => {
+                        donut.style.background = `conic-gradient(
+                            var(--accent-green) 0deg ${completedDeg}deg,
+                            var(--accent-gold) ${completedDeg}deg ${progressDeg}deg,
+                            rgba(255,255,255,0.1) ${progressDeg}deg 360deg
+                        )`;
+                    }, 500);
+                }
+            }
+            updateJobReadiness();
         });
 
         // Logout function (can be called from sidebar)
@@ -856,6 +1290,8 @@
         // Make logout available globally
         window.logout = logout;
     </script>
+    <script src="js/store.js"></script>
+    <script src="js/roadmap-engine.js"></script>
     <script src="js/sidebar.js"></script>
     <script src="js/toast-notifications.js"></script>
     <script src="js/loading-states.js"></script>

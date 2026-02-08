@@ -57,25 +57,31 @@ const ROLE_TOPICS = {
     ],
     'sde': [
         {
+            title: 'Aptitude & Reasoning',
+            icon: '🧠',
+            topics: [
+                { name: 'Quantitative Aptitude', items: ['Number Systems', 'Percentages & Ratios', 'Time, Speed & Distance'] },
+                { name: 'Logical Reasoning', items: ['Seating Arrangement', 'Blood Relations', 'Syllogisms'] },
+                { name: 'Verbal Ability', items: ['Reading Comprehension', 'Sentence Correction', 'Vocabulary'] }
+            ]
+        },
+        {
             title: 'Data Structures & Algorithms',
+            icon: '⚡',
             topics: [
-                { name: 'Linear DS', items: ['Arrays & Strings', 'Linked Lists', 'Stacks & Queues'] },
-                { name: 'Non-Linear DS', items: ['Trees (BST, AVL)', 'Heaps', 'Graphs (BFS, DFS)'] },
-                { name: 'Algorithm Patterns', items: ['Sliding Window', 'Two Pointers', 'Dynamic Programming'] }
+                { name: 'Linear Data Structures', items: ['Arrays & Strings', 'Linked Lists', 'Stacks & Queues'] },
+                { name: 'Non-Linear Data Structures', items: ['Trees (BST, Heap)', 'Graphs (BFS, DFS)', 'Hash Tables'] },
+                { name: 'Algorithm Paradigms', items: ['Dynamic Programming', 'Greedy Algorithms', 'Backtracking'] }
             ]
         },
         {
-            title: 'Low Level Design (LLD)',
+            title: 'CS Fundamentals',
+            icon: '💻',
             topics: [
-                { name: 'OOPS Principles', items: ['SOLID', 'Encapsulation', 'Polymorphism'] },
-                { name: 'Design Patterns', items: ['Singleton', 'Factory', 'Observer', 'Strategy'] }
-            ]
-        },
-        {
-            title: 'Computer Science Fundamentals',
-            topics: [
-                { name: 'Operating Systems', items: ['Process vs Thread', 'Scheduling', 'Memory Management'] },
-                { name: 'Computer Networks', items: ['TCP/IP', 'HTTP/HTTPS', 'DNS', 'Websockets'] }
+                { name: 'Operating Systems', items: ['Process Management', 'Memory Management', 'Concurrency'] },
+                { name: 'DBMS', items: ['SQL vs NoSQL', 'Normalization', 'ACID Properties'] },
+                { name: 'Computer Networks', items: ['OSI Model', 'TCP/IP', 'HTTP/HTTPS'] },
+                { name: 'OOPS', items: ['Encapsulation', 'Polymorphism', 'Inheritance'] }
             ]
         }
     ]

@@ -58,8 +58,10 @@
                         <div class="interview-header">
                             <div>
                                 <span class="badge badge-primary" id="interview-mode-badge">Technical Interview</span>
-                                <div style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">
-                                    Question <span id="current-q">1</span> of <span id="total-q">10</span>
+                                <div>
+                                    <span class="badge badge-primary" id="interview-mode-badge">Technical
+                                        Interview</span>
+                                    <!-- Navigation added below via JS -->
                                 </div>
                             </div>
                             <div class="interview-timer">
@@ -68,96 +70,109 @@
                             </div>
                         </div>
 
+                        <div class="question-nav" id="question-nav">
+                            <!-- Nav buttons injected by JS -->
+                        </div>
+
                         <div class="interview-progress">
-                            <div class="progress-bar" style="height: 6px;">
+                            <div class="progress-bar" style="height: 4px;">
                                 <div class="progress-fill" id="interview-progress" style="width: 10%;"></div>
                             </div>
                         </div>
 
-                        <div class="question-card">
-                            <div class="question-category" id="question-category">Data Structures</div>
-                            <h2 class="question-text" id="question-text">
-                                Explain the difference between a stack and a queue. When would you use each?
-                            </h2>
-                        </div>
+                        <div class="interview-split-layout">
+                            <!-- Left Panel: Question & Context -->
+                            <div class="left-panel">
+                                <div class="question-card">
+                                    <div class="question-category" id="question-category">Data Structures</div>
+                                    <h2 class="question-text" id="question-text">
+                                        Explain the difference between a stack and a queue. When would you use each?
+                                    </h2>
+                                </div>
 
-                        <div class="answer-section">
-                            <div class="answer-header">
-                                <label style="font-size: 14px; font-weight: 500;" id="answer-label">Your Answer</label>
-                                <div class="answer-tools">
-                                    <span id="code-lang-badge" class="badge badge-secondary hidden"
-                                        style="font-size: 11px;">JavaScript</span>
+                                <div class="answer-tips">
+                                    <span>💡 Tips:</span>
+                                    <span>Be specific</span>
+                                    <span>Use examples</span>
+                                    <span>Structure your answer</span>
                                 </div>
                             </div>
 
-                            <!-- Text/Speech Input -->
-                            <div id="text-input-container">
-                                <textarea class="answer-input" id="answer-input"
-                                    placeholder="Type your answer here or use the microphone... Be clear and structured in your response."></textarea>
-
-                                <!-- Real-time Speech Transcription Preview -->
-                                <div class="transcript-preview-container">
-                                    <div class="transcript-label">
-                                        <span>🎤 Live Transcription:</span>
+                            <!-- Right Panel: Input Area -->
+                            <div class="right-panel">
+                                <div class="answer-section">
+                                    <div class="answer-header">
+                                        <label style="font-size: 14px; font-weight: 500;" id="answer-label">Your
+                                            Answer</label>
+                                        <div class="answer-tools">
+                                            <select id="language-select" class="language-select hidden">
+                                                <option value="javascript">JavaScript</option>
+                                                <option value="python">Python</option>
+                                                <option value="java">Java</option>
+                                                <option value="cpp">C++</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="transcript-preview" id="transcript-preview"></div>
+
+                                    <!-- Text/Speech Input -->
+                                    <div id="text-input-container"
+                                        style="flex: 1; display: flex; flex-direction: column;">
+                                        <textarea class="answer-input" id="answer-input"
+                                            placeholder="Type your answer here or use the microphone... Be clear and structured in your response."></textarea>
+
+                                        <!-- Real-time Speech Transcription Preview -->
+                                        <div class="transcript-preview-container">
+                                            <div class="transcript-label">
+                                                <span>🎤 Live Transcription:</span>
+                                            </div>
+                                            <div class="transcript-preview" id="transcript-preview"></div>
+                                        </div>
+
+                                        <!-- Mic Button Below Transcript -->
+                                        <div style="margin-top: 12px; display: flex; justify-content: center;">
+                                            <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
+                                                <span class="mic-icon">🎤</span>
+                                                <span id="mic-status">Start Speaking</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Code Editor Input -->
+                                    <div id="code-input-container" class="hidden"
+                                        style="flex: 1; display: flex; flex-direction: column;">
+                                        <div class="code-editor" id="code-editor" style="flex: 1;">
+                                            <textarea class="code-area" id="code-area" spellcheck="false"
+                                                placeholder="// Write your solution here..."></textarea>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <!-- Mic Button Below Transcript -->
-                                <div style="margin-top: 12px; display: flex; justify-content: center;">
-                                    <button id="mic-btn" class="mic-btn" onclick="toggleSpeech()">
-                                        <span class="mic-icon">🎤</span>
-                                        <span id="mic-status">Start Speaking</span>
+                                <div class="interview-actions">
+                                    <button class="btn btn-secondary" onclick="skipQuestion()">
+                                        Skip Question
+                                    </button>
+                                    <button class="btn btn-primary" onclick="submitAnswer()">
+                                        Submit Answer →
                                     </button>
                                 </div>
                             </div>
-
-                            <!-- Code Editor Input -->
-                            <div id="code-input-container" class="hidden">
-                                <div class="code-editor" id="code-editor">
-                                    <textarea class="code-area" id="code-area" spellcheck="false"
-                                        placeholder="// Write your solution here..."></textarea>
-                                </div>
-                            </div>
-
-                            <div class="answer-tips">
-                                <span>💡 Tips:</span>
-                                <span>Be specific</span>
-                                <span>Use examples</span>
-                                <span>Structure your answer</span>
-                            </div>
                         </div>
 
-                        <div class="interview-actions">
-                            <button class="btn btn-secondary" onclick="skipQuestion()">
-                                Skip Question
-                            </button>
-                            <button class="btn btn-primary" onclick="submitAnswer()">
-                                Submit Answer →
-                            </button>
+                    </div>
+
+                    <!-- Fixed Video Feed -->
+                    <div class="video-container fixed-cam">
+                        <video id="webcam-feed" autoplay playsinline muted></video>
+                        <div class="video-overlay">
+                            <div class="rec-indicator" id="rec-indicator">
+                                <div class="rec-dot"></div> REC
+                            </div>
+                            <div class="video-label">Cam</div>
                         </div>
                     </div>
 
-                    <!-- Right: Video Feed -->
-                    <div class="interview-sidebar">
-                        <div class="video-container">
-                            <video id="webcam-feed" autoplay playsinline muted></video>
-                            <div class="video-overlay">
-                                <div class="rec-indicator" id="rec-indicator">
-                                    <div class="rec-dot"></div> REC
-                                </div>
-                                <div class="video-label">Your Camera</div>
-                            </div>
-                        </div>
-
-                        <div class="ai-interviewer" id="ai-interviewer">
-                            <div class="ai-avatar">
-                                <div class="ai-pulse"></div>
-                                🤖
-                            </div>
-                            <div class="ai-status hidden" id="ai-status">AI is listening...</div>
-                        </div>
-                    </div>
+                    <!-- AI Interviewer (Hidden/Minimized for now) -->
+                    <div class="ai-interviewer hidden" id="ai-interviewer"></div>
                 </div>
             </div>
 
@@ -259,33 +274,68 @@
             margin-bottom: 32px;
         }
 
+        .interview-grid {
+            display: block;
+            max-width: 1400px;
+            /* Wider for split screen */
+            margin: 0 auto;
+            height: calc(100vh - 140px);
+        }
+
+        .interview-split-layout {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            gap: 24px;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            overflow-y: auto;
+            padding-right: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            overflow: hidden;
+        }
+
         .question-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 32px;
-            margin-bottom: 24px;
-        }
-
-        .question-category {
-            display: inline-block;
-            padding: 6px 12px;
-            background: rgba(99, 102, 241, 0.15);
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--accent-primary);
-            margin-bottom: 16px;
-        }
-
-        .question-text {
-            font-size: 22px;
-            font-weight: 600;
-            line-height: 1.5;
+            margin-bottom: 0;
+            /* Remove margin as it's in flex gap */
         }
 
         .answer-section {
-            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            margin-bottom: 0;
+        }
+
+        .code-editor,
+        .answer-input {
+            flex: 1;
+            min-height: 0;
+            /* Allow flex shrink */
+            margin-bottom: 16px;
+        }
+
+        #code-area,
+        #answer-input {
+            height: 100%;
         }
 
         .answer-tips {
@@ -301,18 +351,88 @@
         }
 
         .interview-grid {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 24px;
+            display: block;
+            /* Single column */
+            max-width: 900px;
+            margin: 0 auto;
         }
 
-        @media (max-width: 1024px) {
-            .interview-grid {
-                grid-template-columns: 1fr;
-            }
+        .question-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
 
-            .interview-sidebar {
-                order: -1;
+        .nav-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-btn.completed {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .language-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: white;
+            padding: 6px 12px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .language-select option {
+            background: #1a1a1a;
+        }
+
+        .video-container.fixed-cam {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            width: 220px;
+            aspect-ratio: 16/9;
+            z-index: 1000;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            background: black;
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .video-container.fixed-cam:hover {
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .video-container.fixed-cam {
+                width: 140px;
+                top: 16px;
+                right: 16px;
             }
         }
 
@@ -703,12 +823,19 @@
             ]
         };
 
+        const BOILERPLATES = {
+            javascript: "// Write your solution here\nfunction solution() {\n    \n}",
+            python: "# Write your solution here\ndef solution():\n    pass",
+            java: "// Write your solution here\nclass Solution {\n    public void solve() {\n        \n    }\n}",
+            cpp: "// Write your solution here\n#include <iostream>\n\nvoid solution() {\n    \n}"
+        };
+
         let currentMode = 'mixed';
         let currentQuestionIndex = 0;
         let answers = [];
         let timerInterval = null;
-        let timeLeft = 120;
-        let initialTime = 120; // Track initial time for accurate calculation
+        let timeLeft = 600; // 10 minutes global
+        let initialTime = 600;
         let autoSaveInterval = null;
 
         // Load user data - Fixed to handle missing elements gracefully
@@ -757,6 +884,20 @@
                     skipQuestion();
                 }
             });
+
+            // Language Select Listener
+            const langSelect = document.getElementById('language-select');
+            if (langSelect) {
+                langSelect.addEventListener('change', (e) => {
+                    const lang = e.target.value;
+                    const codeArea = document.getElementById('code-area');
+                    // Only inject if empty or contains other boilerplate
+                    // For now, simpliest is just inject
+                    if (BOILERPLATES[lang]) {
+                        codeArea.value = BOILERPLATES[lang];
+                    }
+                });
+            }
         });
 
         // Custom Modal Functions
@@ -839,9 +980,8 @@
             });
         }
 
-        // Timer Functions (MISSING - NOW ADDED)
+
         function startTimer() {
-            // Clear any existing timer
             if (timerInterval) {
                 clearInterval(timerInterval);
             }
@@ -850,20 +990,20 @@
                 timeLeft--;
                 updateTimerDisplay();
 
-                // Warning when 30 seconds left
                 if (timeLeft === 30) {
                     const timerEl = document.getElementById('timer');
-                    timerEl.style.color = '#ef4444';
-                    timerEl.style.animation = 'pulse 1s infinite';
+                    if (timerEl) {
+                        timerEl.style.color = '#ef4444';
+                        timerEl.style.animation = 'pulse 1s infinite';
+                    }
                 }
 
-                // Auto-submit when time runs out
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     showAlert('Time is up! Moving to next question...', '⏰', 'Time Expired').then(() => {
-                        // Auto-move to next question
                         currentQuestionIndex++;
-                        if (currentQuestionIndex >= QUESTIONS[currentMode].length) {
+                        const questions = getQuestions();
+                        if (currentQuestionIndex >= questions.length) {
                             completeInterview();
                         } else {
                             showQuestion();
@@ -920,11 +1060,20 @@
             }
 
             // Use AI or fallback to static questions
+            // Use AI or fallback to static questions
             const questions = AI_QUESTIONS || QUESTIONS[mode];
-            document.getElementById('total-q').textContent = questions.length;
+
+            // Generate Navigation
+            const nav = document.getElementById('question-nav');
+            nav.innerHTML = questions.map((_, i) => `
+                <div class="nav-btn ${i === 0 ? 'active' : ''}" onclick="jumpToQuestion(${i})">
+                    ${i + 1}
+                </div>
+            `).join('');
 
             showQuestion();
-            startTimer();
+            startTimer(); // Global timer starts once
+
 
             // Initialize Media
             window.interviewMedia.initCamera('webcam-feed').then(success => {
@@ -1008,11 +1157,23 @@
             return AI_QUESTIONS || QUESTIONS[currentMode];
         }
 
+        function jumpToQuestion(index) {
+            currentQuestionIndex = index;
+            showQuestion();
+        }
+
         function showQuestion() {
             const questions = getQuestions();
             const q = questions[currentQuestionIndex];
 
-            document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+            // Update Nav
+            document.querySelectorAll('.nav-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === currentQuestionIndex);
+                // Mark completed/skipped if in answers (simple check)
+                if (answers.some(a => a.question === questions[i].text)) {
+                    btn.classList.add('completed');
+                }
+            });
             document.getElementById('question-category').textContent = q.category;
             document.getElementById('question-text').textContent = q.text;
 
@@ -1035,15 +1196,24 @@
                 textContainer.classList.add('hidden');
                 codeContainer.classList.remove('hidden');
                 micBtn.classList.add('hidden');
-                codeBadge.classList.remove('hidden');
+                document.getElementById('language-select').classList.remove('hidden');
+                document.getElementById('answer-label').textContent = 'Your Solution';
                 aiInterviewer.classList.add('hidden'); // Hide AI for code questions
-                document.getElementById('code-area').value = ''; // Clear code
+
+                // Inject boilerplate if empty
+                const lang = document.getElementById('language-select').value || 'javascript';
+                const codeArea = document.getElementById('code-area');
+                if (!codeArea.value) {
+                    codeArea.value = BOILERPLATES[lang];
+                }
             } else {
                 // Text/Speech Mode
                 textContainer.classList.remove('hidden');
                 codeContainer.classList.add('hidden');
                 micBtn.classList.remove('hidden');
-                codeBadge.classList.add('hidden');
+                micBtn.classList.remove('hidden');
+                document.getElementById('language-select').classList.add('hidden');
+                document.getElementById('answer-label').textContent = 'Your Answer';
                 aiInterviewer.classList.remove('hidden'); // Show AI for text questions
                 document.getElementById('answer-input').value = ''; // Clear text
 
@@ -1057,13 +1227,8 @@
             document.getElementById('interview-progress').style.width =
                 ((currentQuestionIndex + 1) / questions.length * 100) + '%';
 
-            // Set time based on question type and track initial time
-            initialTime = q.type === 'code' ? 300 : 120;
-            timeLeft = initialTime;
-            updateTimerDisplay();
-
-            // Restart timer for new question
-            startTimer();
+            // Do NOT restart timer here as it's global
+            // startTimer();
         }
 
         async function submitAnswer() {
