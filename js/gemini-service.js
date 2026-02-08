@@ -5,7 +5,7 @@
 
 const GeminiService = {
     apiKey: '',
-    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
 
     /**
      * Initialize the service with API key
@@ -69,6 +69,9 @@ const GeminiService = {
 
             if (!response.ok) {
                 const error = await response.json();
+                if (response.status === 429) {
+                    throw new Error('AI Rate Limit Exceeded (429). Please wait a few seconds and try again. Google Free Tier has limits on how fast you can scan resumes.');
+                }
                 throw new Error(error.error?.message || 'Gemini API request failed');
             }
 
@@ -82,22 +85,42 @@ const GeminiService = {
     },
 
     /**
-     * Parse JSON from Gemini response (handles markdown code blocks)
+     * Parse JSON from Gemini response (handles markdown code blocks and partial structures)
      */
     _parseJSON(text) {
         try {
             let cleaned = text.trim();
-            if (cleaned.startsWith('```json')) {
-                cleaned = cleaned.slice(7);
-            } else if (cleaned.startsWith('```')) {
-                cleaned = cleaned.slice(3);
+            // Remove markdown code blocks
+            cleaned = cleaned.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+
+            const parsed = JSON.parse(cleaned);
+
+            // If it's an array (like for questions), return it directly
+            if (Array.isArray(parsed)) return parsed;
+
+            // If it's an object, ensure it's not null and has minimum fields for safety
+            if (parsed && typeof parsed === 'object') {
+                // If it looks like a resume analysis, add defaults
+                if (parsed.skills || parsed.score) {
+                    return {
+                        skills: {
+                            present: Array.isArray(parsed.skills?.present) ? parsed.skills.present : [],
+                            partial: Array.isArray(parsed.skills?.partial) ? parsed.skills.partial : [],
+                            missing: Array.isArray(parsed.skills?.missing) ? parsed.skills.missing : []
+                        },
+                        experience: Array.isArray(parsed.experience) ? parsed.experience : [],
+                        projects: Array.isArray(parsed.projects) ? parsed.projects : [],
+                        score: typeof parsed.score === 'number' ? parsed.score : 0,
+                        coverage: typeof parsed.coverage === 'number' ? parsed.coverage : 0,
+                        readiness: typeof parsed.readiness === 'number' ? parsed.readiness : 0,
+                        ...parsed
+                    };
+                }
+                return parsed;
             }
-            if (cleaned.endsWith('```')) {
-                cleaned = cleaned.slice(0, -3);
-            }
-            return JSON.parse(cleaned.trim());
+            return null;
         } catch (e) {
-            console.error('[GeminiService] Failed to parse JSON:', e);
+            console.error('[GeminiService] Failed to parse JSON:', e, 'Text:', text);
             return null;
         }
     },
@@ -241,14 +264,16 @@ Respond with ONLY a JSON array (no markdown):
         "category": "Data Structures",
         "text": "Write a function to reverse a linked list.",
         "difficulty": "medium",
-        "timeLimit": 300
+        "timeLimit": 300,
+        "tips": ["Consider edge cases like empty list", "Discuss time vs space complexity", "Try both iterative and recursive approaches"]
     },
     {
         "type": "text",
         "category": "Behavioral",
         "text": "Tell me about a challenging project.",
         "difficulty": "easy",
-        "timeLimit": 120
+        "timeLimit": 120,
+        "tips": ["Use the STAR method", "Focus on your specific actions", "Highlight the positive outcome"]
     }
 ]`;
 
@@ -279,12 +304,18 @@ Category: ${question.category}
 
 Answer: ${answer}
 
-Respond with ONLY a JSON object (no markdown):
+Evaluate this interview answer based on intended problem logic, approach, and reasoning.
+Question: ${question.text} (${question.category})
+Answer: ${answer}
+
+Respond with ONLY a JSON object:
 {
-    "score": 75,
-    "feedback": "Brief feedback",
-    "strengths": ["strength1"],
-    "improvements": ["improvement1"]
+    "outcome": "Correct Answer" | "Incorrect Answer",
+    "score": 0-100,
+    "feedback": "Concise feedback on accuracy",
+    "reasoning": "Brief analysis of the user's logic and approach",
+    "strengths": ["..."],
+    "improvements": ["..."]
 }`;
 
         try {
