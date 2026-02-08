@@ -167,7 +167,10 @@ window.initRoadmap = function (role, isSample) {
 window.toggleTask = function (taskId, moduleId, checkbox) {
     const taskItem = checkbox.closest('.subtopic-item');
     const topicCard = checkbox.closest('.topic-card');
-    if (completedTopics.includes(taskId)) {
+    const topicName = taskItem.querySelector('.subtopic-name').textContent;
+    const isNowCompleted = !completedTopics.includes(taskId);
+
+    if (!isNowCompleted) {
         completedTopics.splice(completedTopics.indexOf(taskId), 1);
         checkbox.classList.remove('checked');
         taskItem.querySelector('.subtopic-name').classList.remove('completed');
@@ -176,6 +179,12 @@ window.toggleTask = function (taskId, moduleId, checkbox) {
         checkbox.classList.add('checked');
         taskItem.querySelector('.subtopic-name').classList.add('completed');
     }
+
+    // Sync with Dashboard Tasks
+    if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
+        SkillStore.syncTaskByTitle(topicName, isNowCompleted);
+    }
+
     localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
     const moduleCard = document.getElementById(`module-${moduleId}`);
     const allSubCks = moduleCard.querySelectorAll('.subtopic-item .task-checkbox');
@@ -192,16 +201,36 @@ window.toggleModule = function (moduleId, taskIds, checkbox) {
     const moduleCard = document.getElementById(`module-${moduleId}`);
     const topicCard = checkbox.closest('.topic-card');
     const isChecked = checkbox.classList.contains('checked');
+    const subtopicElements = moduleCard.querySelectorAll('.subtopic-item');
+
     if (isChecked) {
         checkbox.classList.remove('checked');
         moduleCard.classList.remove('completed');
         taskIds.forEach(id => { const idx = completedTopics.indexOf(id); if (idx > -1) completedTopics.splice(idx, 1); });
-        moduleCard.querySelectorAll('.subtopic-item .task-checkbox').forEach(ck => { ck.classList.remove('checked'); ck.nextElementSibling.classList.remove('completed'); });
+        subtopicElements.forEach(el => {
+            const ck = el.querySelector('.task-checkbox');
+            ck.classList.remove('checked');
+            el.querySelector('.subtopic-name').classList.remove('completed');
+
+            // Sync with Dashboard
+            if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
+                SkillStore.syncTaskByTitle(el.querySelector('.subtopic-name').textContent, false);
+            }
+        });
     } else {
         checkbox.classList.add('checked');
         moduleCard.classList.add('completed');
         taskIds.forEach(id => { if (!completedTopics.includes(id)) completedTopics.push(id); });
-        moduleCard.querySelectorAll('.subtopic-item .task-checkbox').forEach(ck => { ck.classList.add('checked'); ck.nextElementSibling.classList.add('completed'); });
+        subtopicElements.forEach(el => {
+            const ck = el.querySelector('.task-checkbox');
+            ck.classList.add('checked');
+            el.querySelector('.subtopic-name').classList.add('completed');
+
+            // Sync with Dashboard
+            if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
+                SkillStore.syncTaskByTitle(el.querySelector('.subtopic-name').textContent, true);
+            }
+        });
     }
     localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
     updateModuleMeta(moduleCard, taskIds.length);

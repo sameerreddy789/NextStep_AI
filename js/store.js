@@ -102,10 +102,10 @@ const DEFAULT_USER = {
 
 // Default tasks
 const DEFAULT_TASKS = [
-    { id: 't1', title: 'Learn System Design basics', due: 'Today', status: 'progress', icon: '📚', color: 'blue', completed: false },
-    { id: 't2', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', icon: '💻', color: 'purple', completed: false },
-    { id: 't3', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', icon: '🎤', color: 'green', completed: false },
-    { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true }
+    { id: 't1', title: 'Learn System Design basics', due: 'Today', status: 'progress', icon: '📚', color: 'blue', completed: false, type: 'system' },
+    { id: 't2', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', icon: '💻', color: 'purple', completed: false, type: 'system' },
+    { id: 't3', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', icon: '🎤', color: 'green', completed: false, type: 'system' },
+    { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true, type: 'personal' }
 ];
 
 // Default Priority Skills
@@ -164,11 +164,34 @@ function saveUser(user) {
 
 function getTasks() {
     const stored = localStorage.getItem(TASKS_KEY);
+    let tasks = [];
+
     if (!stored) {
-        localStorage.setItem(TASKS_KEY, JSON.stringify(DEFAULT_TASKS));
-        return DEFAULT_TASKS;
+        tasks = DEFAULT_TASKS;
+        localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    } else {
+        tasks = JSON.parse(stored);
     }
-    return JSON.parse(stored);
+
+    // Migrate old tasks that don't have a 'type'
+    let migrated = false;
+    tasks = tasks.map(t => {
+        if (!t.type) {
+            migrated = true;
+            // Best guess: t1, t2, t3 from DEFAULT_TASKS are 'system'
+            return {
+                ...t,
+                type: t.id && t.id.startsWith('t') ? 'system' : 'personal'
+            };
+        }
+        return t;
+    });
+
+    if (migrated) {
+        saveTasks(tasks);
+    }
+
+    return tasks;
 }
 
 function saveTasks(tasks) {
@@ -288,11 +311,45 @@ function addTask(task) {
         id: `task-${Date.now()}`,
         status: 'pending',
         completed: false,
+        type: 'personal', // Default to personal
         ...task
     };
     tasks.push(newTask);
     saveTasks(tasks);
     return newTask;
+}
+
+/**
+ * Syncs a task's completion status based on its title.
+ * Used to integrate Roadmap progress with Dashboard tasks.
+ */
+function syncTaskByTitle(title, completed) {
+    const tasks = getTasks();
+    const normalizedTitle = title.toLowerCase().trim();
+    // Extract keywords (longer than 3 chars) to avoid matching common small words like "and", "the"
+    const roadmapWords = normalizedTitle.split(/[\s&/]+/).filter(w => w.length > 3);
+
+    let updated = false;
+    const updatedTasks = tasks.map(t => {
+        const taskTitle = t.title.toLowerCase();
+
+        // Match if titles share meaningful keywords OR have a containment relationship
+        const isMatch = taskTitle.includes(normalizedTitle) ||
+            normalizedTitle.includes(taskTitle) ||
+            (roadmapWords.length > 0 && roadmapWords.some(word => taskTitle.includes(word)));
+
+        if (isMatch) {
+            if (t.completed !== completed) {
+                updated = true;
+                return { ...t, completed: completed, status: completed ? 'done' : 'pending' };
+            }
+        }
+        return t;
+    });
+
+    if (updated) {
+        saveTasks(updatedTasks);
+    }
 }
 
 function deleteTask(id) {
@@ -393,6 +450,7 @@ function getTopSkills(limit = 3) {
 // ============ Export ============
 
 window.SkillStore = {
+    init: () => { }, // Prevent crashes if called
     getSkills,
     saveSkills,
     getSkillById,
@@ -412,6 +470,7 @@ window.SkillStore = {
     toggleTask,
     addTask,
     deleteTask,
+    syncTaskByTitle,
     getPrioritySkills,
     addPrioritySkill,
     deletePrioritySkill

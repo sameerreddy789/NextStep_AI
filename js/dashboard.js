@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5. Initialize Interactive Elements
     renderTasks();
-    renderPrioritySkills();
     updateWeeklyProgress();
 
     // 6. Handle Global Logout
@@ -131,29 +130,87 @@ function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
 }
 
 // Task & Skill Management
-function renderTasks() {
+function renderAssignedTasks() {
     if (!window.SkillStore) return;
-    const taskList = document.getElementById('task-list');
-    if (!taskList) return;
+    const systemList = document.getElementById('system-task-list');
+    if (!systemList) return;
 
     const tasks = SkillStore.getTasks();
-    taskList.innerHTML = tasks.map(t => `
+    const systemTasks = tasks.filter(t => t.type === 'system');
+
+    systemList.innerHTML = systemTasks.map(t => `
         <div class="task-item ${t.completed ? 'completed' : ''}">
             <div class="task-icon ${t.color}">${t.icon}</div>
             <div class="task-content">
                 <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
                 <div class="task-due">${t.due}</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}')">
-                <div onclick="deleteTask('${t.id}')" style="cursor: pointer; color: var(--text-muted);">✕</div>
-            </div>
+            <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'system')">
         </div>
-    `).join('');
+    `).join('') || '<div class="empty-state-text">No assigned tasks yet.</div>';
 }
 
-window.toggleTask = id => { if (window.SkillStore) { SkillStore.toggleTask(id); renderTasks(); } };
-window.deleteTask = id => { if (confirm('Delete?')) { SkillStore.deleteTask(id); renderTasks(); } };
+function renderUserTasks() {
+    if (!window.SkillStore) return;
+    const personalList = document.getElementById('personal-task-list');
+    if (!personalList) return;
+
+    const tasks = SkillStore.getTasks();
+    const personalTasks = tasks.filter(t => t.type === 'personal');
+
+    personalList.innerHTML = personalTasks.map(t => `
+        <div class="task-item ${t.completed ? 'completed' : ''}">
+            <div class="task-icon ${t.color || 'blue'}">${t.icon || '📝'}</div>
+            <div class="task-content">
+                <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
+                <div class="task-due">${t.due || 'Personal'}</div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'personal')">
+                <div class="task-delete-btn" onclick="deleteTask('${t.id}')">✕</div>
+            </div>
+        </div>
+    `).join('') || '<div class="empty-state-text">No personal tasks yet. Add one to stay on track.</div>';
+}
+
+// Global wrapper for initial render
+function renderTasks() {
+    renderAssignedTasks();
+    renderUserTasks();
+}
+
+window.toggleTask = (id, type) => {
+    if (window.SkillStore) {
+        SkillStore.toggleTask(id);
+        if (type === 'system') renderAssignedTasks();
+        else renderUserTasks();
+    }
+};
+
+let taskToDeleteId = null;
+
+window.deleteTask = id => {
+    taskToDeleteId = id;
+    const modal = document.getElementById('delete-confirm-modal');
+    if (modal) modal.classList.add('active');
+};
+
+window.closeDeleteModal = () => {
+    taskToDeleteId = null;
+    const modal = document.getElementById('delete-confirm-modal');
+    if (modal) modal.classList.remove('active');
+};
+
+window.confirmDelete = () => {
+    if (taskToDeleteId && window.SkillStore) {
+        SkillStore.deleteTask(taskToDeleteId);
+        renderUserTasks(); // Only refresh personal tasks
+        closeDeleteModal();
+        if (window.showToast) {
+            showToast('Task removed');
+        }
+    }
+};
 
 function renderPrioritySkills() {
     if (!window.SkillStore) return;
@@ -197,7 +254,48 @@ window.DashboardManager = {
         renderStats();
         renderCharts();
         renderTasks();
-        renderPrioritySkills();
     }
 };
 
+// --- Modal & Task Logic ---
+window.openAddModal = (type) => {
+    const modal = document.getElementById('add-modal');
+    const input = document.getElementById('task-title-input');
+    if (modal) modal.classList.add('active');
+    if (input) {
+        input.value = '';
+        input.focus();
+    }
+};
+
+window.closeModal = () => {
+    const modal = document.getElementById('add-modal');
+    if (modal) modal.classList.remove('active');
+};
+
+window.saveNewTask = () => {
+    const titleInput = document.getElementById('task-title-input');
+    const title = titleInput.value.trim();
+
+    if (!title) {
+        alert('Please enter a task title');
+        return;
+    }
+
+    if (window.SkillStore) {
+        SkillStore.addTask({
+            title: title,
+            due: 'Today',
+            icon: '📝',
+            color: 'blue',
+            type: 'personal' // Explicitly set as personal
+        });
+
+        closeModal();
+        renderUserTasks();
+
+        if (window.showToast) {
+            showToast('Task added successfully!');
+        }
+    }
+};

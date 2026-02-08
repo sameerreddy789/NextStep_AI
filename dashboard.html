@@ -84,130 +84,108 @@
 
             <!-- Grid Layout -->
             <div class="dashboard-grid">
-                <!-- Weekly Progress Chart -->
-                <!-- Weekly Progress & Recent Activity -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Weekly Progress</h3>
+                <!-- Top Row: Weekly Progress & Job Readiness -->
+                <div class="top-row">
+                    <!-- Weekly Progress & Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Weekly Progress</h3>
+                        </div>
+
+                        <!-- Key Metrics -->
+                        <div class="weekly-metrics">
+                            <div class="metric-item">
+                                <div class="metric-value" id="weekly-topics">0</div>
+                                <div class="metric-label">Topics</div>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="weekly-questions">0</div>
+                                <div class="metric-label">Questions</div>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-item">
+                                <div class="metric-value" id="weekly-time">0h</div>
+                                <div class="metric-label">Time Spent</div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Chart (Simplified) -->
+                        <div class="simple-chart-container" id="weekly-chart-bars">
+                            <!-- Bars injected by JS -->
+                        </div>
+
+                        <!-- Recent Activity List -->
+                        <div class="recent-activity-container">
+                            <h4 class="section-subtitle">RECENTLY COMPLETED</h4>
+                            <div class="activity-list" id="recent-activity-list">
+                                <div class="empty-state-text">Start learning to see activity here!</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Key Metrics -->
-                    <div class="weekly-metrics">
-                        <div class="metric-item">
-                            <div class="metric-value" id="weekly-topics">0</div>
-                            <div class="metric-label">Topics</div>
+                    <!-- Job Readiness -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Job Readiness</h3>
                         </div>
-                        <div class="metric-divider"></div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="weekly-questions">0</div>
-                            <div class="metric-label">Questions</div>
-                        </div>
-                        <div class="metric-divider"></div>
-                        <div class="metric-item">
-                            <div class="metric-value" id="weekly-time">0h</div>
-                            <div class="metric-label">Time Spent</div>
-                        </div>
-                    </div>
-
-                    <!-- Visual Chart (Simplified) -->
-                    <div class="simple-chart-container" id="weekly-chart-bars">
-                        <!-- Bars injected by JS -->
-                    </div>
-
-                    <!-- Recent Activity List -->
-                    <div class="recent-activity-container">
-                        <h4 class="section-subtitle">RECENTLY COMPLETED</h4>
-                        <div class="activity-list" id="recent-activity-list">
-                            <div class="empty-state-text">Start learning to see activity here!</div>
+                        <div class="readiness-chart">
+                            <div class="pie-chart-container">
+                                <!-- SVG Pie Chart (Targets for js/dashboard.js) -->
+                                <svg class="pie-svg" viewBox="0 0 200 200">
+                                    <path id="segment-completed" class="pie-segment segment-completed"
+                                        d="M 100 100 L 100 20 Z"></path>
+                                    <path id="segment-progress" class="pie-segment segment-progress"
+                                        d="M 100 100 L 100 20 Z"></path>
+                                    <path id="segment-pending" class="pie-segment segment-pending"
+                                        d="M 100 100 L 100 20 Z">
+                                    </path>
+                                </svg>
+                                <div class="pie-center-text">
+                                    <span id="readiness-value" class="pie-value">0%</span>
+                                    <span class="pie-label">Readiness</span>
+                                </div>
+                            </div>
+                            <div class="readiness-legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot green"></span>
+                                    <span>Completed</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot yellow"></span>
+                                    <span>In Progress</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot gray"></span>
+                                    <span>Pending</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Job Readiness -->
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Job Readiness</h3>
-                    </div>
-                    <div class="readiness-chart">
-                        <div class="pie-chart-container">
-                            <!-- SVG Pie Chart (Targets for js/dashboard.js) -->
-                            <svg class="pie-svg" viewBox="0 0 200 200">
-                                <path id="segment-completed" class="pie-segment segment-completed"
-                                    d="M 100 100 L 100 20 Z"></path>
-                                <path id="segment-progress" class="pie-segment segment-progress"
-                                    d="M 100 100 L 100 20 Z"></path>
-                                <path id="segment-pending" class="pie-segment segment-pending" d="M 100 100 L 100 20 Z">
-                                </path>
-                            </svg>
-                            <div class="pie-center-text">
-                                <span id="readiness-value" class="pie-value">0%</span>
-                                <span class="pie-label">Readiness</span>
-                            </div>
+                <!-- Split Task View -->
+                <div class="card task-split-container">
+                    <div class="task-column">
+                        <div class="card-header">
+                            <h3 class="card-title">Assigned Tasks</h3>
+                            <span class="badge-system">System</span>
                         </div>
-                        <div class="readiness-legend">
-                            <div class="legend-item">
-                                <span class="legend-dot green"></span>
-                                <span>Completed</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot yellow"></span>
-                                <span>In Progress</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot gray"></span>
-                                <span>Pending</span>
-                            </div>
+                        <div class="task-list" id="system-task-list">
+                            <!-- System Tasks injected by JS -->
                         </div>
                     </div>
-                </div>
 
-                <!-- Upcoming Tasks -->
-                <div class="card">
-                    <div class="card-header">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <h3 class="card-title">My Tasks</h3>
+                    <div class="vertical-divider"></div>
+
+                    <div class="task-column">
+                        <div class="card-header">
+                            <h3 class="card-title">My To-Do</h3>
                             <button class="add-icon-btn" onclick="openAddModal('task')">+</button>
                         </div>
-                        <a href="roadmap.html" class="card-action">View All</a>
-                    </div>
-                    <div class="task-list" id="task-list">
-                        <!-- Tasks injected by JS -->
-                    </div>
-
-                    <!-- Career Gap Explanation (Only for Career Gap users) -->
-                    <div class="card" id="career-gap-section" style="display: none;">
-                        <div class="card-header">
-                            <h3 class="card-title">Today's Focus</h3>
-                        </div>
-                        <div style="padding: 12px;">
-                            <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px;">
-                                Returning to work after a career gap is challenging but achievable. Here's your
-                                personalized
-                                guidance:
-                            </p>
-                            <div class="task-list">
-                                <div class="task-item">
-                                    <div class="task-icon purple">📚</div>
-                                    <div class="task-content">
-                                        <div class="task-title">Update Your Skills</div>
-                                        <div class="task-due">Focus on latest technologies in your field</div>
-                                    </div>
-                                </div>
-                                <div class="task-item">
-                                    <div class="task-icon blue">💼</div>
-                                    <div class="task-content">
-                                        <div class="task-title">Build Portfolio Projects</div>
-                                        <div class="task-due">Showcase recent work to employers</div>
-                                    </div>
-                                </div>
-                                <div class="task-item">
-                                    <div class="task-icon green">🤝</div>
-                                    <div class="task-content">
-                                        <div class="task-title">Network Actively</div>
-                                        <div class="task-due">Reconnect with industry professionals</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="task-list" id="personal-task-list">
+                            <!-- Personal Tasks injected by JS -->
+                            <div class="empty-state-text">No personal tasks yet. Add one to stay on track.</div>
                         </div>
                     </div>
                 </div>
@@ -215,36 +193,44 @@
 
                 <!-- Skill Gaps -->
                 <!-- Skill Gaps -->
-                <div class="card">
-                    <div class="card-header">
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <h3 class="card-title">Priority Skills</h3>
-                            <button class="add-icon-btn" onclick="openAddModal('priority')">+</button>
-                        </div>
-                        <a href="skill-gap.html" class="card-action">View All</a>
-                    </div>
-                    <div class="skill-gap-mini" id="skill-gaps">
-                        <!-- Skill gaps injected by JS -->
-                    </div>
-                </div>
+
 
         </main>
     </div>
 
     <!-- Add Item Modal -->
-    <div class="modal-overlay" onclick="if(event.target === this) closeModal()">
+    <div class="modal-overlay" id="add-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title" id="modal-title">Add Item</div>
+                <div class="modal-title" id="modal-title">Add Task</div>
                 <div class="modal-close" onclick="closeModal()">✕</div>
             </div>
             <div class="form-group">
-                <label class="form-label">Select Skill/Topic</label>
-                <select class="form-select" id="item-select">
-                    <!-- Populated by JS -->
+                <label class="form-label" id="modal-label">Task Title</label>
+                <input type="text" class="form-select" id="task-title-input" placeholder="Enter task title...">
+                <select class="form-select hidden" id="item-select" style="display: none;">
+                    <!-- Fallback for other item types if needed -->
                 </select>
             </div>
-            <button class="btn-add-item" onclick="saveNewItem()">Add Item</button>
+            <button class="btn-add-item" onclick="saveNewTask()">Save Task</button>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-overlay" id="delete-confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Delete Task?</div>
+                <div class="modal-close" onclick="closeDeleteModal()">✕</div>
+            </div>
+            <div style="padding: 10px 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                Are you sure you want to remove this task? This action cannot be undone.
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1; background: #ff4757; border-color: #ff4757;"
+                    onclick="confirmDelete()">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -389,6 +375,12 @@
         }
 
         .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .top-row {
             display: grid;
             grid-template-columns: 1.2fr 0.8fr;
             gap: 24px;
@@ -577,7 +569,8 @@
         }
 
         .task-title.completed {
-            text-decoration: line-through;
+            text-decoration: line-through !important;
+            color: var(--text-muted);
         }
 
         .task-list {
@@ -664,6 +657,43 @@
         .task-status.done {
             background: rgba(16, 185, 129, 0.2);
             color: var(--accent-green);
+        }
+
+        /* Task Controls Polish */
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-green);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 0 4px;
+        }
+
+        .task-checkbox:hover {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+        }
+
+        .task-delete-btn {
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 20px;
+            padding: 4px;
+            line-height: 1;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .task-delete-btn:hover {
+            color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+            transform: scale(1.2) rotate(90deg);
+            text-shadow: 0 0 10px rgba(255, 71, 87, 0.5);
         }
 
         .skill-gap-mini {
@@ -962,87 +992,64 @@
             text-decoration: none;
         }
 
-        .add-icon-btn:hover {
-            background: var(--accent-green);
-            color: white;
+        /* Split Task View Styles */
+        .task-split-container {
+            display: flex;
+            gap: 0;
+            padding: 0;
+            min-height: 400px;
+        }
+
+        .task-column {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vertical-divider {
+            width: 1px;
+            background: var(--border-color);
+            margin: 24px 0;
+            opacity: 0.5;
+        }
+
+        .badge-system {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .task-split-container {
+                flex-direction: column;
+            }
+
+            .vertical-divider {
+                display: none;
+            }
+
+            .task-column {
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .task-column:last-child {
+                border-bottom: none;
+            }
         }
     </style>
 
-    <<<<<<< HEAD <script>
-        document.addEventListener('DOMContentLoaded', () => {
-        // Check authentication
-        const userDataString = localStorage.getItem('nextStep_user');
-        const userType = localStorage.getItem('userType');
-
-        if (!userDataString) {
-        // Not logged in, redirect to auth
-        alert('Please login first');
-        window.location.href = 'auth.html';
-        return;
-        }
-
-        const userData = JSON.parse(userDataString || '{}');
-        const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
-
-        // Display personalized greeting
-        const userName = userData.name || 'User';
-        const firstName = userName.split(' ')[0];
-        document.getElementById('user-greeting-name').textContent = firstName;
-
-        // Display role-based features
-        if (userType === 'careerGap') {
-        // Show career gap section for career gap users
-        document.getElementById('career-gap-section').style.display = 'block';
-        }
-
-        // Draw Pie Chart
-        function drawPieChart(completed = 35, inProgress = 25, pending = 40) {
-        const total = completed + inProgress + pending;
-
-        // Helper function to create SVG path for pie segment
-        function createPieSegment(startAngle, endAngle) {
-        const radius = 80;
-        const cx = 100;
-        const cy = 100;
-
-        const startRad = (startAngle * Math.PI) / 180;
-        const endRad = (endAngle * Math.PI) / 180;
-
-        const x1 = cx + radius * Math.cos(startRad);
-        const y1 = cy + radius * Math.sin(startRad);
-        const x2 = cx + radius * Math.cos(endRad);
-        const y2 = cy + radius * Math.sin(endRad);
-
-        const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-
-        return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-        }
-
-        let currentAngle = 0;
-
-        // Draw completed segment
-        const completedAngle = (completed / total) * 360;
-        if (completed > 0) {
-        document.getElementById('segment-completed').setAttribute('d',
-        createPieSegment(currentAngle, currentAngle + completedAngle));
-        }
-        currentAngle += completedAngle;
-
-        // Draw in-progress segment
-        const progressAngle = (inProgress / total) * 360;
-        if (inProgress > 0) {
-        document.getElementById('segment-progress').setAttribute('d',
-        createPieSegment(currentAngle, currentAngle + progressAngle));
-        }
-        currentAngle += progressAngle;
-
-        // Draw pending segment
-        <script src="js/firebase-config.js" type="module"></script>
-        <script src="js/roadmap-engine.js"></script>
-        <script src="js/sidebar.js"></script>
-        <script src="js/store.js"></script>
-        <script src="js/toast-notifications.js"></script>
-        <script src="js/dashboard.js"></script>
+    <script src="js/firebase-config.js" type="module"></script>
+    <script src="js/roadmap-engine.js"></script>
+    <script src="js/sidebar.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/toast-notifications.js"></script>
+    <script src="js/dashboard.js"></script>
 </body>
 
 </html>
