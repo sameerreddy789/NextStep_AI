@@ -59,14 +59,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             // Sync Firestore state to LocalStorage for route-guard.js compatibility
-            localStorage.setItem('nextStep_user', JSON.stringify({ ...userData, ...data }));
+            const fullUserData = { ...userData, ...data };
+            localStorage.setItem('nextStep_user', JSON.stringify(fullUserData));
 
+            // Sync Onboarding Flags
             if (data.onboardingCompleted) {
                 localStorage.setItem('nextStep_onboardingCompleted', 'true');
             }
+            if (data.resumeStatus) {
+                localStorage.setItem('nextStep_resume', JSON.stringify({
+                    status: data.resumeStatus,
+                    data: data.resumeData
+                }));
+            }
+            if (data.interviewCompleted) {
+                localStorage.setItem('nextStep_interview', 'true');
+            }
+            if (data.roadmapGenerated) {
+                localStorage.setItem('nextStep_roadmapCompleted', 'true');
+            }
 
+            // Redirect based on progress
             if (data.roadmapGenerated) {
                 window.location.href = "dashboard.html";
+            } else if (data.interviewCompleted) {
+                window.location.href = "roadmap.html";
             } else if (data.onboardingCompleted) {
                 window.location.href = "resume.html";
             } else {

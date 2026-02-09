@@ -16,9 +16,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Render User Info
     renderUserInfo(userData);
 
-    // 3. Render Charts & Stats
-    renderStats();
-    renderCharts();
+    // 3. Render Charts & Stats using DashboardEngine
+    if (window.DashboardEngine) {
+        const aggregatedData = DashboardEngine.aggregateUserData();
+        const stats = DashboardEngine.calculateStatistics(aggregatedData);
+        renderStatsFromEngine(stats);
+        renderCharts();
+
+        // Subscribe to realtime updates
+        DashboardEngine.subscribe((updatedData) => {
+            const newStats = DashboardEngine.calculateStatistics(updatedData);
+            renderStatsFromEngine(newStats);
+            renderCharts();
+        });
+    } else {
+        // Fallback to old method
+        renderStats();
+        renderCharts();
+    }
 
     // 4. Render Action Items
     renderActionItems();
@@ -28,12 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateWeeklyProgress();
 
     // 6. Handle Global Logout
-    window.logout = function () {
-        if (confirm('Are you sure you want to logout?')) {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-    };
+
 });
 
 function renderUserInfo(user) {
@@ -54,18 +64,29 @@ function renderUserInfo(user) {
     }
 }
 
-function renderStats() {
-    const skills = window.SkillStore ? SkillStore.getSkills() : [];
-    const readiness = window.SkillStore ? SkillStore.getReadiness() : 0;
-
+function renderStatsFromEngine(stats) {
+    // Update stat cards
     const skillsCount = document.getElementById('skills-covered');
-    if (skillsCount) {
-        const covered = skills.filter(s => s.level === 'Expert' || s.level === 'Intermediate').length;
-        skillsCount.textContent = covered || 0;
-    }
+    const interviewsEl = document.getElementById('interviews-taken');
+    const avgScoreEl = document.getElementById('avg-score');
+    const streakEl = document.getElementById('day-streak');
 
-    const readinessEl = document.getElementById('readiness-score');
-    if (readinessEl) readinessEl.textContent = `${readiness}%`;
+    if (skillsCount) skillsCount.textContent = stats.skillsCovered || 0;
+    if (interviewsEl) interviewsEl.textContent = stats.interviewsTaken || 0;
+    if (avgScoreEl) avgScoreEl.textContent = `${stats.avgScore || 0}%`;
+    if (streakEl) streakEl.textContent = stats.dayStreak || 0;
+
+    const readinessEl = document.getElementById('readiness-score-big');
+    if (readinessEl) readinessEl.textContent = `${stats.readinessScore || 0}%`;
+
+    // Update weekly metrics
+    const weeklyTopics = document.getElementById('weekly-topics');
+    const weeklyQuestions = document.getElementById('weekly-questions');
+    const weeklyTime = document.getElementById('weekly-time');
+
+    if (weeklyTopics) weeklyTopics.textContent = stats.weeklyTopics || 0;
+    if (weeklyQuestions) weeklyQuestions.textContent = stats.weeklyQuestions || 0;
+    if (weeklyTime) weeklyTime.textContent = `${stats.weeklyTime || 0}h`;
 }
 
 function renderCharts() {

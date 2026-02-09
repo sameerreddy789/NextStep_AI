@@ -29,9 +29,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Platform Link Helpers
-window.getLearningLink = function (sectionTitle, moduleName) {
+// Platform Link Helpers
+window.getLearningLink = function (sectionTitle, module) {
+    if (module.searchQuery) return `https://www.youtube.com/results?search_query=${encodeURIComponent(module.searchQuery)}`;
+
+    // Fallback logic
+    const moduleName = module.name || module;
     const sTitle = sectionTitle.toLowerCase();
     const mName = moduleName.toLowerCase();
+
     if (sTitle.includes('aptitude')) return 'https://www.geeksforgeeks.org/aptitude/aptitude-questions-and-answers/';
     if (sTitle.includes('cs fundamentals') || sTitle.includes('computer science')) {
         if (mName.includes('operating system')) return 'https://www.geeksforgeeks.org/operating-systems/';
@@ -39,12 +45,16 @@ window.getLearningLink = function (sectionTitle, moduleName) {
         if (mName.includes('network')) return 'https://www.geeksforgeeks.org/computer-network-tutorials/';
         if (mName.includes('oops') || mName.includes('object')) return 'https://www.geeksforgeeks.org/object-oriented-programming-oops-concept-in-java/';
     }
-    return `https://www.youtube.com/results?search_query=${encodeURIComponent(moduleName + ' tutorial')}`;
+    return `https://www.youtube.com/results?search_query=${encodeURIComponent(mName + ' tutorial')}`;
 };
 
-window.getPracticeLink = function (sectionTitle, moduleName) {
+window.getPracticeLink = function (sectionTitle, module) {
+    if (module.searchQuery) return `https://leetcode.com/problemset/all/?search=${encodeURIComponent(module.name)}`;
+
+    const moduleName = module.name || module;
     const sTitle = sectionTitle.toLowerCase();
     const mName = moduleName.toLowerCase();
+
     if (sTitle.includes('aptitude')) return 'https://www.geeksforgeeks.org/aptitude/aptitude-questions-and-answers/';
     if (sTitle.includes('data structures') || sTitle.includes('dsa')) return `https://leetcode.com/problemset/all/?search=${encodeURIComponent(moduleName)}`;
     if (sTitle.includes('cs fundamentals') || sTitle.includes('computer science')) {
@@ -52,7 +62,62 @@ window.getPracticeLink = function (sectionTitle, moduleName) {
         if (mName.includes('dbms') || mName.includes('database')) return 'https://www.geeksforgeeks.org/quizzes/50-dbms-mcqs-with-answers/';
         if (mName.includes('network')) return 'https://www.geeksforgeeks.org/quizzes/50-computer-networks-mcqs-with-answers/';
     }
-    return '#';
+    // Generic fallback to Google
+    return `https://www.google.com/search?q=${encodeURIComponent(mName + ' practice problems')}`;
+};
+
+window.renderHeatmap = function (containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    // Generate last 365 days
+    const today = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setDate(today.getDate() - 364);
+
+    // Mock data - in real app, fetch from user profile
+    const completedDates = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
+
+    let html = `<div class="heatmap-grid" style="display: grid; grid-template-rows: repeat(7, 10px); grid-auto-flow: column; gap: 3px;">`;
+
+    for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const count = completedDates[dateStr] || 0;
+        let intensity = 'level-0';
+        if (count > 0) intensity = 'level-1';
+        if (count > 2) intensity = 'level-2';
+        if (count > 4) intensity = 'level-3';
+        if (count > 6) intensity = 'level-4';
+
+        html += `<div class="heatmap-cell ${intensity}" title="${dateStr}: ${count} tasks" style="width: 10px; height: 10px; border-radius: 2px;"></div>`;
+    }
+    html += `</div>`;
+
+    // Add legend and stats
+    const totalTasks = Object.values(completedDates).reduce((a, b) => a + b, 0);
+    html += `
+    <div class="heatmap-meta" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+        <span>${totalTasks} contributions in the last year</span >
+    <div style="display: flex; gap: 4px; align-items: center;">
+        <span>Less</span>
+        <div class="heatmap-cell level-0" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+        <div class="heatmap-cell level-1" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+        <div class="heatmap-cell level-2" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+        <div class="heatmap-cell level-3" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+        <div class="heatmap-cell level-4" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+        <span>More</span>
+    </div>
+    </div >
+    <style>
+        .heatmap-cell.level-0 {background - color: rgba(255,255,255,0.05); }
+        .heatmap-cell.level-1 {background - color: rgba(16, 185, 129, 0.2); }
+        .heatmap-cell.level-2 {background - color: rgba(16, 185, 129, 0.4); }
+        .heatmap-cell.level-3 {background - color: rgba(16, 185, 129, 0.7); }
+        .heatmap-cell.level-4 {background - color: #10B981; }
+    </style>
+`;
+
+    container.innerHTML = html;
 };
 
 window.openSubtopicLearn = function (topicName) {
@@ -73,13 +138,16 @@ window.openSubtopicPractice = function (sectionTitle, topicName) {
 };
 
 // Initializer
-window.initRoadmap = function (role, isSample, skillGaps = []) {
+window.initRoadmap = function (role, isSample, skillGaps = [], aiData = null) {
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
 
+    // Render Heatmap
+    if (window.renderHeatmap) window.renderHeatmap('contribution-graph');
+
     const sectionsData = isSample
         ? RoadmapEngine.generateSampleRoadmap(role)
-        : RoadmapEngine.generateFullRoadmap(role, skillGaps);
+        : RoadmapEngine.generateFullRoadmap(role, skillGaps, aiData);
 
     container.innerHTML = sectionsData.map((section, idx) => {
         const isDSA = section.title.includes('Data Structures') || idx === 1;
@@ -93,8 +161,8 @@ window.initRoadmap = function (role, isSample, skillGaps = []) {
             const completedInModule = taskIds.filter(id => completedTopics.includes(id)).length;
             sectionCompletedTasks += completedInModule;
             const isModuleCompleted = completedInModule === taskIds.length && taskIds.length > 0;
-            const learnLink = getLearningLink(section.title, module.name);
-            const practiceLink = getPracticeLink(section.title, module.name);
+            const learnLink = getLearningLink(section.title, module);
+            const practiceLink = getPracticeLink(section.title, module);
 
             const subtopicsHtml = module.items.map(item => {
                 const itemId = `${moduleId}-${item.replace(/\s+/g, '')}`;
@@ -178,6 +246,12 @@ window.toggleTask = function (taskId, moduleId, checkbox) {
         completedTopics.push(taskId);
         checkbox.classList.add('checked');
         taskItem.querySelector('.subtopic-name').classList.add('completed');
+
+        // Log activity for heatmap
+        const today = new Date().toISOString().split('T')[0];
+        const log = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
+        log[today] = (log[today] || 0) + 1;
+        localStorage.setItem('nextStep_activity_log', JSON.stringify(log));
     }
 
     // Sync with Dashboard Tasks

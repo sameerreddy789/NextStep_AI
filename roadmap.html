@@ -17,12 +17,16 @@
     <script src="js/route-guard.js"></script>
     <!-- Load Environment Variables -->
     <script src="js/env-config.js"></script>
+    <script src="js/gemini-service.js"></script>
     <script src="js/serp-service.js"></script>
     <script src="js/roadmap-engine.js"></script>
     <script src="js/roadmap-customizer.js"></script>
     <script>
         // Initialize Services after environment is loaded
         window.addEventListener('load', () => {
+            if (window.ENV && window.ENV.GEMINI_API_KEY && window.GeminiService) {
+                window.GeminiService.init(window.ENV.GEMINI_API_KEY);
+            }
             if (window.SerpService) {
                 window.SerpService.init();
             }
@@ -179,6 +183,16 @@
                     <span class="overview-value" id="overall-progress-val">0%</span>
                     <span class="overview-label">Overall Progress</span>
                 </div>
+            </div>
+
+            <!-- Contribution Graph (Heatmap) -->
+            <div id="contribution-graph-container"
+                style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 24px; margin-bottom: 32px;">
+                <h3
+                    style="font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                    🔥 Learning Activity
+                </h3>
+                <div id="contribution-graph"></div>
             </div>
 
             <!-- Roadmap Container -->
@@ -682,20 +696,71 @@
         import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const hasInterview = localStorage.getItem('nextStep_interview');
             const hasResume = localStorage.getItem('nextStep_resume');
+
+            // Check for existing AI roadmap
+            let aiRoadmap = JSON.parse(localStorage.getItem('nextStep_ai_roadmap') || 'null');
+
             const roadmapData = JSON.parse(localStorage.getItem('nextStep_roadmap') || '{"skills":[]}');
             const skillGaps = roadmapData.skills || [];
 
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const userRole = userData.targetRole || 'sde';
 
-            // Gated Access Logic: Allow if either resume OR interview is completed
-            if (!hasInterview && !hasResume) {
+            // Gated Access Logic
+            if (!hasInterview && !hasResume && !aiRoadmap) {
                 document.getElementById('gated-modal').classList.remove('hidden');
             } else {
-                initRoadmap(userRole, false, skillGaps);
+                // If we have interview data but NO AI Roadmap yet, let's generate it!
+                if (!aiRoadmap && (hasInterview || hasResume)) {
+                    console.log("[Roadmap] 🤖 AI Generation Triggered...");
+
+                    // Show a non-blocking toast or loading indicator
+                    const loader = document.createElement('div');
+                    loader.id = 'ai-roadmap-loader';
+                    loader.innerHTML = `
+                        <div style="position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--accent-primary); padding: 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.5s ease;">
+                            <div class="loader-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <div>
+                                <div style="font-weight: 600; color: #fff;">Building Personal Plan...</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Analyzing interview & resume</div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.appendChild(loader);
+
+                    try {
+                        const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
+                        const interviewData = JSON.parse(localStorage.getItem('nextStep_interview_autosave') || '{}');
+
+                        // Use Gemini to generate
+                        // Note: We need to ensure GeminiService is ready. It inits on DOMContentLoaded.
+                        // We might need a slight delay or check.
+                        if (window.GeminiService) {
+                            aiRoadmap = await window.GeminiService.generatePersonalizedRoadmap(
+                                resumeData,
+                                skillGaps, // Using skillGaps as proxy for interview weaknesses 
+                                userRole
+                            );
+
+                            if (aiRoadmap) {
+                                localStorage.setItem('nextStep_ai_roadmap', JSON.stringify(aiRoadmap));
+                                console.log("[Roadmap] ✅ AI Roadmap Saved!");
+                            }
+                        }
+                    } catch (err) {
+                        console.error("[Roadmap] ❌ Generation failed:", err);
+                    } finally {
+                        const loaderEl = document.getElementById('ai-roadmap-loader');
+                        if (loaderEl) loaderEl.remove();
+                    }
+                }
+
+                // Initialize UI with (potentially new) AI Data
+                // Pass aiRoadmap to initRoadmap
+                initRoadmap(userRole, false, skillGaps, aiRoadmap);
 
                 // Track if we need to show a "nudge" for interview
                 if (!hasInterview) {

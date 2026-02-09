@@ -1046,14 +1046,7 @@
             setTimeout(() => notification.remove(), 3000);
         }
 
-        window.logout = function () {
-            if (confirm('Are you sure you want to logout?')) {
-                auth.signOut().then(() => {
-                    localStorage.clear();
-                    window.location.href = 'index.html';
-                });
-            }
-        }
+
     </script>
     <script src="js/sidebar.js"></script>
     <script src="js/click-spark.js"></script>

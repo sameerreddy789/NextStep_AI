@@ -9,8 +9,10 @@ const EditorState = {
     currentLanguage: 'c',
     languages: {
         'c': { id: 'c', label: 'C', defaultCode: '#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello World");\n    return 0;\n}' },
+        'cpp': { id: 'cpp', label: 'C++', defaultCode: '#include <iostream>\n\nint main() {\n    // Write your solution here\n    std::cout << "Hello World" << std::endl;\n    return 0;\n}' },
         'python': { id: 'python', label: 'Python', defaultCode: '# Write your solution here\ndef solution():\n    print("Hello World!")\n' },
-        'java': { id: 'java', label: 'Java', defaultCode: '// Write your solution here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}' }
+        'java': { id: 'java', label: 'Java', defaultCode: '// Write your solution here\npublic class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello World!");\n    }\n}' },
+        'javascript': { id: 'javascript', label: 'JavaScript', defaultCode: '// Write your solution here\nfunction solution() {\n    console.log("Hello World!");\n}\n' }
     }
 };
 
@@ -82,9 +84,14 @@ function setLanguage(langId) {
 
     monaco.editor.setModelLanguage(model, langId);
 
-    // Update code if empty or default
-    const currentCode = EditorState.editor.getValue();
-    if (!currentCode || currentCode === EditorState.languages['javascript'].defaultCode) {
+    // Dynamic Boilerplate Logic
+    const currentCode = EditorState.editor.getValue().trim();
+
+    // Check if the current code is empty or matches ANY default boilerplate
+    const isDefaultOrEmpty = !currentCode || Object.values(EditorState.languages).some(l => l.defaultCode.trim() === currentCode);
+
+    if (isDefaultOrEmpty) {
+        console.log(`[Editor] 📝 Updating boilerplate for ${langId}`);
         EditorState.editor.setValue(EditorState.languages[langId].defaultCode);
     }
 

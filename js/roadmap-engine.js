@@ -108,7 +108,26 @@ const RoadmapEngine = {
         }));
     },
 
-    generateFullRoadmap(role, skillGaps = []) {
+    /**
+     * Generate roadmap from AI data or fallback to static
+     */
+    generateFullRoadmap(role, skillGaps = [], aiRoadmapData = null) {
+        // 1. If AI data exists, use it as the primary source
+        if (aiRoadmapData && Array.isArray(aiRoadmapData) && aiRoadmapData.length > 0) {
+            console.log('[RoadmapEngine] 🤖 Using AI-generated roadmap data');
+            return aiRoadmapData.map((week, index) => ({
+                week: week.week || index + 1,
+                title: week.title,
+                status: index === 0 ? 'current' : 'upcoming',
+                topics: week.topics.map(t => ({
+                    name: t.name,
+                    searchQuery: t.query, // Store query for SERP
+                    items: [t.desc] // Use desc as the first item
+                }))
+            }));
+        }
+
+        // 2. Fallback to Static Data with partial personalization
         const data = JSON.parse(JSON.stringify(this.getRoleData(role))); // Deep copy
 
         // Inject skill gaps if provided

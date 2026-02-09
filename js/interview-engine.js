@@ -771,7 +771,9 @@ async function completeInterview() {
     if (videoSlot) videoSlot.classList.add('hidden');
 
     // Scroll to top so the report is visible immediately
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'instant' });
+    }, 100);
 
     // Start AI Analysis
     const loadingEl = document.getElementById('results-loading');

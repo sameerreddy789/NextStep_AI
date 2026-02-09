@@ -732,7 +732,29 @@
                 const resumeDataRaw = localStorage.getItem('nextStep_resume');
                 const resumeData = (resumeDataRaw && resumeDataRaw !== 'undefined' && resumeDataRaw !== 'null') ? JSON.parse(resumeDataRaw) : { skills: {} };
                 // Handle different skill data formats
-                const userSkills = dataToSkillArray(resumeData?.skills);
+                let userSkills = dataToSkillArray(resumeData?.skills);
+
+                // MERGE INTERVIEW SKILLS
+                // We want to credit skills demonstrated in the interview (Score >= 70%)
+                try {
+                    const interviewRaw = localStorage.getItem('nextStep_interview_autosave');
+                    if (interviewRaw) {
+                        const interviewData = JSON.parse(interviewRaw);
+                        if (interviewData.answers) {
+                            const verifiedSkills = interviewData.answers
+                                .filter(a => a.evaluation && a.evaluation.score >= 70)
+                                .map(a => a.category);
+
+                            // Add unique verified skills
+                            verifiedSkills.forEach(skill => {
+                                if (!userSkills.includes(skill)) userSkills.push(skill);
+                            });
+                            console.log('[SkillGap] Merged Verified Skills:', verifiedSkills);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[SkillGap] Failed to load interview skills:', e);
+                }
 
                 // 1. Fetch real market context via SERP
                 const marketData = await window.SerpService.fetchRoleContext(role);
