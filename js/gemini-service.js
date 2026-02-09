@@ -43,7 +43,7 @@ const GeminiService = {
      * Check if service is available
      */
     isAvailable() {
-        return !!this.apiKey;
+        return this.apiKeys && this.apiKeys.length > 0;
     },
 
     /**
@@ -498,6 +498,50 @@ Respond with ONLY a JSON object:
         } catch (error) {
             console.warn('[GeminiService] ⚠️ Market analysis failed, using fallback:', error.message);
             return this._getFallbackMarketSkills(role, userSkills);
+        }
+    },
+
+    /**
+     * Generate a personalized roadmap based on resume, interview gaps, and target role
+     */
+    async generatePersonalizedRoadmap(resumeData, interviewGaps, targetRole) {
+        console.log('[GeminiService] 🗺️ Generating personalized roadmap...');
+
+        const prompt = `Create a personalized 6-week learning roadmap for a ${targetRole} role.
+
+User Context:
+1. Resume Skills: ${JSON.stringify(resumeData.skills || [])}
+2. Interview Weaknesses (Focus Items): ${JSON.stringify(interviewGaps || [])}
+
+Instructions:
+- Weeks 1-2 should prioritize fixing the "Interview Weaknesses".
+- Weeks 3-4 should cover core "Must-Have" skills for ${targetRole} that are missing from the Resume.
+- Weeks 5-6 should cover advanced/future-proof topics.
+- For EACH topic, provide a specifically generated search query for finding efficient tutorials.
+
+Respond with ONLY a JSON array of objects (no markdown):
+[
+    {
+        "week": 1,
+        "title": "Focus: Data Structures Repetitions",
+        "topics": [
+            { "name": "Linked Lists", "query": "Linked Lists data structure tutorial for interview", "desc": "Address identified gap in linear data structures." },
+            { "name": "Hash Maps", "query": "Hash Maps implementation guide", "desc": "Core concept reinforcement." }
+        ]
+    }
+]`;
+
+        try {
+            const response = await this._request(prompt);
+            const parsed = this._parseJSON(response);
+            if (parsed && Array.isArray(parsed)) {
+                console.log(`[GeminiService] ✅ Generated ${parsed.length} week roadmap`);
+                return parsed;
+            }
+            throw new Error('Failed to parse roadmap');
+        } catch (error) {
+            console.error('[GeminiService] ❌ Roadmap generation failed:', error);
+            throw error;
         }
     },
 
