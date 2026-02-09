@@ -87,90 +87,93 @@ function renderCharts() {
     }
 }
 
-// Draw Pie Chart
+// Draw Static Pie Chart
 function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
     const total = completed + inProgress + pending;
+    const svg = document.querySelector('.readiness-svg');
 
-    function createPieSegment(startAngle, endAngle) {
-        // Handle full circle case
-        if (endAngle - startAngle >= 360) endAngle = startAngle + 359.99;
+    // Clear previous
+    if (svg) svg.innerHTML = '';
 
-        const radius = 80;
-        const cx = 100, cy = 100;
-        const startRad = (startAngle * Math.PI) / 180;
-        const endRad = (endAngle * Math.PI) / 180;
-        const x1 = cx + radius * Math.cos(startRad);
-        const y1 = cy + radius * Math.sin(startRad);
-        const x2 = cx + radius * Math.cos(endRad);
-        const y2 = cy + radius * Math.sin(endRad);
-        const largeArc = (endAngle - startAngle) > 180 ? 1 : 0;
-        return `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
-    }
+    const segments = [
+        { val: pending, class: 'segment-pending', label: 'Not Started' },
+        { val: inProgress, class: 'segment-progress', label: 'In Progress' },
+        { val: completed, class: 'segment-completed', label: 'Completed' }
+    ];
 
-    // Default state: Clear all paths if total is 0
     if (total === 0) {
-        ['segment-completed', 'segment-progress', 'segment-pending'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.setAttribute('d', '');
-        });
-        const pendingSeg = document.getElementById('segment-pending');
-        if (pendingSeg) pendingSeg.setAttribute('d', createPieSegment(0, 359.9));
+        // Draw full grey circle
+        if (svg) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', '0');
+            circle.setAttribute('cy', '0');
+            circle.setAttribute('r', '1');
+            circle.setAttribute('class', 'segment-pending');
+            svg.appendChild(circle);
+        }
         return;
     }
 
-    let currentAngle = 0;
-    const segments = [
-        { id: 'segment-completed', val: completed, color: 'var(--accent-green)', label: 'Completed' },
-        { id: 'segment-progress', val: inProgress, color: 'var(--accent-gold)', label: 'In Progress' },
-        { id: 'segment-pending', val: pending, color: 'rgba(255,255,255,0.1)', label: 'Not Started' }
-    ];
+    let cumPercent = 0;
 
-    let resetTimer = null;
-    const resetCenterText = () => {
-        const valueEl = document.getElementById('readiness-value');
-        const labelEl = document.querySelector('.pie-label');
-        const readinessPercent = window.SkillStore ? SkillStore.getReadiness() : 0;
-        if (valueEl) {
-            valueEl.textContent = `${readinessPercent}%`;
-            valueEl.style.color = 'var(--text-primary)';
-        }
-        if (labelEl) labelEl.textContent = 'Readiness';
-    };
+    function getCoordinatesForPercent(percent) {
+        const x = Math.cos(2 * Math.PI * percent);
+        const y = Math.sin(2 * Math.PI * percent);
+        return [x, y];
+    }
 
     segments.forEach(seg => {
-        const el = document.getElementById(seg.id);
-        if (el) {
-            if (seg.val > 0) {
-                const angle = (seg.val / total) * 360;
-                const pathData = createPieSegment(currentAngle, currentAngle + angle);
-                el.setAttribute('d', pathData);
+        if (seg.val === 0) return;
 
-                // Add click interaction
-                el.onclick = () => {
-                    const percent = Math.round((seg.val / total) * 100);
-                    const valueEl = document.getElementById('readiness-value');
-                    const labelEl = document.querySelector('.pie-label');
-                    if (valueEl) {
-                        valueEl.textContent = `${percent}%`;
-                        valueEl.style.color = seg.color;
-                    }
-                    if (labelEl) labelEl.textContent = seg.label;
+        const percent = seg.val / total;
+        const startPercent = cumPercent;
+        const endPercent = cumPercent + percent;
 
-                    // Clear and restart reset timer
-                    if (resetTimer) clearTimeout(resetTimer);
-                    resetTimer = setTimeout(resetCenterText, 3000);
-                };
+        // Calculate coordinates
+        const [startX, startY] = getCoordinatesForPercent(startPercent);
+        const [endX, endY] = getCoordinatesForPercent(endPercent);
 
-                currentAngle += angle;
-            } else {
-                el.setAttribute('d', ''); // Hide if 0
-                el.onclick = null;
-            }
+        // SVG Path Command
+        const largeArcFlag = percent > 0.5 ? 1 : 0;
+        const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+
+        // Create Path
+        if (svg) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', pathData);
+            path.setAttribute('class', `pie-segment ${seg.class}`);
+
+            // Tooltip Interaction (Static Hover)
+            path.onmouseenter = () => showTooltip(seg.label, Math.round(percent * 100));
+            path.onmouseleave = hideTooltip;
+
+            svg.appendChild(path);
         }
-    });
 
-    // Initial score display
-    resetCenterText();
+        cumPercent += percent;
+    });
+}
+
+function showTooltip(status, percent) {
+    const tooltip = document.getElementById('chart-tooltip');
+    if (tooltip) {
+        tooltip.querySelector('.tooltip-status').textContent = status;
+        tooltip.querySelector('.tooltip-percent').textContent = `${percent}%`;
+        tooltip.classList.add('active');
+
+        // Static center positioning or follow mouse could be implemented
+        // For now, center is clean
+        tooltip.style.left = '50%';
+        tooltip.style.top = '50%';
+        tooltip.style.transform = 'translate(-50%, -50%)';
+    }
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('chart-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('active');
+    }
 }
 
 // Task & Skill Management

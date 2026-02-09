@@ -331,6 +331,165 @@
     font-weight: 700;
 }
 
+/* Social Media Links Section */
+.profile-social-links {
+    width: 100%;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.social-links-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    justify-content: center;
+}
+
+.social-header-icon {
+    font-size: 16px;
+    display: inline-flex;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-header-icon:hover {
+    transform: rotate(360deg) scale(1.1);
+}
+
+.social-header-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.social-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.social-link-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.social-link-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-primary);
+    transform: translateX(4px);
+}
+
+.social-link-anchor {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.2s ease;
+}
+
+.social-icon {
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 8px;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.social-link-anchor:hover .social-icon {
+    transform: rotate(360deg) scale(1.15);
+    background: var(--accent-primary);
+}
+
+.linkedin-icon {
+    background: rgba(10, 102, 194, 0.1);
+}
+
+.social-link-anchor:hover .linkedin-icon {
+    background: #0A66C2;
+}
+
+.github-icon {
+    background: rgba(36, 41, 47, 0.3);
+}
+
+.social-link-anchor:hover .github-icon {
+    background: #24292F;
+}
+
+.leetcode-icon {
+    background: rgba(255, 161, 22, 0.1);
+}
+
+.social-link-anchor:hover .leetcode-icon {
+    background: #FFA116;
+}
+
+.social-platform-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.social-visibility-toggle {
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.social-visibility-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.social-visibility-toggle span {
+    font-size: 14px;
+}
+
+.social-links-empty {
+    text-align: center;
+    padding: 24px 16px;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px dashed rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.empty-icon {
+    font-size: 28px;
+    opacity: 0.7;
+}
+
+.empty-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 220px;
+}
+
 /* Form Styles for Edit Mode */
 .edit-form-container {
     display: grid;
@@ -338,6 +497,270 @@
     gap: 20px;
     margin-top: 20px;
 }
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+    margin-top: 12px;
+}
+
+.input-helper {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.input-validation {
+    font-size: 11px;
+    margin-top: 4px;
+    min-height: 16px;
+    line-height: 1.4;
+}
+
+.input-validation.error {
+    color: var(--accent-red);
+}
+
+.input-validation.success {
+    color: var(--accent-green);
+}
+
+.social-input.invalid {
+    border-color: var(--accent-red);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.social-input.valid {
+    border-color: var(--accent-green);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+
+/* Social Media Showcase Section (Main Content) */
+.social-showcase-section {
+    margin-top: 0;
+}
+
+.section-header-inline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-subtitle-inline {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.social-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.social-showcase-card {
+    display: block;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.showcase-card-inner {
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+.social-showcase-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Hover effects */
+.social-showcase-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: var(--accent-primary);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+
+.social-showcase-card:hover::before {
+    opacity: 1;
+}
+
+/* Platform-specific hover effects */
+.social-showcase-card.linkedin-card:hover {
+    border-color: #0A66C2;
+    box-shadow: 0 12px 28px rgba(10, 102, 194, 0.35);
+}
+
+.social-showcase-card.github-card:hover {
+    border-color: #6e40c9;
+    box-shadow: 0 12px 28px rgba(110, 64, 201, 0.25);
+}
+
+.social-showcase-card.leetcode-card:hover {
+    border-color: #FFA116;
+    box-shadow: 0 12px 28px rgba(255, 161, 22, 0.35);
+}
+
+/* Icon styling */
+.social-showcase-icon-large {
+    width: 72px;
+    height: 72px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.social-showcase-icon-large::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.social-showcase-card:hover .social-showcase-icon-large::after {
+    opacity: 1;
+}
+
+.linkedin-card .social-showcase-icon-large {
+    background: rgba(10, 102, 194, 0.15);
+}
+
+.github-card .social-showcase-icon-large {
+    background: rgba(110, 64, 201, 0.15);
+}
+
+.leetcode-card .social-showcase-icon-large {
+    background: rgba(255, 161, 22, 0.15);
+}
+
+.social-showcase-card:hover .social-showcase-icon-large {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.linkedin-card:hover .social-showcase-icon-large {
+    background: rgba(10, 102, 194, 0.25);
+    box-shadow: 0 0 20px rgba(10, 102, 194, 0.4);
+}
+
+.github-card:hover .social-showcase-icon-large {
+    background: rgba(110, 64, 201, 0.25);
+    box-shadow: 0 0 20px rgba(110, 64, 201, 0.4);
+}
+
+.leetcode-card:hover .social-showcase-icon-large {
+    background: rgba(255, 161, 22, 0.25);
+    box-shadow: 0 0 20px rgba(255, 161, 22, 0.4);
+}
+
+.showcase-icon-emoji {
+    font-size: 36px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.social-showcase-card:hover .showcase-icon-emoji {
+    transform: scale(1.1);
+}
+
+/* Text styling */
+.social-showcase-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.social-showcase-action {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.social-showcase-card:hover .social-showcase-action {
+    color: var(--accent-primary);
+}
+
+.linkedin-card:hover .social-showcase-action {
+    color: #0A66C2;
+}
+
+.github-card:hover .social-showcase-action {
+    color: #8b5cf6;
+}
+
+.leetcode-card:hover .social-showcase-action {
+    color: #FFA116;
+}
+
+/* Add Profile state */
+.social-showcase-card.empty-state {
+    border-style: dashed;
+    background: rgba(255, 255, 255, 0.01);
+}
+
+.social-showcase-card.empty-state:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-4px);
+}
+
+.social-showcase-card.empty-state .social-showcase-icon-large {
+    opacity: 0.6;
+}
+
+.social-showcase-card.empty-state:hover .social-showcase-icon-large {
+    opacity: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .social-showcase-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .showcase-card-inner {
+        padding: 24px 20px;
+    }
+
+    .social-showcase-icon-large {
+        width: 64px;
+        height: 64px;
+    }
+
+    .showcase-icon-emoji {
+        font-size: 32px;
+    }
+}
+
+
 
 /* Icon Hover Animations - Smoother & Slower (Matching Home Page) */
 .mini-card-icon,

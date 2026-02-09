@@ -128,34 +128,19 @@
                     <!-- Job Readiness -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Job Readiness</h3>
+                            <h3 class="card-title">Job Readiness Overview</h3>
                         </div>
-                        <div class="readiness-chart">
+                        <div class="readiness-chart" id="readiness-chart-section">
                             <div class="pie-chart-container">
                                 <div class="pie-donut">
-                                    <!-- SVG Pie Chart -->
-                                    <svg class="pie-svg" viewBox="0 0 200 200">
-                                        <defs>
-                                            <filter id="glow">
-                                                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                                                <feMerge>
-                                                    <feMergeNode in="coloredBlur" />
-                                                    <feMergeNode in="SourceGraphic" />
-                                                </feMerge>
-                                            </filter>
-                                        </defs>
-                                        <circle cx="100" cy="100" r="80" fill="rgba(255,255,255,0.03)" />
-                                        <path id="segment-completed" class="pie-segment segment-completed"
-                                            filter="url(#glow)"></path>
-                                        <path id="segment-progress" class="pie-segment segment-progress"
-                                            filter="url(#glow)"></path>
-                                        <path id="segment-pending" class="pie-segment segment-pending"></path>
-                                        <!-- Donut Hole -->
-                                        <circle class="pie-donut-hole" cx="100" cy="100" r="60"></circle>
+                                    <!-- Static Pie Chart (Segments injected by JS) -->
+                                    <svg class="readiness-svg" viewBox="-1 -1 2 2" style="transform: rotate(-90deg);">
+                                        <!-- Segments will be paths like: <path d="..." fill="..."> -->
                                     </svg>
-                                    <div class="pie-center-text">
-                                        <span id="readiness-value" class="pie-value">0%</span>
-                                        <span class="pie-label">Readiness</span>
+                                    <!-- Tooltip -->
+                                    <div id="chart-tooltip" class="chart-tooltip">
+                                        <div class="tooltip-status">Status</div>
+                                        <div class="tooltip-percent">0%</div>
                                     </div>
                                 </div>
                             </div>
@@ -165,7 +150,7 @@
                                     <span>Completed</span>
                                 </div>
                                 <div class="legend-item">
-                                    <span class="legend-dot yellow"></span>
+                                    <span class="legend-dot blue"></span>
                                     <span>In Progress</span>
                                 </div>
                                 <div class="legend-item">
@@ -552,24 +537,24 @@
             background: var(--text-muted);
         }
 
-        /* SVG Pie Chart Styles */
-        .pie-svg {
+        /* Readiness Pie Chart Styles */
+        .readiness-svg {
             width: 100%;
             height: 100%;
+            overflow: visible;
             transform: rotate(-90deg);
         }
 
         .pie-segment {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            stroke: var(--bg-card);
+            stroke-width: 0.02;
+            /* White border effect scaled to viewBox -1 to 1 */
             cursor: pointer;
-            stroke-linecap: round;
+            transition: opacity 0.2s ease;
         }
 
         .pie-segment:hover {
             opacity: 0.9;
-            transform: scale(1.02);
-            transform-origin: center;
-            filter: brightness(1.2) drop-shadow(0 0 8px currentColor);
         }
 
         .segment-completed {
@@ -577,15 +562,24 @@
         }
 
         .segment-progress {
-            fill: var(--accent-gold);
+            fill: #3B82F6;
+            /* Modern Blue */
         }
 
         .segment-pending {
-            fill: rgba(255, 255, 255, 0.1);
+            fill: #E5E7EB;
+            /* Light Grey */
         }
 
-        .pie-donut-hole {
-            fill: var(--bg-card);
+        /* Tooltip reuse */
+        .chart-tooltip {
+            /* ... existing styles ... */
+            z-index: 101;
+        }
+
+        .legend-dot.gray {
+            background: #E5E7EB;
+            /* Light Grey for Not Started */
         }
 
         /* Task Item Transitions & Classes */

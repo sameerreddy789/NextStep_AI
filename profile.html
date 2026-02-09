@@ -57,6 +57,8 @@
                         </li>
                     </ul>
 
+
+
                     <button class="btn-edit-profile" onclick="toggleEdit('personal')">
                         <span>✏️</span> Edit Profile
                     </button>
@@ -139,6 +141,49 @@
                         </div>
                     </div>
 
+                    <!-- Social Media Links Showcase -->
+                    <div class="insight-card social-showcase-section" id="social-showcase-card">
+                        <div class="section-header-inline">
+                            <h3 class="section-title">🔗 Professional Profiles</h3>
+                            <span class="section-subtitle-inline">Connect & Collaborate</span>
+                        </div>
+                        <div class="social-showcase-grid" id="social-showcase-grid">
+                            <!-- LinkedIn Card -->
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="social-showcase-card linkedin-card" id="linkedin-showcase">
+                                <div class="showcase-card-inner">
+                                    <div class="social-showcase-icon-large">
+                                        <span class="showcase-icon-emoji">🔗</span>
+                                    </div>
+                                    <h4 class="social-showcase-title">LinkedIn</h4>
+                                    <p class="social-showcase-action" id="linkedin-action">View Profile</p>
+                                </div>
+                            </a>
+                            <!-- GitHub Card -->
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="social-showcase-card github-card" id="github-showcase">
+                                <div class="showcase-card-inner">
+                                    <div class="social-showcase-icon-large">
+                                        <span class="showcase-icon-emoji">💻</span>
+                                    </div>
+                                    <h4 class="social-showcase-title">GitHub</h4>
+                                    <p class="social-showcase-action" id="github-action">View Profile</p>
+                                </div>
+                            </a>
+                            <!-- LeetCode Card -->
+                            <a href="#" target="_blank" rel="noopener noreferrer"
+                                class="social-showcase-card leetcode-card" id="leetcode-showcase">
+                                <div class="showcase-card-inner">
+                                    <div class="social-showcase-icon-large">
+                                        <span class="showcase-icon-emoji">🧩</span>
+                                    </div>
+                                    <h4 class="social-showcase-title">LeetCode</h4>
+                                    <p class="social-showcase-action" id="leetcode-action">View Profile</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Edit Mode (Hidden initially) -->
                     <div class="insight-card hidden" id="personal-edit">
                         <h3 class="section-title">Edit Personal Details</h3>
@@ -175,6 +220,39 @@
                             <div class="form-group">
                                 <label class="form-label">Date of Birth</label>
                                 <input type="date" class="form-input" id="edit-dob" value="1998-06-15">
+                            </div>
+
+                            <!-- Social Media Links -->
+                            <div class="form-group full-width">
+                                <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                                    <span>🔗</span> Professional Links
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">LinkedIn URL</label>
+                                <input type="url" class="form-input social-input" id="edit-linkedin"
+                                    placeholder="https://linkedin.com/in/yourprofile" data-platform="linkedin">
+                                <div class="input-helper">Add your LinkedIn to showcase your professional background
+                                </div>
+                                <div class="input-validation" id="linkedin-validation"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">GitHub URL</label>
+                                <input type="url" class="form-input social-input" id="edit-github"
+                                    placeholder="https://github.com/yourusername" data-platform="github">
+                                <div class="input-helper">Share your repositories and open-source contributions</div>
+                                <div class="input-validation" id="github-validation"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">LeetCode URL</label>
+                                <input type="url" class="form-input social-input" id="edit-leetcode"
+                                    placeholder="https://leetcode.com/yourprofile" data-platform="leetcode">
+                                <div class="input-helper">Highlight your coding practice and problem-solving skills
+                                </div>
+                                <div class="input-validation" id="leetcode-validation"></div>
                             </div>
                         </div>
                         <div class="edit-actions">
@@ -626,6 +704,139 @@
             if (profileData.location) {
                 document.getElementById('profile-location').textContent = profileData.location;
             }
+
+            // Load social media links
+            loadSocialLinks(profileData.socialLinks || {});
+        }
+
+        function loadSocialLinks(socialLinks) {
+            const platforms = ['linkedin', 'github', 'leetcode'];
+
+            platforms.forEach(platform => {
+                const linkData = socialLinks[platform];
+                const editInputEl = document.getElementById(`edit-${platform}`);
+
+                // Showcase elements (main content)
+                const showcaseEl = document.getElementById(`${platform}-showcase`);
+                const actionEl = document.getElementById(`${platform}-action`);
+
+                if (linkData && linkData.url) {
+                    // Populate edit field
+                    if (editInputEl) editInputEl.value = linkData.url;
+
+                    // Show/hide based on visibility
+                    if (linkData.visible !== false) {
+                        // Showcase - has link
+                        if (showcaseEl) {
+                            showcaseEl.href = linkData.url;
+                            showcaseEl.classList.remove('empty-state');
+                            showcaseEl.removeAttribute('onclick');
+                        }
+                        if (actionEl) {
+                            actionEl.textContent = 'View Profile';
+                        }
+                    } else {
+                        // Showcase - hidden link shows as empty
+                        if (showcaseEl) {
+                            showcaseEl.href = '#';
+                            showcaseEl.classList.add('empty-state');
+                            showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'personal\'); return false;');
+                        }
+                        if (actionEl) {
+                            actionEl.textContent = '+ Add Profile';
+                        }
+                    }
+                } else {
+                    // No URL set
+                    if (editInputEl) editInputEl.value = '';
+
+                    // Showcase - empty state
+                    if (showcaseEl) {
+                        showcaseEl.href = '#';
+                        showcaseEl.classList.add('empty-state');
+                        showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'personal\'); return false;');
+                    }
+                    if (actionEl) {
+                        actionEl.textContent = '+ Add Profile';
+                    }
+                }
+            });
+
+            // Always show showcase card
+            const showcaseCard = document.getElementById('social-showcase-card');
+            if (showcaseCard) {
+                showcaseCard.style.display = 'block';
+            }
+        }
+
+        window.validateURL = function (url, platform) {
+            if (!url || url.trim() === '') {
+                return { valid: true, message: '' }; // Empty is okay (optional)
+            }
+
+            // Basic URL validation
+            try {
+                const urlObj = new URL(url);
+
+                // Platform-specific validation
+                const platformPatterns = {
+                    linkedin: /^https?:\/\/(www\.)?linkedin\.com\/(in|company)\/.+/i,
+                    github: /^https?:\/\/(www\.)?github\.com\/.+/i,
+                    leetcode: /^https?:\/\/(www\.)?leetcode\.com\/.+/i
+                };
+
+                if (platformPatterns[platform] && !platformPatterns[platform].test(url)) {
+                    return {
+                        valid: false,
+                        message: `Please enter a valid ${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`
+                    };
+                }
+
+                return { valid: true, message: '✓ Valid URL' };
+            } catch (e) {
+                return { valid: false, message: 'Please enter a valid URL' };
+            }
+        }
+
+        window.toggleSocialVisibility = async function (platform) {
+            const user = auth.currentUser;
+
+            // Get current profile data
+            let profileData = user ?
+                await ProfileService.loadProfile(user.uid) :
+                JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+
+            const socialLinks = profileData.socialLinks || {};
+            const linkData = socialLinks[platform] || {};
+
+            // Toggle visibility
+            linkData.visible = !(linkData.visible !== false); // Default true, so toggle
+
+            // If no URL, can't toggle visibility
+            if (!linkData.url) {
+                showNotification(`Please add your ${platform} URL first!`);
+                return;
+            }
+
+            // Update social links
+            socialLinks[platform] = linkData;
+            const dataToSave = { socialLinks };
+
+            // Save
+            if (user) {
+                await ProfileService.saveProfile(user.uid, dataToSave);
+            } else {
+                const current = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+                current.socialLinks = socialLinks;
+                localStorage.setItem('nextStep_profile', JSON.stringify(current));
+                localStorage.setItem('nextStep_user', JSON.stringify(current));
+            }
+
+            // Update UI
+            loadSocialLinks(socialLinks);
+            showNotification(linkData.visible ?
+                `${platform} link is now visible` :
+                `${platform} link is now hidden`);
         }
 
         window.removeAvatar = async function (e) {
@@ -705,11 +916,62 @@
             const phone = document.getElementById('edit-phone').value;
             const targetRole = document.getElementById('edit-role').value;
 
+            // Validate and collect social media links
+            const socialLinks = {};
+            const platforms = ['linkedin', 'github', 'leetcode'];
+            let hasValidationError = false;
+
+            platforms.forEach(platform => {
+                const inputEl = document.getElementById(`edit-${platform}`);
+                const validationEl = document.getElementById(`${platform}-validation`);
+                const url = inputEl ? inputEl.value.trim() : '';
+
+                if (url) {
+                    const validation = validateURL(url, platform);
+
+                    if (!validation.valid) {
+                        hasValidationError = true;
+                        if (inputEl) inputEl.classList.add('invalid');
+                        if (validationEl) {
+                            validationEl.textContent = validation.message;
+                            validationEl.classList.add('error');
+                            validationEl.classList.remove('success');
+                        }
+                    } else {
+                        if (inputEl) {
+                            inputEl.classList.remove('invalid');
+                            inputEl.classList.add('valid');
+                        }
+                        if (validationEl) {
+                            validationEl.textContent = validation.message;
+                            validationEl.classList.add('success');
+                            validationEl.classList.remove('error');
+                        }
+                        socialLinks[platform] = { url, visible: true };
+                    }
+                } else {
+                    // Clear validation styling
+                    if (inputEl) {
+                        inputEl.classList.remove('invalid', 'valid');
+                    }
+                    if (validationEl) {
+                        validationEl.textContent = '';
+                        validationEl.classList.remove('error', 'success');
+                    }
+                }
+            });
+
+            if (hasValidationError) {
+                showNotification('Please fix the invalid URLs before saving.');
+                return;
+            }
+
             const data = {
                 name: `${firstname} ${lastname}`.trim(),
                 email: email,
                 phone: phone,
-                targetRole: targetRole
+                targetRole: targetRole,
+                socialLinks: socialLinks
             };
 
             if (user) {
@@ -740,6 +1002,9 @@
             const roleDisplay = roleNames[targetRole] || targetRole;
             document.getElementById('profile-role').textContent = roleDisplay;
             document.getElementById('view-role-alt').textContent = roleDisplay;
+
+            // Update social links view
+            loadSocialLinks(socialLinks);
 
             window.toggleEdit('personal');
             showNotification('Profile updated successfully!');
