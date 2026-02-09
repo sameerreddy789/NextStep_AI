@@ -382,6 +382,27 @@ Respond with ONLY a JSON object:
     },
 
     /**
+     * Transcribe audio using Gemini's multimodal capabilities
+     */
+    async transcribeAudio(audioBlob) {
+        console.log('[GeminiService] 🎙️ Transcribing audio...');
+
+        const base64 = await this._fileToBase64(audioBlob);
+        const prompt = "Transcribe this audio exactly as spoken. Focus on accuracy. If there is no speech, return an empty string. Respond with ONLY the transcribed text.";
+
+        try {
+            const result = await this._request(prompt, {
+                mimeType: audioBlob.type || 'audio/webm',
+                base64: base64
+            });
+            return result.trim();
+        } catch (error) {
+            console.error('[GeminiService] ❌ Transcription failed:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Simulate code execution against multiple test cases
      */
     async executeCode(code, language, testCases) {
@@ -389,7 +410,7 @@ Respond with ONLY a JSON object:
 
         const testsJson = JSON.stringify(testCases);
         const prompt = `You are a highly accurate code execution engine and compiler for ${language}.
-Your task is to execute the provided code against multiple test cases and return the results.
+Your task is to execute the provided code against multiple test cases and return a consolidated report.
 
 CODE:
 ${code}
@@ -399,34 +420,38 @@ LANGUAGE: ${language}
 TEST CASES:
 ${testsJson}
 
-For each test case, determine the expected output vs actual output of the code.
-Consider standard rules for ${language} (syntax, logic, common libraries).
+For each test case:
+1. Determine the expected output vs actual output of the code.
+2. Capture STDOUT or any compilation/runtime errors.
 
-Respond with ONLY a JSON array of results:
-[
-    {
-        "label": "Test Case Label",
-        "input": "Input provided",
-        "expected": "Expected output",
-        "actual": "What the code actually produced",
-        "status": "passed" | "failed",
-        "output": "Any console output or error messages if applicable"
-    }
-]
+Respond with ONLY a JSON object:
+{
+    "overallConsole": "Consolidated compiler output or runtime logs (e.g., 'Compiling... Build Successful' or 'Traceback...')",
+    "testResults": [
+        {
+            "label": "Test Case Label",
+            "input": "Input provided",
+            "expected": "Expected output",
+            "actual": "What the code produced",
+            "status": "passed" | "failed",
+            "output": "Specific console output for this test"
+        }
+    ]
+}
 
-IMPORTANT: 
-- Be precise. If the code is correct, marks as "passed".
-- If there's a syntax error, provide it in the "output" field and mark all as "failed".
-- Return ONLY the JSON array.`;
+IMPORTANT:
+- Be strict about ${language} syntax.
+- If it's a coding challenge where they must implement a function, assume the caller handles the return value check.
+- Return ONLY the JSON object.`;
 
         try {
             const response = await this._request(prompt);
             const parsed = this._parseJSON(response);
-            if (parsed && Array.isArray(parsed)) {
+            if (parsed && typeof parsed === 'object') {
                 console.log('[GeminiService] ✅ Code execution simulation complete');
                 return parsed;
             }
-            throw new Error('Failed to parse execution results');
+            throw new Error('Failed to parse execution report');
         } catch (error) {
             console.error('[GeminiService] ❌ Execution simulation failed:', error);
             throw error;
@@ -473,6 +498,51 @@ Respond with ONLY a JSON object:
         } catch (error) {
             console.warn('[GeminiService] ⚠️ Market analysis failed, using fallback:', error.message);
             return this._getFallbackMarketSkills(role, userSkills);
+        }
+    },
+
+    async analyzeDetailedPerformance(answers, role) {
+        console.log('[GeminiService] 🧪 Performing 6-dimension interview analysis');
+
+        const prompt = `You are a senior technical recruiter and career coach.
+Analyze the following interview performance for a ${role} position.
+
+Interview Responses:
+${JSON.stringify(answers)}
+
+Evaluate the candidate across exactly these 6 dimensions with specified weightings:
+1. Technical Skills (20%) - Code correctness, complexity, and algorithmic efficiency.
+2. Problem Solving (20%) - Approach, edge cases, and logical reasoning.
+3. Role Knowledge (20%) - Understanding of ${role} specific concepts and tools.
+4. Experience (15%) - Quality of past project descriptions and situation handling.
+5. Communication (15%) - Clarity, structure, and ability to explain complex ideas.
+6. Professional Demeanor (10%) - Soft skills, attitude, and team collaboration potential.
+
+Respond with ONLY a JSON object:
+{
+    "overallScore": 0-100,
+    "dimensions": [
+        { "name": "Technical Skills", "score": 0-100, "weight": 20, "feedback": "..." },
+        { "name": "Problem Solving", "score": 0-100, "weight": 20, "feedback": "..." },
+        { "name": "Role Knowledge", "score": 0-100, "weight": 20, "feedback": "..." },
+        { "name": "Experience", "score": 0-100, "weight": 15, "feedback": "..." },
+        { "name": "Communication", "score": 0-100, "weight": 15, "feedback": "..." },
+        { "name": "Professional Demeanor", "score": 0-100, "weight": 10, "feedback": "..." }
+    ],
+    "strengths": ["...", "..."],
+    "weaknesses": ["...", "..."],
+    "improvements": ["...", "..."],
+    "summary": "Full overview of performance"
+}`;
+
+        try {
+            const response = await this._request(prompt);
+            const parsed = this._parseJSON(response);
+            if (parsed) return parsed;
+            throw new Error('Failed to parse analysis');
+        } catch (error) {
+            console.error('[GeminiService] Analysis failed:', error);
+            throw error;
         }
     },
 
@@ -537,6 +607,45 @@ Respond with ONLY a JSON object:
         applyStatus(data.futureProof);
 
         return data;
+    },
+
+    /**
+     * Transcribe audio blob using Gemini Flash
+     */
+    async transcribeAudio(audioBlob) {
+        if (!this.apiKeys.length) throw new Error('Gemini API keys not configured');
+
+        console.log('[GeminiService] 🎙️ Transcribing audio...');
+
+        try {
+            const base64 = await this._fileToBase64(audioBlob);
+            const prompt = "Transcribe this audio exactly as spoken. Focus on accuracy. If there is no speech, return an empty string. Respond with ONLY the transcribed text.";
+
+            const result = await this._request(prompt, {
+                mimeType: audioBlob.type || 'audio/webm',
+                base64: base64
+            });
+
+            return result.trim();
+        } catch (error) {
+            console.error('[GeminiService] ❌ Transcription failed:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Convert Blob/File to Base64
+     */
+    _fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
     }
 };
 
