@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NextStep AI</title>
-    <meta name="description" content="Your AI Career Co-Pilot Dashboard">
-    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/empty-states.css">
     <link rel="stylesheet" href="css/page-transitions.css">
@@ -133,10 +132,13 @@
                         <div class="readiness-chart" id="readiness-chart-section">
                             <div class="pie-chart-container">
                                 <div class="pie-donut">
-                                    <!-- Static Pie Chart (Segments injected by JS) -->
-                                    <svg class="readiness-svg" viewBox="-1 -1 2 2" style="transform: rotate(-90deg);">
-                                        <!-- Segments will be paths like: <path d="..." fill="..."> -->
+                                    <svg class="readiness-svg" viewBox="-1.1 -1.1 2.2 2.2">
+                                        <!-- Segments injected by JS -->
                                     </svg>
+                                    <div class="pie-center-content">
+                                        <span class="pie-value" id="readiness-score-big">0%</span>
+                                        <span class="pie-label">Readiness</span>
+                                    </div>
                                     <!-- Tooltip -->
                                     <div id="chart-tooltip" class="chart-tooltip">
                                         <div class="tooltip-status">Status</div>
@@ -147,15 +149,18 @@
                             <div class="readiness-legend">
                                 <div class="legend-item">
                                     <span class="legend-dot green"></span>
-                                    <span>Completed</span>
+                                    <span class="legend-text">Completed</span>
+                                    <span class="legend-percent" id="legend-completed">0%</span>
                                 </div>
                                 <div class="legend-item">
                                     <span class="legend-dot blue"></span>
-                                    <span>In Progress</span>
+                                    <span class="legend-text">In Progress</span>
+                                    <span class="legend-percent" id="legend-progress">0%</span>
                                 </div>
                                 <div class="legend-item">
                                     <span class="legend-dot gray"></span>
-                                    <span>Not Started</span>
+                                    <span class="legend-text">Not Started</span>
+                                    <span class="legend-percent" id="legend-pending">0%</span>
                                 </div>
                             </div>
                         </div>
@@ -431,11 +436,12 @@
             color: var(--text-muted);
         }
 
+        /* Job Readiness Chart & Legend */
         .readiness-chart {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
         }
 
         .pie-chart-container {
@@ -443,36 +449,33 @@
             width: 240px;
             height: 240px;
             margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .pie-donut {
-            width: 240px;
-            height: 240px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .pie-donut-hole {
-            fill: #1A1F29;
-            /* Matches card background */
-            stroke: rgba(255, 255, 255, 0.05);
-            stroke-width: 1;
-        }
-
-        .pie-center-text {
+        .pie-center-content {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
             pointer-events: none;
+            z-index: 10;
         }
 
         .pie-value {
@@ -481,8 +484,6 @@
             font-weight: 800;
             color: var(--text-primary);
             line-height: 1;
-            text-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .pie-label {
@@ -490,33 +491,43 @@
             font-size: 11px;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 2.5px;
-            margin-top: 6px;
+            letter-spacing: 2px;
+            margin-top: 4px;
             font-weight: 700;
-            opacity: 0.8;
+        }
+
+        .readiness-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            transform: rotate(-90deg);
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
         }
 
         .readiness-legend {
+            width: 100%;
             display: flex;
-            gap: 24px;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: var(--text-secondary);
+            gap: 12px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            padding: 6px 10px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
         }
 
         .legend-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-primary);
-            transform: translateX(3px);
+            background: rgba(255, 255, 255, 0.06);
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         .legend-dot {
@@ -527,59 +538,68 @@
 
         .legend-dot.green {
             background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
         }
 
-        .legend-dot.yellow {
-            background: var(--accent-gold);
-        }
-
-        .legend-dot.gray {
-            background: var(--text-muted);
-        }
-
-        /* Readiness Pie Chart Styles */
-        .readiness-svg {
-            width: 100%;
-            height: 100%;
-            overflow: visible;
-            transform: rotate(-90deg);
-        }
-
-        .pie-segment {
-            stroke: var(--bg-card);
-            stroke-width: 0.02;
-            /* White border effect scaled to viewBox -1 to 1 */
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-
-        .pie-segment:hover {
-            opacity: 0.9;
-        }
-
-        .segment-completed {
-            fill: var(--accent-green);
-        }
-
-        .segment-progress {
-            fill: #3B82F6;
-            /* Modern Blue */
-        }
-
-        .segment-pending {
-            fill: #E5E7EB;
-            /* Light Grey */
-        }
-
-        /* Tooltip reuse */
-        .chart-tooltip {
-            /* ... existing styles ... */
-            z-index: 101;
+        .legend-dot.blue {
+            background: #3B82F6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
         }
 
         .legend-dot.gray {
             background: #E5E7EB;
-            /* Light Grey for Not Started */
+            box-shadow: 0 0 10px rgba(229, 231, 235, 0.2);
+        }
+
+        .legend-text {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .legend-percent {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-size: 12px;
+            margin-left: 8px;
+            opacity: 0.9;
+        }
+
+        /* Tooltip Polish */
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(15, 20, 25, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .chart-tooltip.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip-status {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        .tooltip-percent {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
         }
 
         /* Task Item Transitions & Classes */

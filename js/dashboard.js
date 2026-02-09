@@ -71,44 +71,67 @@ function renderStats() {
 function renderCharts() {
     if (window.SkillStore) {
         const skills = SkillStore.getSkills();
+        const totalSkills = skills.length || 1;
 
-        // Categorize skills based on growth stages
-        let completed = 0;
-        let inProgress = 0;
-        let pending = 0;
+        // Categorize progress contribution rather than simple counts
+        let completedProgress = 0;
+        let inProgressProgress = 0;
 
         skills.forEach(s => {
-            if (s.progress >= 90) completed++;
-            else if (s.progress > 0) inProgress++;
-            else pending++;
+            if (s.progress >= 90) {
+                completedProgress += s.progress;
+            } else if (s.progress > 0) {
+                inProgressProgress += s.progress;
+            }
         });
 
-        drawPieChart(completed, inProgress, pending);
+        const totalPossible = totalSkills * 100;
+        const totalAchieved = completedProgress + inProgressProgress;
+        const pendingProgress = totalPossible - totalAchieved;
+
+        // Draw chart using progress-weighted segments
+        drawPieChart(completedProgress, inProgressProgress, pendingProgress);
     }
 }
 
-// Draw Static Pie Chart
-function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
-    const total = completed + inProgress + pending;
+// Draw Static Pie/Donut Chart using progress values
+function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0) {
+    const total = completedVal + inProgressVal + pendingVal;
     const svg = document.querySelector('.readiness-svg');
+    const scoreBig = document.getElementById('readiness-score-big');
+
+    // Calculate Overall Score (Progress Average across all skills)
+    const overallReadiness = window.SkillStore ? SkillStore.getReadiness() : 0;
+    if (scoreBig) scoreBig.textContent = `${overallReadiness}%`;
 
     // Clear previous
     if (svg) svg.innerHTML = '';
 
     const segments = [
-        { val: pending, class: 'segment-pending', label: 'Not Started' },
-        { val: inProgress, class: 'segment-progress', label: 'In Progress' },
-        { val: completed, class: 'segment-completed', label: 'Completed' }
+        { val: pendingVal, class: 'segment-pending', color: '#E5E7EB', label: 'Not Started', legendId: 'legend-pending' },
+        { val: inProgressVal, class: 'segment-progress', color: '#3B82F6', label: 'In Progress', legendId: 'legend-progress' },
+        { val: completedVal, class: 'segment-completed', color: '#10B981', label: 'Completed', legendId: 'legend-completed' }
     ];
 
+    // Update Legend Percentages
+    segments.forEach(seg => {
+        const el = document.getElementById(seg.legendId);
+        if (el) {
+            const p = total > 0 ? Math.round((seg.val / total) * 100) : 0;
+            el.textContent = `${p}%`;
+        }
+    });
+
     if (total === 0) {
-        // Draw full grey circle
+        // Draw background circle
         if (svg) {
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             circle.setAttribute('cx', '0');
             circle.setAttribute('cy', '0');
             circle.setAttribute('r', '1');
-            circle.setAttribute('class', 'segment-pending');
+            circle.setAttribute('fill', 'rgba(255,255,255,0.05)');
+            circle.setAttribute('stroke', 'rgba(255,255,255,0.1)');
+            circle.setAttribute('stroke-width', '0.05');
             svg.appendChild(circle);
         }
         return;
@@ -122,6 +145,14 @@ function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
         return [x, y];
     }
 
+    // Add background circle for the "donut" look
+    const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    bgCircle.setAttribute('cx', '0');
+    bgCircle.setAttribute('cy', '0');
+    bgCircle.setAttribute('r', '1');
+    bgCircle.setAttribute('fill', 'rgba(255,255,255,0.02)');
+    svg.appendChild(bgCircle);
+
     segments.forEach(seg => {
         if (seg.val === 0) return;
 
@@ -129,23 +160,34 @@ function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
         const startPercent = cumPercent;
         const endPercent = cumPercent + percent;
 
-        // Calculate coordinates
+        // Calculate coordinates for the arc
         const [startX, startY] = getCoordinatesForPercent(startPercent);
         const [endX, endY] = getCoordinatesForPercent(endPercent);
 
-        // SVG Path Command
+        // SVG Path Command - Donut segment (thick ring)
         const largeArcFlag = percent > 0.5 ? 1 : 0;
-        const pathData = `M 0 0 L ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+        const pathData = `M ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`;
 
-        // Create Path
         if (svg) {
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', pathData);
-            path.setAttribute('class', `pie-segment ${seg.class}`);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', seg.color);
+            path.setAttribute('stroke-width', '0.22');
+            path.setAttribute('class', 'pie-ring-segment');
+            path.style.transition = 'stroke-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
 
-            // Tooltip Interaction (Static Hover)
-            path.onmouseenter = () => showTooltip(seg.label, Math.round(percent * 100));
-            path.onmouseleave = hideTooltip;
+            // Enhanced Interactivity
+            path.addEventListener('mouseenter', () => {
+                showTooltip(seg.label, Math.round(percent * 100));
+                path.setAttribute('stroke-width', '0.28');
+                path.style.filter = 'drop-shadow(0 0 4px ' + seg.color + '44)';
+            });
+            path.addEventListener('mouseleave', () => {
+                hideTooltip();
+                path.setAttribute('stroke-width', '0.22');
+                path.style.filter = 'none';
+            });
 
             svg.appendChild(path);
         }
@@ -157,15 +199,13 @@ function drawPieChart(completed = 0, inProgress = 0, pending = 0) {
 function showTooltip(status, percent) {
     const tooltip = document.getElementById('chart-tooltip');
     if (tooltip) {
-        tooltip.querySelector('.tooltip-status').textContent = status;
-        tooltip.querySelector('.tooltip-percent').textContent = `${percent}%`;
+        const statusEl = tooltip.querySelector('.tooltip-status');
+        const percentEl = tooltip.querySelector('.tooltip-percent');
+        if (statusEl) statusEl.textContent = status;
+        if (percentEl) percentEl.textContent = `${percent}%`;
         tooltip.classList.add('active');
-
-        // Static center positioning or follow mouse could be implemented
-        // For now, center is clean
-        tooltip.style.left = '50%';
-        tooltip.style.top = '50%';
-        tooltip.style.transform = 'translate(-50%, -50%)';
+        tooltip.style.opacity = '1';
+        tooltip.style.visibility = 'visible';
     }
 }
 
@@ -173,6 +213,8 @@ function hideTooltip() {
     const tooltip = document.getElementById('chart-tooltip');
     if (tooltip) {
         tooltip.classList.remove('active');
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
     }
 }
 

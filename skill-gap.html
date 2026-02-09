@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Skill Gap Analysis | NextStep AI</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="description" content="See what skills you need vs what you have">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/animated-background.css">
@@ -84,7 +85,7 @@
             </div>
 
             <!-- Skill Categories -->
-            <div id="skills-results" class="skills-grid" style="grid-template-columns: 1fr;">
+            <div id="skills-results" class="skills-grid">
 
                 <!-- Must-Have Skills -->
                 <div class="card skill-section" id="section-must-have">
@@ -225,11 +226,29 @@
             transform: translateY(0);
         }
 
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 1024px) {
+            .skills-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+        }
+
         .skill-section {
-            margin-bottom: 20px;
+            margin-bottom: 0;
+            /* Handled by grid gap */
             border: 1px solid rgba(255, 255, 255, 0.08) !important;
             overflow: hidden;
             transition: all 0.3s ease;
+            height: fit-content;
         }
 
         .skill-section:hover {
@@ -247,7 +266,7 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
-            padding: 16px 20px;
+            padding: 12px 16px;
             user-select: none;
             background: transparent;
             transition: background 0.3s ease;
@@ -276,13 +295,13 @@
         .trigger-left {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 12px;
         }
 
         .trigger-left h2 {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
         }
 
         .collapse-icon-wrapper {
@@ -326,7 +345,7 @@
 
         .collapsible-inner {
             min-height: 0;
-            padding: 0 28px 28px;
+            padding: 0 16px 16px;
             opacity: 0;
             transform: translateY(-10px);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -668,8 +687,21 @@
             // Initial Analysis
             performAnalysis(initialRole);
 
+            // Automatic Update (Debounced)
+            let debounceTimer;
+            roleInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                const newRole = roleInput.value.trim();
+                if (newRole) {
+                    debounceTimer = setTimeout(() => {
+                        performAnalysis(newRole);
+                    }, 1200); // 1.2s delay to ensure user finished typing
+                }
+            });
+
             // Manual Refresh
             updateBtn.addEventListener('click', () => {
+                clearTimeout(debounceTimer);
                 const newRole = roleInput.value.trim();
                 if (newRole) performAnalysis(newRole);
             });
@@ -677,6 +709,7 @@
             // Enter Key Support
             roleInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
+                    clearTimeout(debounceTimer);
                     const newRole = roleInput.value.trim();
                     if (newRole) performAnalysis(newRole);
                 }
@@ -714,18 +747,9 @@
 
                 // 4. Update UI
                 loading.classList.add('hidden');
-                results.style.opacity = '1';
-                results.style.pointerEvents = 'auto';
-
-                // Update localStorage preference
-                const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-                userData.targetRole = role;
-                localStorage.setItem('nextStep_user', JSON.stringify(userData));
-
                 // Sync Explorer
                 selectedExplorerRole = role;
                 updateExplorerUI();
-
             } catch (error) {
                 console.error('Skill Gap Analysis Failed:', error);
                 loading.classList.remove('hidden');

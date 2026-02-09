@@ -12,7 +12,12 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 
 ---
 
-### 🎯 Smart AI Resume Analysis
+### 📊 Career Readiness Analytics
+- **Dynamic Donut Visualization** — Progressive-weighted ring segments for accurate skill tracking
+- **Centralized Score Focus** — Real-time overall readiness score display with backdrop-blur effects
+- **Interactive Tooltips** — Detail-rich hover interactions for every readiness segment
+
+###  Smart AI Resume Analysis
 - **Live Gemini AI Integration** — Performs deep multimodal analysis of PDF resumes for precise skill extraction
 - **AI-Powered Skill Validation** — Automatically detects and categorizes technical, soft, and industry-specific skills
 - **ATS Compatibility Score** — Real-time evaluation of how well your resume performs with modern ATS models
@@ -36,20 +41,22 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 - **Interactive Checklist** — Track progress across Learn, Practice, and Interview tasks
 - **🎉 Completion Celebration** — Automated celebration with job board links and "Next-Level" skill suggestions
 
-### 📊 Live Skill Gap Analysis
+### � Live Skill Gap Analysis
 - **Market Search Integration** — Scans live industry trends via SERP for your specific target role
+- **Automated Market Scan** — Trigger analysis automatically with debounced career goal inputs
 - **Contextual Comparison** — Compares your resume skills directly against current market demands
+- **Clean Grid Layout** — Optimized multi-column display for clear visual categorization
 - **Prioritized Learning** — Categorizes skills into Must-Have, Good-to-Have, and Future-Proof
 - **Direct Roadmap Sync** — One-click integration to update your roadmap with identified gaps
 
 ### 🎨 Premium UI/UX Ecosystem
+- **Compact Sidebar Navigation** — Streamlined vertical navigation with dynamic progress tracking
+- **Live Stat Integration** — Real-time readiness % and daily streak badges in the sidebar
 - **Orbital Feature Timeline** — Interactive visualization of the career preparation journey
 - **Magic Bento Grid** — Modern, dense information display with hover-reactive cards
 - **Infinite Plane Background** — Dynamic, grid-based animation for a high-end feel
+- **Consistent Pro Branding** — Custom `favicon.svg` branding integrated across all application pages
 - **Click Spark Effects** — Engaging micro-interactions for every user action
-- **Toast Notifications** — Sophisticated alert system for real-time app feedback
-- **Skeleton Loading** — Premium perceived performance with shimmer effects and transition-aware loaders
-- **Keyboard Navigation** — Fully accessible experience with global shortcuts (Esc, Ctrl+Enter)
 
 ---
 

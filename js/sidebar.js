@@ -69,6 +69,11 @@ function generateSidebar() {
     };
     const userRole = roleNames[userData.targetRole] || 'Developer';
 
+    // Fetch stats for progress card
+    const stats = window.SkillStore ? SkillStore.getStats() : { avgProgress: 45, maxStreak: 7 };
+    const progress = stats.avgProgress;
+    const streak = stats.maxStreak;
+
     const sidebarHTML = `
         <div class="sidebar-header">
             <button class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle sidebar">
@@ -94,20 +99,24 @@ function generateSidebar() {
         </nav>
         <div class="sidebar-progress-card">
             <div class="progress-main-row">
-                <span class="progress-percent-big">45%</span>
-                <span class="progress-fire">🔥 7</span>
+                <div class="progress-stat-item">
+                    <span class="progress-percent-big">${progress}%</span>
+                    <span class="progress-label">Readiness</span>
+                </div>
+                <div class="progress-streak-item">
+                    <span class="progress-streak-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #F59E0B;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.5 3.5 6 2.136 2.136 3.5 4.554 3.5 7a7 7 0 1 1-14 0c0-3 2.5-5 2.5-7 1 1 1.5 1.5 2.5 3.5Z"></path></svg>
+                    </span>
+                    <span class="progress-streak-val">${streak}</span>
+                </div>
             </div>
             <div class="progress-track">
-                <div class="progress-track-fill" style="width: 45%"></div>
+                <div class="progress-track-fill" style="width: ${progress}%"></div>
             </div>
-            <a href="interview.html" class="progress-action-btn">
-                Resume Learning
+            <a href="roadmap.html" class="progress-action-btn">
+                Resume Roadmap
             </a>
         </div>
-
-
-
-
 
         <div class="sidebar-footer">
             <a href="profile.html" class="user-info-widget" style="text-decoration: none; cursor: pointer;">
