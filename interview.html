@@ -152,13 +152,6 @@
                                         <textarea class="answer-input" id="answer-input"
                                             placeholder="Type your answer here or use the microphone... Be clear and structured in your response."></textarea>
 
-                                        <!-- Real-time Speech Transcription Preview (Hidden per user request) -->
-                                        <div class="transcript-preview-container" style="display: none;">
-                                            <div class="transcript-label">
-                                                <span>🎤 Live Transcription:</span>
-                                            </div>
-                                            <div class="transcript-preview" id="transcript-preview"></div>
-                                        </div>
 
                                         <!-- AI Feedback Area (Correct/Wrong) -->
                                         <div id="ai-evaluation-feedback" class="hidden"
@@ -181,6 +174,16 @@
                                                 <span id="mic-status">Start Speaking</span>
                                             </button>
                                         </div>
+
+                                        <!-- Real-time Speech Transcription Preview (Moved below Mic) -->
+                                        <div id="transcript-container" class="transcript-preview-container hidden"
+                                            style="margin-top: 20px; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto;">
+                                            <div class="transcript-label">
+                                                <span>🎤 Live Transcription</span>
+                                                <div class="recording-pulse"></div>
+                                            </div>
+                                            <div class="transcript-preview" id="transcript-preview"></div>
+                                        </div>
                                     </div>
 
                                     <!-- Code Editor Input (Monaco Integration) -->
@@ -199,13 +202,8 @@
                                                         onclick="window.EditorManager.toggleTheme()"
                                                         title="Toggle Theme">🌓</button>
                                                 </div>
-                                                <button class="run-btn" onclick="window.EditorManager.run()">
+                                                <button class="run-btn" onclick="window.executeLocal()">
                                                     ▶ Run Code
-                                                </button>
-                                                <button id="validate-logic-btn" class="run-btn"
-                                                    onclick="window.validateCodingSolution()"
-                                                    style="background: var(--accent-primary); border-left: 1px solid rgba(255,255,255,0.1);">
-                                                    🧠 Validate Logic
                                                 </button>
                                             </div>
                                             <div id="monaco-editor-host" class="monaco-editor-host"></div>
@@ -215,9 +213,6 @@
                                                     <div id="logic-outcome-badge" class="hidden"
                                                         style="margin-left: auto; margin-right: 12px; font-weight: 800; font-size: 11px; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
                                                     </div>
-                                                    <span
-                                                        onclick="document.getElementById('console-output').innerHTML=''; document.getElementById('logic-outcome-badge').classList.add('hidden');"
-                                                        style="cursor:pointer">Clear</span>
                                                 </div>
                                                 <div id="console-output" class="console-output"></div>
                                             </div>
@@ -234,7 +229,7 @@
                                                     <!-- Sample tests injected here -->
                                                     <div class="empty-state">No test cases loaded</div>
                                                 </div>
-                                                <div id="test-results-view" class="test-view">
+                                                <div id="results-tests-view" class="test-view">
                                                     <div class="test-stat-bar">
                                                         <span class="stat-item"><span id="tests-passed">0</span>
                                                             Passed</span>
@@ -254,7 +249,7 @@
 
                             <!-- Moved User Actions Inside Right Panel -->
                             <div class="interview-actions"
-                                style="margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; gap: 12px; align-items: center;">
+                                style="margin-top: auto; padding-top: 20px; display: flex; justify-content: flex-start; gap: 12px; align-items: center;">
                                 <button class="btn btn-secondary btn-sm" onclick="skipQuestion()">
                                     Skip Question
                                 </button>
@@ -1073,6 +1068,16 @@
             border-top: 1px solid #334155;
             font-family: 'Fira Code', monospace;
             font-size: 13px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-output {
+            flex: 1;
+            padding: 10px 16px;
+            overflow-y: auto;
+            color: #f1f5f9;
+            line-height: 1.5;
         }
 
         /* ===== TEST CASE PANEL ===== */
@@ -1278,34 +1283,133 @@
             outline: none;
         }
 
-        /* Speech Transcription Preview */
+        /* Transcript Preview Box */
         .transcript-preview-container {
-            margin-top: 12px;
-            background: rgba(99, 102, 241, 0.08);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 12px;
-            padding: 12px 16px;
-            min-height: 50px;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 16px 20px;
+            min-height: 80px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            animation: slideUpFade 0.3s ease-out;
         }
 
-        .transcript-preview-container:has(.transcript-preview:not(:empty)) {
-            background: rgba(99, 102, 241, 0.12);
-            border-color: rgba(99, 102, 241, 0.4);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        .transcript-preview-container.hidden {
+            display: none;
         }
 
         .transcript-label {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 600;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 800;
             color: var(--accent-primary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+        }
+
+        .transcript-preview {
+            font-size: 15px;
+            color: #f1f5f9;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .transcript-preview:empty::before {
+            content: 'Listening for your response...';
+            color: #64748b;
+            font-style: italic;
+            opacity: 0.7;
+        }
+
+        .recording-pulse {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Transcription Loading States */
+        .loading-dots::after {
+            content: '...';
+            display: inline-block;
+            width: 12px;
+            text-align: left;
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+
+            0%,
+            20% {
+                content: '';
+            }
+
+            40% {
+                content: '.';
+            }
+
+            60% {
+                content: '..';
+            }
+
+            80% {
+                content: '...';
+            }
+        }
+
+        .transcribing-ai {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-primary);
+            font-weight: 700;
+            font-size: 14px;
+            animation: pulse-soft 2s infinite;
+        }
+
+        .transcribing-ai span {
+            font-size: 18px;
+            animation: rotate-spark 3s linear infinite;
+        }
+
+        @keyframes rotate-spark {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse-soft {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
 
         /* Tips Accordion */
