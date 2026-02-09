@@ -13,6 +13,8 @@ class InterviewMedia {
         this.recordedChunks = [];
         this.onResult = null; // Callback for text result
         this.synth = window.speechSynthesis;
+        this.audioRecorder = null;
+        this.audioChunks = [];
     }
 
     // Initialize Webcam with Audio
@@ -192,25 +194,99 @@ class InterviewMedia {
 
     stopListening() {
         if (this.recognition && this.isRecording) {
-            this.recognition.stop();
+            try {
+                this.recognition.stop();
+            } catch (e) { console.warn("[InterviewMedia] Error stopping recognition:", e); }
             this.isRecording = false;
         }
+        return this.stopAudioRecording();
     }
 
-    toggleListening() {
-        if (!this.recognition) {
-            alert("Speech recognition is not initialized or supported.");
+    // Audio Recording for AI Transcription logic with MimeType Fallbacks
+    startAudioRecording() {
+        if (!this.stream) {
+            console.error("[InterviewMedia] No stream available for recording");
             return false;
         }
 
-        if (this.isRecording) {
-            this.stopListening();
-            return false; // Stopped
-        } else {
-            const started = this.startListening();
-            if (started) return true; // Started
-            return false; // Failed to start
+        try {
+            this.audioChunks = [];
+
+            // MimeType Fallback logic (Safari vs Chrome)
+            const types = [
+                'audio/webm;codecs=opus',
+                'audio/webm',
+                'audio/ogg;codecs=opus',
+                'audio/mp4',
+                '' // Browser default
+            ];
+
+            let selectedType = '';
+            for (const type of types) {
+                if (type === '' || MediaRecorder.isTypeSupported(type)) {
+                    selectedType = type;
+                    break;
+                }
+            }
+
+            console.log(`[InterviewMedia] Starting recorder with type: ${selectedType || 'default'}`);
+            this.audioRecorder = selectedType
+                ? new MediaRecorder(this.stream, { mimeType: selectedType })
+                : new MediaRecorder(this.stream);
+
+            this.audioRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) this.audioChunks.push(e.data);
+            };
+            this.audioRecorder.start();
+            console.log("[InterviewMedia] 🎙️ Audio capture started");
+            return true;
+        } catch (err) {
+            console.error("[InterviewMedia] Failed to start audio recorder:", err);
+            return false;
         }
+    }
+
+    stopAudioRecording() {
+        return new Promise((resolve) => {
+            if (this.audioRecorder && this.audioRecorder.state !== 'inactive') {
+                this.audioRecorder.onstop = () => {
+                    const blob = new Blob(this.audioChunks, { type: this.audioRecorder.mimeType || 'audio/webm' });
+                    console.log("[InterviewMedia] ⏹️ Captured Blob:", blob.size, blob.type);
+                    resolve(blob);
+                };
+                this.audioRecorder.stop();
+            } else {
+                resolve(null);
+            }
+        });
+    }
+
+    toggleListening() {
+        // We decouple this from recognition support to allow Gemini-only transcription
+        if (this.isRecording) {
+            return false; // Signifies stopping
+        }
+
+        // Try to start browser STT for live preview if supported
+        let recognitionStarted = false;
+        if (this.recognition) {
+            recognitionStarted = this.startListening();
+        } else {
+            console.warn("[InterviewMedia] Native STT not supported. Falling back to AI-only mode.");
+            this.isRecording = true; // Still mark as recording for UI tracking
+        }
+
+        // Always start raw audio capture for Gemini
+        const audioStarted = this.startAudioRecording();
+
+        if (audioStarted) {
+            return true; // Successfully started at least the audio capture
+        }
+
+        // If even audio capture failed, reset state
+        this.isRecording = false;
+        if (recognitionStarted) this.stopListening();
+        return false;
     }
 
     // Privacy Mode Toggle
