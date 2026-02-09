@@ -2414,6 +2414,8 @@ pre {
     min-width: 40px;
     min-height: 40px;
     background: linear-gradient(135deg, var(--accent-green, #10b981), var(--accent-green-dark, #059669));
+    background-size: cover;
+    background-position: center;
     border-radius: 50%;
     display: flex;
     align-items: center;

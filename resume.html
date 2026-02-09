@@ -309,6 +309,58 @@
     </div>
 
     <style>
+        /* Smooth Hover Animations (Home/Profile Style) */
+        .stat-icon,
+        .upload-icon,
+        .mini-card-icon,
+        .info-icon,
+        .skill-tag span:first-child {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            display: inline-flex;
+        }
+
+        .stat-card:hover .stat-icon,
+        .upload-zone:hover .upload-icon,
+        .skill-tag:hover span:first-child {
+            transform: rotate(360deg) scale(1.2) !important;
+        }
+
+        .card,
+        .stat-card,
+        .upload-zone {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover,
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-primary) !important;
+        }
+
+        .upload-zone:hover {
+            transform: scale(1.01);
+            background: rgba(99, 102, 241, 0.05);
+            border-color: var(--accent-primary);
+        }
+
+        /* Entry Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
         .skill-tag {
             display: inline-flex;
             align-items: center;
@@ -318,7 +370,13 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 13px;
-            transition: var(--transition-fast);
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .skill-tag:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
         }
 
         .skill-tag.present {
@@ -834,39 +892,58 @@
                     badge.style.background = 'var(--accent-red)';
                 }
 
-                // Display suggestions
-                const suggestionsList = document.getElementById('ats-suggestions');
-                suggestionsList.innerHTML = atsResult.suggestions.map(s => `<li>${s}</li>`).join('');
             }, 300);
 
             // Skills found
             const foundSkills = [...data.skills.present, ...data.skills.partial];
             document.getElementById('found-count').textContent = foundSkills.length + ' skills';
-            document.getElementById('skills-found').innerHTML = data.skills.present.map(s =>
-                `<span class="skill-tag present">✓ ${s}</span>`
-            ).join('') + data.skills.partial.map(s =>
-                `<span class="skill-tag partial">◐ ${s}</span>`
-            ).join('');
+            // Render Found Skills
+            const foundEl = document.getElementById('skills-found');
+            foundEl.innerHTML = '';
+            (data.skills?.present || []).forEach((skill, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'skill-tag present animate-in';
+                tag.style.animationDelay = `${index * 0.05}s`;
+                tag.innerHTML = `<span>✅</span> ${skill}`;
+                foundEl.appendChild(tag);
+            });
 
-            // Missing skills
-            document.getElementById('missing-badge').textContent = data.skills.missing.length + ' skills';
-            document.getElementById('skills-missing').innerHTML = data.skills.missing.map(s =>
-                `<span class="skill-tag missing">✗ ${s}</span>`
-            ).join('');
+            // Render Missing Skills
+            const missingEl = document.getElementById('skills-missing');
+            missingEl.innerHTML = '';
+            const missingSkills = data.skills?.missing || [];
+            missingSkills.forEach((skill, index) => {
+                const tag = document.createElement('div');
+                tag.className = 'skill-tag missing animate-in';
+                tag.style.animationDelay = `${((data.skills?.present?.length || 0) + index) * 0.05}s`;
+                tag.innerHTML = `<span>❌</span> ${skill}`;
+                missingEl.appendChild(tag);
+            });
 
+            // Suggestions
+            const suggestionsEl = document.getElementById('ats-suggestions');
+            suggestionsEl.innerHTML = '';
+            const suggestions = data?.atsScore?.suggestions || data?.suggestions || [];
+            suggestions.forEach((text, index) => {
+                const li = document.createElement('li');
+                li.className = 'animate-in';
+                li.style.animationDelay = `${((data.skills?.present?.length || 0) + missingSkills.length + index) * 0.1}s`;
+                li.textContent = text;
+                suggestionsEl.appendChild(li);
+            });
             // Experience
-            document.getElementById('experience-list').innerHTML = data.experience.map(e => `
-                <div class="experience-item">
-                    <h4>${e.title}</h4>
-                    <p>${e.company} • ${e.duration}</p>
+            document.getElementById('experience-list').innerHTML = data.experience.map((e, index) => `
+                <div class="experience-item animate-in" style="animation-delay: ${index * 0.15}s">
+                    <h4>${e.role || 'Role'}</h4>
+                    <p>${e.company || 'Company'} • ${e.duration || ''}</p>
                 </div>
             `).join('');
 
             // Projects
-            document.getElementById('projects-list').innerHTML = data.projects.map(p => `
-                <div class="project-item">
-                    <h4>${p.name}</h4>
-                    <p>${p.tech}</p>
+            document.getElementById('projects-list').innerHTML = data.projects.map((p, index) => `
+                <div class="project-item animate-in" style="animation-delay: ${index * 0.15}s">
+                    <h4>${p.name || 'Project Name'}</h4>
+                    <p>${p.tech || ''}</p>
                 </div>
             `).join('');
         }

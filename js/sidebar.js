@@ -111,7 +111,9 @@ function generateSidebar() {
 
         <div class="sidebar-footer">
             <a href="profile.html" class="user-info-widget" style="text-decoration: none; cursor: pointer;">
-                <div class="user-avatar-widget">${userInitial}</div>
+                <div class="user-avatar-widget" style="${userData.photoURL ? `background-image: url(${userData.photoURL}); font-size: 0;` : ''}">
+                    ${userData.photoURL ? '' : userInitial}
+                </div>
                 <div class="user-details-widget">
                     <div class="user-name-widget">${userName}</div>
                     <div class="user-role-widget">${userRole}</div>
