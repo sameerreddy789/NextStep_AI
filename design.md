@@ -35,22 +35,15 @@ The system extracts skills from resumes through simulated analysis, displays res
 
 ## Architecture
 
-### System Components
+The feature uses a **Pipeline Architecture** where data flows from raw inputs (PDF/Speech) through an AI Intelligence Layer (`GeminiService`) and a Market Logic Layer (`SerpService`) to a personalized dashboard.
 
-The resume analysis feature follows a simplified **interview-aware pipeline**:
+### Key Components
 
-1. **File Upload Handler** (resume.html): Handles file reception via drag-drop or file picker
-2. **File Validator** (JavaScript): Validates file format and size (max 10MB)
-3. **Resume Parser** (Simulated): Extracts structured information from text using demo data
-4. **Data Display** (resume.html): Shows extracted skills, projects, experience in organized sections
-5. **Interview Trigger** (resume.html): Shows CTA to take validation interview (optional but encouraged)
-6. **Interview Module** (interview.html): Conducts adaptive mock interviews (technical/behavioral/mixed)
-7. **Feedback System** (feedback.html): Shows interview results and skill validation
-8. **Readiness Calculator** (Integrated): Calculates 0-100 readiness score from multiple factors
-9. **Skill Gap Analyzer** (skill-gap.html): Compares user skills vs market requirements
-10. **Roadmap Generator** (roadmap.html): Creates personalized 6-week learning plan with language-aware resources
-11. **Data Store** (store.js + LocalStorage + Firestore): Persists all user data with cloud sync
-12. **UI Framework** (sidebar.js, ui.js, effects.js): Shared components and effects across platform
+1.  **AI Intelligence Layer** (`gemini-service.js`): The unified engine for multimodal analysis, question generation, and performance evaluation.
+2.  **Adaptive Logic Layer** (`interview-engine.js`): Manages the state and flow of the interview, integrating speech and code inputs.
+3.  **Market Intelligence Layer** (`serp-service.js`): Fetches live job data to ground the AI's skills analysis in reality.
+4.  **UI Ecosystem Layer**: A collection of high-end interactive components (Orbital Timeline, Magic Bento, Infinite Plane) providing a premium UX.
+5.  **State & Persistence Layer**: Secure handling of user data via LocalStorage and Firebase.
 
 ### Component Interaction Flow (Interview-Aware)
 
@@ -265,38 +258,35 @@ interface ReadinessChange {
 
 ## Component Specifications
 
-### File Validator
+### AI Evaluation Data Model
 
-**Responsibilities**:
-- Validate file format (PDF, DOC, DOCX)
-- Validate file size (max 10MB)
-- Check file integrity
-- Provide user-friendly error messages
-
-**Implementation**:
-- Use File API to check file type and size
-- Use magic number validation (file signature bytes) to prevent extension spoofing
-- Return descriptive error messages matching CareerPilot's notification style
-
-**Client-Side Implementation**:
-```javascript
-// In resume.html or dedicated validator.js
-function validateFile(file) {
-  const validTypes = ['application/pdf', 'application/msword', 
-                      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-  const maxSize = 10 * 1024 * 1024; // 10MB
-  
-  if (!validTypes.includes(file.type)) {
-    return { valid: false, error: 'Unsupported file format. Please upload PDF, DOC, or DOCX files.' };
-  }
-  
-  if (file.size > maxSize) {
-    return { valid: false, error: 'File size exceeds 10MB limit. Please upload a smaller file.' };
-  }
-  
-  return { valid: true };
+```json
+{
+  "questionId": "q_123",
+  "score": 85,
+  "feedback": "Strong logic, but could optimize space complexity.",
+  "reasoning": "The user correctly implemented... however...",
+  "suggestedImprovement": "Consider using a Hash Map for O(n) lookups.",
+  "status": "correct|partially_correct|incorrect"
 }
 ```
+
+### Component Specification: GeminiService
+
+| Property | Value |
+|----------|-------|
+| Logic | Centralized AI API wrapper for Google Gemini |
+| Inputs | PDF Blobs, Text Strings, JSON Schemas |
+| Outputs | Validated JSON objects matching requested schemas |
+| Security | API Key handled via `env-config.js` and obfuscation |
+
+### Component Specification: InterviewEngine
+
+| Property | Value |
+|----------|-------|
+| Logic | State-machine based flow (Setup -> Interrogating -> Evaluating -> Results) |
+| Features | MCQ rendering, Monaco Editor integration, Speech-to-Text |
+| Persistence | LocalStorage sync + Firestore completion tracking |
 
 **Error Cases**:
 - Invalid format: Display glassmorphism notification with retry button
