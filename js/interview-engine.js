@@ -66,13 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             window.EditorManager.setLanguage(lang);
             if (langSelect) langSelect.value = lang;
             if (editorLangSelect) editorLangSelect.value = lang;
-            if (window.MonacoEditor) {
-                const currentVal = window.MonacoEditor.getValue();
-                if (!currentVal || currentVal.includes('Hello World')) {
-                    const newCode = BOILERPLATES[lang];
-                    if (newCode) window.MonacoEditor.setValue(newCode);
-                }
-            }
         }
     };
 
@@ -148,17 +141,18 @@ function updateSpeakerUI() {
     }
 }
 
-window.showConfirm = function (message, icon = '❓', title = 'Confirm') {
+window.showConfirm = function (message, icon = '❓', title = 'Confirm', confirmLabel = 'OK', cancelLabel = 'Cancel') {
     return new Promise((resolve) => {
         const modal = document.getElementById('custom-modal');
         document.getElementById('modal-icon').textContent = icon;
         document.getElementById('modal-title').textContent = title;
         document.getElementById('modal-message').textContent = message;
+
         const cancelBtn = document.getElementById('modal-cancel');
         const confirmBtn = document.getElementById('modal-confirm');
         cancelBtn.classList.remove('hidden');
-        confirmBtn.textContent = 'OK';
-        cancelBtn.textContent = 'Cancel';
+        confirmBtn.textContent = confirmLabel;
+        cancelBtn.textContent = cancelLabel;
         modal.classList.remove('hidden');
 
         const handleConfirm = () => { modal.classList.add('hidden'); cleanup(); resolve(true); };
@@ -171,6 +165,47 @@ window.showConfirm = function (message, icon = '❓', title = 'Confirm') {
         cancelBtn.addEventListener('click', handleCancel);
     });
 };
+
+// Fullscreen Integrity Enforcement
+async function handleFullscreenChange() {
+    const isInterviewActive = document.getElementById('interview-section') && !document.getElementById('interview-section').classList.contains('hidden');
+
+    if (isInterviewActive && !document.fullscreenElement) {
+        console.warn('[Interview] 🛡️ Fullscreen exit detected!');
+
+        const stay = await window.showConfirm(
+            "Exiting fullscreen is not allowed during the interview. Choosing 'Exit Interview' will terminate your session and you will have to start over from the beginning.",
+            "🚫",
+            "Integrity Warning",
+            "Stay & Continue",
+            "Exit Interview"
+        );
+
+        if (stay) {
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    await document.documentElement.requestFullscreen();
+                }
+            } catch (err) {
+                console.error('[Interview] Failed to re-enter fullscreen:', err);
+            }
+        } else {
+            console.log('[Interview] 🚪 User chose to exit. Resetting session...');
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            location.reload(); // Simplest way to reset everything
+        }
+    }
+}
+
+// Navigation Guard
+function handleBeforeUnload(e) {
+    if (document.getElementById('interview-section') && !document.getElementById('interview-section').classList.contains('hidden')) {
+        e.preventDefault();
+        e.returnValue = 'Interview in progress. If you leave, your progress will be lost.';
+        return e.returnValue;
+    }
+}
 
 // Timer Logic
 window.startTimer = function () {
@@ -256,19 +291,40 @@ async function startInterview(mode) {
     showQuestion();
     startTimer();
 
+    // 🆕 Focused UX: Fullscreen and Sidebar Control
+    console.log('[Interview] 🖥️ Entering focused mode...');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+
+    if (sidebar) sidebar.classList.add('hidden');
+    if (mainContent) mainContent.style.marginLeft = '0';
+
+    try {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+        }
+    } catch (fsError) {
+        console.warn('[Interview] Fullscreen request failed:', fsError);
+    }
+
+    // Add navigation guard
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
     window.interviewMedia.initCamera('webcam-feed').then(success => {
         if (success) window.interviewMedia.startVideoRecording();
     });
 
     window.interviewMedia.initSpeech((final, interim) => {
-        const textArea = document.getElementById('answer-input');
         const transcriptPreview = document.getElementById('transcript-preview');
         if (!document.getElementById('text-input-container').classList.contains('hidden')) {
-            if (interim) { transcriptPreview.textContent = interim; transcriptPreview.style.opacity = '0.6'; }
+            if (interim) {
+                transcriptPreview.textContent = interim;
+            }
             if (final) {
-                textArea.value += (textArea.value ? ' ' : '') + final;
-                textArea.scrollTop = textArea.scrollHeight;
-                transcriptPreview.textContent = '';
+                // For "Live" feel, we show it in the box. 
+                // We won't append to textarea here anymore to avoid duplicates with Gemini.
+                transcriptPreview.textContent = final;
             }
         }
     });
@@ -276,35 +332,92 @@ async function startInterview(mode) {
     updateSpeakerUI();
 };
 
-function toggleSpeech() {
+async function toggleSpeech() {
     if (!window.interviewMedia) {
-        console.warn('[Speech] interviewMedia not initialized');
+        console.warn('[Speech] ❌ interviewMedia not initialized');
         return;
     }
-    const isRecording = window.interviewMedia.toggleListening();
+
     const btn = document.getElementById('mic-btn');
     const status = document.getElementById('mic-status');
     const micIcon = btn ? btn.querySelector('.mic-icon') : null;
     const aiStatus = document.getElementById('ai-status');
+    const transcriptContainer = document.getElementById('transcript-container');
+    const transcriptPreview = document.getElementById('transcript-preview');
+    const textArea = document.getElementById('answer-input');
 
-    if (isRecording) {
-        if (btn) btn.classList.add('recording');
-        if (status) status.textContent = 'Stop Recording';
-        if (micIcon) micIcon.textContent = '⏹️';
-        if (aiStatus) { aiStatus.classList.remove('hidden'); aiStatus.textContent = 'AI is listening...'; }
+    const isStarting = !window.interviewMedia.isRecording;
+
+    if (isStarting) {
+        const success = window.interviewMedia.toggleListening();
+        if (success) {
+            if (btn) btn.classList.add('recording');
+            if (status) status.textContent = 'Stop Recording';
+            if (micIcon) micIcon.textContent = '⏹️';
+            if (aiStatus) { aiStatus.classList.remove('hidden'); aiStatus.textContent = 'AI is listening...'; }
+            if (transcriptContainer) transcriptContainer.classList.remove('hidden');
+            if (transcriptPreview) transcriptPreview.textContent = '';
+        }
     } else {
+        // Stopping - Change UI to "Transcribing" state immediately
+        console.log("[Speech] ⏹️ Stopping recording and processing with Gemini...");
         if (btn) btn.classList.remove('recording');
-        if (status) status.textContent = 'Start Speaking';
-        if (micIcon) micIcon.textContent = '🎤';
-        if (aiStatus) aiStatus.classList.add('hidden');
+        if (status) status.innerHTML = 'AI Transcribing<span class="loading-dots"></span>';
+        if (micIcon) micIcon.textContent = '⏳';
+        if (aiStatus) aiStatus.textContent = 'AI is processing audio...';
 
-        // AUTO-EVALUATE: If user spoke an answer, trigger AI evaluation
-        const answer = document.getElementById('answer-input').value.trim();
-        if (answer.length > 10) {
-            evaluateCurrentAnswer(answer);
+        try {
+            const audioBlob = await window.interviewMedia.stopListening();
+
+            if (audioBlob && audioBlob.size > 2000) {
+                if (transcriptPreview) {
+                    transcriptPreview.innerHTML = '<div class="transcribing-ai"><span>✨</span> Gemini is transcribing your audio...</div>';
+                }
+
+                const finalTranscript = await window.GeminiService.transcribeAudio(audioBlob);
+
+                if (finalTranscript && finalTranscript.trim().length > 0) {
+                    console.log("[InterviewEngine] ✅ Gemini transcription received:", finalTranscript);
+
+                    // Append to main textarea
+                    textArea.value += (textArea.value ? ' ' : '') + finalTranscript;
+                    textArea.scrollTop = textArea.scrollHeight;
+                    textArea.dispatchEvent(new Event('input')); // Auto-resize
+
+                    // Update preview box with the high-fidelity text
+                    if (transcriptPreview) {
+                        transcriptPreview.textContent = finalTranscript;
+                        // Keep visible for 3 seconds then hide
+                        setTimeout(() => {
+                            if (transcriptContainer) transcriptContainer.classList.add('hidden');
+                        }, 4000);
+                    }
+                } else {
+                    console.warn("[InterviewEngine] Gemini returned empty transcription.");
+                    if (transcriptPreview) transcriptPreview.textContent = "No speech detected.";
+                    setTimeout(() => { if (transcriptContainer) transcriptContainer.classList.add('hidden'); }, 2000);
+                }
+            } else {
+                console.log("[InterviewEngine] Audio too short or empty.");
+                if (transcriptContainer) transcriptContainer.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error("[InterviewEngine] Transcription error:", error);
+            if (transcriptPreview) transcriptPreview.textContent = "Error: Transcription failed.";
+            setTimeout(() => { if (transcriptContainer) transcriptContainer.classList.add('hidden'); }, 3000);
+        } finally {
+            if (status) status.textContent = 'Start Speaking';
+            if (micIcon) micIcon.textContent = '🎤';
+            if (aiStatus) aiStatus.classList.add('hidden');
+
+            // Trigger evaluation if length is sufficient
+            const answer = textArea.value.trim();
+            if (answer.length > 5) {
+                evaluateCurrentAnswer(answer);
+            }
         }
     }
-};
+}
 
 async function evaluateCurrentAnswer(answerText) {
     const feedbackArea = document.getElementById('ai-evaluation-feedback');
@@ -628,11 +741,37 @@ async function completeInterview() {
     localStorage.setItem('nextStep_onboardingCompleted', 'true');
     localStorage.setItem('nextStep_roadmapCompleted', 'true');
 
+    // 🆕 Restore UX focus
+    console.log('[Interview] 🖥️ Exiting focused mode...');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+
+    if (sidebar) sidebar.classList.remove('hidden');
+    if (mainContent) {
+        const isCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+        mainContent.style.marginLeft = isCollapsed ? '70px' : '260px';
+    }
+
+    try {
+        if (document.exitFullscreen && document.fullscreenElement) {
+            document.exitFullscreen();
+        }
+    } catch (fsError) {
+        console.warn('[Interview] Exit fullscreen failed:', fsError);
+    }
+
+    // Remove navigation guard
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.removeEventListener('fullscreenchange', handleFullscreenChange);
+
     // Hide interview UI
     document.getElementById('interview-section').classList.add('hidden');
     document.getElementById('complete-section').classList.remove('hidden');
     const videoSlot = document.getElementById('video-slot');
     if (videoSlot) videoSlot.classList.add('hidden');
+
+    // Scroll to top so the report is visible immediately
+    window.scrollTo({ top: 0, behavior: 'instant' });
 
     // Start AI Analysis
     const loadingEl = document.getElementById('results-loading');
@@ -684,11 +823,26 @@ async function completeInterview() {
             }
         }
 
+        validAnswersCount = answers.filter(a => !a.skipped).length;
         const overallScore = validAnswersCount > 0 ? Math.round(totalScore / validAnswersCount) : 0;
+
+        // 🆕 6-Dimension Detailed Analysis
+        console.log('[Interview] 🧠 Generating detailed performance analysis...');
+        const userProfile = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+        const role = userProfile.targetRole || 'Software Engineer';
+
+        let detailedAnalysis = null;
+        try {
+            detailedAnalysis = await window.GeminiService.analyzeDetailedPerformance(analyzedAnswers, role);
+        } catch (analError) {
+            console.error('[Interview] Detailed analysis failed:', analError);
+        }
+
         const interviewData = {
             mode: currentMode,
             answers: analyzedAnswers,
-            overallScore: overallScore,
+            overallScore: detailedAnalysis?.overallScore || overallScore,
+            detailedAnalysis: detailedAnalysis,
             completedAt: new Date().toISOString()
         };
 
@@ -719,11 +873,61 @@ function renderInterviewResults(data) {
 
     if (scoreVal) scoreVal.innerText = `${data.overallScore}%`;
     if (summaryEl) {
-        summaryEl.innerText = data.overallScore >= 80 ?
+        summaryEl.innerText = data.detailedAnalysis?.summary || (data.overallScore >= 80 ?
             "Exceptional performance! You demonstrated deep technical knowledge and clear communication." :
             data.overallScore >= 60 ?
                 "Good effort! You have a solid foundation but there are specific areas where you can sharpen your expertise." :
-                "This was a great learning experience. Your roadmap has been updated with focused topics to help you bridge these gaps.";
+                "This was a great learning experience. Your roadmap has been updated with focused topics to help you bridge these gaps.");
+    }
+
+    // 🆕 Inject 6-Dimension Breakdown
+    if (data.detailedAnalysis && data.detailedAnalysis.dimensions) {
+        const breakdownHtml = `
+            <div class="dimension-breakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; text-align: left;">
+                ${data.detailedAnalysis.dimensions.map(dim => {
+            const color = dim.score >= 80 ? '#10b981' : dim.score >= 50 ? '#f59e0b' : '#ef4444';
+            return `
+                    <div class="dimension-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">${dim.name}</span>
+                            <span style="font-size: 13px; font-weight: 700; color: ${color}">${dim.score}%</span>
+                        </div>
+                        <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+                            <div style="width: ${dim.score}%; height: 100%; background: ${color}; border-radius: 3px;"></div>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin: 0;">${dim.feedback}</p>
+                    </div>
+                    `;
+        }).join('')}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; text-align: left;">
+                <div class="analysis-box" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 20px;">
+                    <h4 style="color: #10b981; font-size: 14px; margin-bottom: 12px;">🏆 Strengths</h4>
+                    <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                        ${data.detailedAnalysis.strengths.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="analysis-box" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 20px;">
+                    <h4 style="color: var(--accent-primary); font-size: 14px; margin-bottom: 12px;">🚀 Areas for Growth</h4>
+                    <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                        ${data.detailedAnalysis.improvements.map(i => `<li>${i}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        // Prepend breakdown before result cards
+        const overallCard = document.querySelector('.overall-score-card');
+        if (overallCard) {
+            let breakdownContainer = document.getElementById('dimensions-container');
+            if (!breakdownContainer) {
+                breakdownContainer = document.createElement('div');
+                breakdownContainer.id = 'dimensions-container';
+                overallCard.parentNode.insertBefore(breakdownContainer, overallCard.nextSibling);
+            }
+            breakdownContainer.innerHTML = breakdownHtml;
+        }
     }
 
     if (listEl) {
@@ -872,6 +1076,11 @@ async function saveInterviewToDatabase(data) {
             timestamp: serverTimestamp()
         });
 
+        // Update user status flag
+        await setDoc(doc(db, "users", user.uid), {
+            interviewCompleted: true
+        }, { merge: true });
+
         console.log('[Database] ✅ Interview results saved successfully');
 
         // Analyze skill gaps and update roadmap
@@ -965,13 +1174,20 @@ async function runExecutionFlow(code, tests, isGlobal = false) {
     const passedEl = document.getElementById('tests-passed');
     const failedEl = document.getElementById('tests-failed');
     const statusEl = document.getElementById('execution-status');
+    const consoleOutput = document.getElementById('console-output');
 
     try {
         const langCode = document.getElementById('editor-lang-select').value;
-        const results = await window.GeminiService.executeCode(code, langCode, tests);
+        const report = await window.GeminiService.executeCode(code, langCode, tests);
+
+        // Update Console Output
+        if (consoleOutput) {
+            consoleOutput.innerHTML = `<pre style="color: #f3f4f6; font-family: 'Fira Code', monospace; margin: 0; white-space: pre-wrap;">${report.overallConsole || 'Execution finished.'}</pre>`;
+        }
 
         let passed = 0;
         let failed = 0;
+        const results = report.testResults || [];
 
         resultsContainer.innerHTML = results.map(res => {
             const isPassed = res.status === 'passed';
@@ -998,7 +1214,7 @@ async function runExecutionFlow(code, tests, isGlobal = false) {
 
         passedEl.textContent = passed;
         failedEl.textContent = failed;
-        statusEl.innerHTML = failed === 0 ? '<span style="color:var(--accent-green)">✓ All Passed</span>' : `<span style="color:var(--accent-red)">✗ ${failed} Failed</span>`;
+        statusEl.innerHTML = failed === 0 ? '<span style="color:#10b981">✓ All Passed</span>' : `<span style="color:#ef4444">✗ ${failed} Failed</span>`;
 
         if (isGlobal && failed === 0) {
             setTimeout(async () => {
