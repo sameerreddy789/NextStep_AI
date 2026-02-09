@@ -139,8 +139,25 @@ const GeminiService = {
     _parseJSON(text) {
         try {
             let cleaned = text.trim();
+
             // Remove markdown code blocks
-            cleaned = cleaned.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+            cleaned = cleaned.replace(/^```json\s*/g, '').replace(/```$/g, '').trim();
+            cleaned = cleaned.replace(/^```\s*/g, '').replace(/```$/g, '').trim();
+
+            // Fix common AI JSON mistakes
+            // 1. Fix unescaped quotes in descriptions
+            cleaned = cleaned.replace(/"desc":\s*"([^"]*)"([^"]*)"([^"]*)",/g, (match, p1, p2, p3) => {
+                return `"desc": "${p1}\\"${p2}\\"${p3}",`;
+            });
+
+            // 2. Remove trailing commas before closing braces/brackets
+            cleaned = cleaned.replace(/,(\s*[}\]])/g, '$1');
+
+            // 3. Try to extract JSON if there's extra text
+            const jsonMatch = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+            if (jsonMatch) {
+                cleaned = jsonMatch[0];
+            }
 
             const parsed = JSON.parse(cleaned);
 
@@ -169,9 +186,59 @@ const GeminiService = {
             }
             return null;
         } catch (e) {
-            console.error('[GeminiService] Failed to parse JSON:', e, 'Text:', text);
+            console.error('[GeminiService] Failed to parse JSON:', e.message);
+            console.log('[GeminiService] Problematic text:', text.substring(0, 500));
+
+            // Last resort: try to extract just the structure without descriptions
+            try {
+                // Try to find and extract valid JSON structure by removing description fields
+                const structureMatch = text.match(/\{[\s\S]*?"mustHave"[\s\S]*?"goodToHave"[\s\S]*?"futureProof"[\s\S]*?\}/);
+                if (structureMatch) {
+                    // Simplified parsing: just extract skill names
+                    const mustHaveMatch = text.match(/"mustHave":\s*\[([\s\S]*?)\]/);
+                    const goodToHaveMatch = text.match(/"goodToHave":\s*\[([\s\S]*?)\]/);
+                    const futureProofMatch = text.match(/"futureProof":\s*\[([\s\S]*?)\]/);
+
+                    if (mustHaveMatch || goodToHaveMatch || futureProofMatch) {
+                        console.warn('[GeminiService] Using simplified structure extraction');
+                        return {
+                            mustHave: this._extractSimpleSkills(mustHaveMatch?.[1] || ''),
+                            goodToHave: this._extractSimpleSkills(goodToHaveMatch?.[1] || ''),
+                            futureProof: this._extractSimpleSkills(futureProofMatch?.[1] || '')
+                        };
+                    }
+                }
+            } catch (fallbackError) {
+                console.error('[GeminiService] Fallback parsing also failed:', fallbackError);
+            }
+
             return null;
         }
+    },
+
+    /**
+     * Extract basic skill structure from malformed JSON
+     */
+    _extractSimpleSkills(jsonText) {
+        const skills = [];
+        const nameMatches = jsonText.matchAll(/"name":\s*"([^"]+)"/g);
+        const statusMatches = jsonText.matchAll(/"status":\s*"([^"]+)"/g);
+        const priorityMatches = jsonText.matchAll(/"priority":\s*"([^"]+)"/g);
+
+        const names = Array.from(nameMatches, m => m[1]);
+        const statuses = Array.from(statusMatches, m => m[1]);
+        const priorities = Array.from(priorityMatches, m => m[1]);
+
+        for (let i = 0; i < names.length; i++) {
+            skills.push({
+                name: names[i],
+                status: statuses[i] || 'missing',
+                priority: priorities[i] || 'Medium',
+                desc: 'Market-relevant skill'
+            });
+        }
+
+        return skills;
     },
 
     /**
