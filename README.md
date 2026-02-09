@@ -12,67 +12,44 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 
 ---
 
-## ✨ Features
-
-### 🎯 Smart Resume Analysis
-- **AI-Powered Skill Extraction** — Automatically detects and categorizes your technical and soft skills
-- **ATS Compatibility Score** — Evaluates how well your resume performs with Applicant Tracking Systems
-- **Missing Skills Detection** — Identifies critical skills you need for your target role
-- **Experience & Project Analysis** — Extracts and evaluates your work experience and projects
+### 🎯 Smart AI Resume Analysis
+- **Live Gemini AI Integration** — Performs deep multimodal analysis of PDF resumes for precise skill extraction
+- **AI-Powered Skill Validation** — Automatically detects and categorizes technical, soft, and industry-specific skills
+- **ATS Compatibility Score** — Real-time evaluation of how well your resume performs with modern ATS models
+- **Actionable Suggestions** — Get AI-generated feedback on how to improve your resume for your target role
+- **Experience & Project Parsing** — Context-aware extraction of work history and technical project impact
 
 ### 🎤 Adaptive AI Interviews
-- **Adaptive/Adaptive Logic** — Intelligently mixes Technical (Code) and Behavioral (Speech) questions
-- **Dynamic Response Tools**:
-  - **Code Editor** — Integrated Monaco Editor (VS Code engine) for JavaScript, Python, and Java support
-  - **Speech-to-Text** — Real-time transcription for behavioral questions
-- **Live Proctoring Simulation** — Webcam feed for realistic interview pressure
-- **Timed Responses** — Adaptive timers (longer for code, shorter for speech)
-- **Progress Tracking** — Track your performance across sessions
+- **Real-Time AI Evaluation** — Every answer is analyzed by Gemini AI for logic, approach, and technical accuracy
+- **Adaptive Question Engine** — Dynamically generates questions based on your resume and interview performance
+- **Advanced Answer Methods**:
+  - **Monaco Code Editor** — Professional VS Code-powered environment with "Run Code" simulation
+  - **Speech-to-Text** — Real-time transcription using Web Speech API for behavioral responses
+- **Live Proctoring Simulator** — Interactive webcam feed and behavioral analysis for realistic practice
+- **AI Voice Interaction** — Optional AI-guided interview experience with speech synthesis
+- **Immediate Feedback** — Get per-question analysis on strengths and areas for improvement
 
 ### 🗺️ Personalized Learning Roadmap
-- **6-Week Structured Plan** — Week-by-week learning path based on your skill gaps
-- **Dynamic Resource Integration** — Live YouTube tutorials and LeetCode problems fetched via SerpAPI
-- **Task Management** — Interactive checklist with learn, practice, and interview tasks
-- **Progress Visualization** — Track completion and stay motivated
-- **🎉 Completion Celebration** — Congratulatory popup when you finish all tasks with:
-  - **Job Application Links** — Direct access to LinkedIn, Indeed, AngelList, Internshala, and remote job boards
-  - **Related Skills Suggestions** — Role-specific skill recommendations to level up further
+- **Dynamic 6-Week Plan** — Tailored learning path generated from your specific skill gaps
+- **AI Roadmap Nudges** — "Refine with AI" feature to customize your journey using natural language prompts
+- **Live Resource Integration** — Real-time YouTube tutorials and LeetCode problems fetched via SerpAPI
+- **Interactive Checklist** — Track progress across Learn, Practice, and Interview tasks
+- **🎉 Completion Celebration** — Automated celebration with job board links and "Next-Level" skill suggestions
 
-### 📊 Comprehensive Dashboard
-- **Job Readiness Score** — Real-time assessment of your interview readiness
-- **Weekly Progress Charts** — Visual representation of your learning journey
-- **Skills Coverage Metrics** — Track skills covered vs. skills needed
-- **Day Streak Counter** — Stay consistent with gamified motivation
+### 📊 Live Skill Gap Analysis
+- **Market Search Integration** — Scans live industry trends via SERP for your specific target role
+- **Contextual Comparison** — Compares your resume skills directly against current market demands
+- **Prioritized Learning** — Categorizes skills into Must-Have, Good-to-Have, and Future-Proof
+- **Direct Roadmap Sync** — One-click integration to update your roadmap with identified gaps
 
-### 👤 User Profiles & Navigation
-- **Simplified Sidebar** — Clean navigation with direct Profile access
-- **Smart User Tab** — Single click to access profile, no hidden menus
-- **Streamlined Logout** — Secure logout from profile page, redirects to landing
-- **Activity Heatmap** — Github-style visualization of your daily learning progress
-
-### 🚀 Onboarding Wizard
-- **Multi-step Flow** — Guided setup for personalized experience
-- **Career Goal Setting** — Define your path (Student, Professional, etc.)
-- **Interactive Resume Upload** — Drag & drop interface
-- **Seamless Transition** — Auto-redirects to resume analysis upon completion
-
-### 🔐 Authentication
-- **Firebase Auth** — Secure Email/Password & Google Sign-In
-- **Cloud Persistence** — User profiles stored in Firestore
-- **Smart Redirection** — New users guided to onboarding automatically
-
-### 🎨 UI/UX Enhancements
-- **Toast Notifications** — Beautiful success/error/warning messages with auto-dismiss
-- **Loading States** — Skeleton screens, spinners, and progress indicators
-- **Page Transitions** — Smooth fade-in animations and card slide-ups
-- **Micro-Interactions** — Button ripple effects, hover animations, and icon bounces
-- **Mobile-First Design** — Hamburger menu, touch-friendly 44px tap targets, responsive sidebar
-- **Keyboard Navigation** — Full keyboard support with Esc, Tab, and Arrow key shortcuts
-- **Accessibility** — ARIA labels, focus indicators, screen reader support, skip-to-content links
-- **Enhanced Footer** — Gradient background with animated social icons
-- **Custom 404 Page** — Friendly error page with helpful navigation
-- **Empty States** — Engaging placeholders with call-to-action buttons
-- **Animated Counters** — Number animations for stats and metrics
+### 🎨 Premium UI/UX Ecosystem
+- **Orbital Feature Timeline** — Interactive visualization of the career preparation journey
+- **Magic Bento Grid** — Modern, dense information display with hover-reactive cards
+- **Infinite Plane Background** — Dynamic, grid-based animation for a high-end feel
+- **Click Spark Effects** — Engaging micro-interactions for every user action
+- **Toast Notifications** — Sophisticated alert system for real-time app feedback
+- **Skeleton Loading** — Premium perceived performance with shimmer effects and transition-aware loaders
+- **Keyboard Navigation** — Fully accessible experience with global shortcuts (Esc, Ctrl+Enter)
 
 ---
 
@@ -81,14 +58,15 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 | Technology | Purpose |
 |------------|---------|
 | **HTML5** | Structure and semantics |
-| **CSS3** | Styling with modern design patterns |
-| **Vanilla JavaScript** | Core functionality and interactivity |
-| **Firebase Auth** | User authentication & Identity |
-| **Cloud Firestore** | NoSQL database for user data |
-| **GSAP** | Smooth animations and transitions |
-| **Monaco Editor** | Professional code editing experience |
-| **Inter Font** | Modern, clean typography |
-| **Custom UI Systems** | Toast notifications, loading states, keyboard nav |
+| **CSS3** | Styling with Glassmorphism and modern patterns |
+| **Vanilla JavaScript** | Core logical engine and state management |
+| **Google Gemini API** | Live AI analysis, evaluation, and generation |
+| **SerpAPI** | Real-time market data and learning resources |
+| **Firebase Auth** | Secure User Identity |
+| **Cloud Firestore** | Cloud persistence for user profiles |
+| **GSAP** | Sophisticated page transitions and UI animations |
+| **Monaco Editor** | Professional-grade code editing environment |
+| **Custom UI Systems** | Toasts, Skeleton loaders, and Interactive components |
 
 ---
 
@@ -117,16 +95,16 @@ NextStep-AI/
 │   ├── onboarding.css  # Onboarding wizard styles
 │   └── ...other components
 └── js/
-    ├── firebase-config.js # Firebase configuration
-    ├── auth-modern.js  # Auth logic
+    ├── gemini-service.js   # Centralized AI engine
+    ├── serp-service.js     # Live market search integration
+    ├── interview-engine.js # AI-driven interview logic
+    ├── interview-media.js  # Voice & Video processing
+    ├── roadmap-engine.js   # Personalized path generation
+    ├── roadmap-customizer.js # AI prompt-based refinement
     ├── toast-notifications.js # Toast system
-    ├── loading-states.js # Loading/spinners
-    ├── mobile-menu.js  # Hamburger menu
-    ├── keyboard-nav.js # Accessibility
-    ├── counter-animation.js # Number animations
-    ├── sidebar.js      # Sidebar component
-    ├── editor.js       # Monaco Editor integration
-    ├── interview-engine.js # AI interview logic
+    ├── loading-states.js # Premium loaders
+    ├── orbital-timeline.js # Interactive feature visualization
+    ├── click-spark.js     # Micro-interaction engine
     └── ...other modules
 ```
 
