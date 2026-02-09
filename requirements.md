@@ -15,11 +15,11 @@ This document specifies the requirements for the resume analysis and interview v
 Resume Upload → Instant Analysis → Results Display → CTA: "Take Instant Interview" → Validation → Readiness Score → Personalized Roadmap
 ```
 
-**Key Innovation**: "We don't trust resumes or interviews alone — we compare both and build the roadmap from verified skills."
+**Key Innovation**: "We don't trust static resumes — we use live Gemini AI multimodal analysis to extract the truth, then validate it through adaptive interviewing."
 
-**Architecture Approach**: Hybrid stack using vanilla JavaScript for most pages with React components where interactivity demands it (code editor, complex UI). Frontend-only with LocalStorage persistence, proving the system works even under low connectivity.
+**Architecture Approach**: Advanced client-side application using **Vanilla JavaScript** (ES6+) for high performance, **Google Gemini AI** for multimodal intelligence, and **SerpAPI** for real-time market data. Frontend-heavy with Firebase/Firestore for secure persistence.
 
-The system extracts skills from resumes through simulated analysis, displays results with a strong CTA to take validation interviews (optional but encouraged), calculates readiness scores (0-100), and uses verified data to generate personalized 6-week roadmaps with language-aware learning.
+The system performs deep AI analysis of resumes, conducts adaptive mock interviews with performance evaluation, calculates readiness scores across 100+ dimensions, and generates 6-week personalized roadmaps with language-aware resource curation.
 
 ## Platform Context
 
@@ -175,21 +175,39 @@ These features exist in the platform but are specified separately.
 8. THE System SHALL track upload timestamp and filename in metadata
 6. WHEN a user confirms the data, THE User_Interface SHALL submit the finalized extraction result for storage
 
-### Requirement 7: Structured Data Storage
+### Requirement 6: Gemini AI Service (CORE)
 
-**User Story:** As a CareerPilot AI user, I want my resume data stored locally, so that it's available across all platform features (skill gap analysis, interviews, roadmaps) without requiring a backend.
+**User Story:** As a system component, I want a centralized AI service to handle complex analysis and evaluation, so that the platform can provide intelligent insights.
 
 #### Acceptance Criteria
+1. THE System SHALL implement GeminiService to interact with Google's Gemini-1.5-Flash model.
+2. THE Service SHALL support multimodal input (PDF resumes) for direct AI analysis without manual text extraction.
+3. THE Service SHALL implement exponential backoff retry logic for rate-limited (429) requests.
+4. THE Service SHALL provide structured JSON outputs for: Resume Analysis, Interview Questions, Answer Evaluation, and Market Skill Categorization.
+5. THE Service SHALL provide high-quality fallback data in case of AI service unavailability or network failure.
 
-1. WHEN a user confirms their extraction result, THE Data_Store SHALL persist the structured data to LocalStorage with the user's unique identifier
-2. WHEN storing data, THE Data_Store SHALL maintain the User_Profile object structure with separate fields for technical skills, soft skills, experience level, and projects
-3. WHEN a user uploads a new resume, THE Data_Store SHALL replace the previous extraction result with the new data in LocalStorage
-4. THE Data_Store SHALL maintain the most recent extraction as active while archiving previous versions in a history array (limit: last 3 versions)
-5. WHEN data is stored, THE Data_Store SHALL timestamp the extraction for tracking purposes
-6. WHEN extraction is completed, THE System SHALL update the dashboard.html statistics (skills count, profile completion percentage)
-7. WHEN storage fails (LocalStorage quota exceeded), THE Data_Store SHALL return an error and maintain data consistency
-8. THE stored data SHALL be accessible to other CareerPilot features: skill-gap.html, interview.html, roadmap.html, and tracker.html
-9. THE Data_Store SHALL implement the store.js utility module for centralized LocalStorage management
+### Requirement 7: Adaptive Interview Engine (ENHANCED)
+
+**User Story:** As a user, I want an interview experience that adapts to my performance and provides instant feedback, so I can improve effectively.
+
+#### Acceptance Criteria
+1. THE InterviewEngine SHALL dynamically select questions based on the candidate's target role and resume-claimed skills.
+2. THE Engine SHALL support "Mixed" mode (Technical + Behavioral) and "Specialized" modes.
+3. THE Engine SHALL implement "Speaker Toggle" for AI-guided voice interviews using Web Speech API.
+4. THE Engine SHALL provide per-question evaluation immediately after submission, showing score, feedback, and reasoning.
+5. THE Engine SHALL simulate live proctoring with webcam feed and behavioral tracking.
+6. THE Engine SHALL implement "Auto-Save" to LocalStorage every 10 seconds to prevent data loss.
+
+### Requirement 8: Live Market Gap Analysis (ENHANCED)
+
+**User Story:** As a user, I want to see how my skills stack up against real-time industry demands, so I can focus on what matters.
+
+#### Acceptance Criteria
+1. THE System SHALL use SerpAPI to fetch live job market trends and role requirements.
+2. THE SkillGapAnalyzer SHALL compare live market data with the user's verified skills using Gemini AI.
+3. THE Analyzer SHALL categorize gaps into: Must-Have, Good-to-Have, and Future-Proof.
+4. THE Analyzer SHALL provide AI-generated "Market Relevance Justifications" for each identified skill.
+5. THE User_Interface SHALL allow users to manually refresh analysis for different roles.
 
 ### Requirement 8: Error Handling and Recovery
 
