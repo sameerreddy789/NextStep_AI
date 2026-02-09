@@ -6,12 +6,17 @@ import { doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebase
 // State
 let currentStep = 1;
 const totalSteps = 5;
+let resumeMode = 'choice'; // 'choice', 'upload', 'create'
+let builderStep = 1;
+const totalBuilderSteps = 14;
+
 let userData = {
     careerGoal: null,
     targetRole: null,
     jobReadyTimeline: null,
     preparationStyle: null,
-    resumeStatus: 'pending'
+    resumeStatus: 'pending',
+    resumeData: null // For built resume
 };
 
 // DOM Elements
@@ -116,10 +121,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Navigation
 async function nextStep() {
-    if (currentStep < totalSteps) {
-        // Save progress to DB (optional: save every step)
-        await saveProgress();
+    // If we are on Step 5 and in Builder Mode, handle builder navigation
+    if (currentStep === 5 && resumeMode === 'create') {
+        if (builderStep < totalBuilderSteps) {
+            builderStep++;
+            updateUI();
+            return;
+        }
+    }
 
+    if (currentStep < totalSteps) {
+        await saveProgress();
         currentStep++;
         updateUI();
     } else {
@@ -128,6 +140,25 @@ async function nextStep() {
 }
 
 function prevStep() {
+    // Handle Builder Back
+    if (currentStep === 5 && resumeMode === 'create') {
+        if (builderStep > 1) {
+            builderStep--;
+            updateUI();
+            return;
+        } else {
+            // Go back to choice
+            setResumeMode('choice');
+            return;
+        }
+    }
+
+    // Handle Upload Back
+    if (currentStep === 5 && resumeMode === 'upload') {
+        setResumeMode('choice');
+        return;
+    }
+
     if (currentStep > 1) {
         currentStep--;
         updateUI();
@@ -141,14 +172,29 @@ function updateUI() {
         else el.classList.add('hidden');
     });
 
+    // Handle Step 5 Sub-views
+    if (currentStep === 5) {
+        const choiceView = document.getElementById('resume-choice-view');
+        const uploadFlow = document.getElementById('upload-flow');
+        const builderFlow = document.getElementById('builder-flow');
+
+        choiceView.classList.toggle('hidden', resumeMode !== 'choice');
+        uploadFlow.classList.toggle('hidden', resumeMode !== 'upload');
+        builderFlow.classList.toggle('hidden', resumeMode !== 'create');
+
+        if (resumeMode === 'create') {
+            updateBuilderUI();
+        }
+    }
+
     // Update Progress
     const pct = ((currentStep) / totalSteps) * 100;
     progressBar.style.width = `${pct}%`;
     stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
 
     // Buttons
-    btnBack.classList.toggle('hidden', currentStep === 1);
-    btnNext.textContent = currentStep === totalSteps ? 'Finish' : 'Next';
+    btnBack.classList.toggle('hidden', currentStep === 1 && resumeMode === 'choice');
+    btnNext.textContent = (currentStep === totalSteps && (resumeMode !== 'create' || builderStep === totalBuilderSteps)) ? 'Finish' : 'Next';
 
     // Show/hide skip button for optional steps (3 and 4)
     const skipBtn = document.getElementById('btn-skip');
@@ -158,6 +204,28 @@ function updateUI() {
 
     validateStep();
 }
+
+function updateBuilderUI() {
+    const titles = [
+        "Personal Information", "Professional Summary", "Education", "Technical Skills",
+        "Projects", "Work Experience", "Career Gap Details", "Internships / Training",
+        "Certifications", "Achievements & Activities", "Soft Skills", "Career Preferences",
+        "Resume Tone", "Declaration"
+    ];
+
+    document.getElementById('builder-step-title').textContent = titles[builderStep - 1];
+    document.getElementById('builder-current-step').textContent = builderStep;
+
+    document.querySelectorAll('.builder-section').forEach((el, index) => {
+        el.classList.toggle('hidden', index + 1 !== builderStep);
+    });
+}
+
+window.setResumeMode = (mode) => {
+    resumeMode = mode;
+    builderStep = 1;
+    updateUI();
+};
 
 // Option Selection
 window.selectOption = (key, value, highlight = true) => {
@@ -187,10 +255,25 @@ function validateStep() {
         case 2: isValid = !!userData.targetRole; break;
         case 3: isValid = !!userData.jobReadyTimeline; break;
         case 4: isValid = !!userData.preparationStyle; break;
-        case 5: isValid = userData.resumeStatus === 'uploaded'; break; // Resume Mandatory
+        case 5:
+            if (resumeMode === 'choice') isValid = false;
+            else if (resumeMode === 'upload') isValid = userData.resumeStatus === 'uploaded';
+            else if (resumeMode === 'create') isValid = validateBuilderStep();
+            break;
     }
 
     btnNext.disabled = !isValid;
+}
+
+function validateBuilderStep() {
+    // Simplified validation: check required fields for current step
+    switch (builderStep) {
+        case 1: return !!document.getElementById('rb-full-name').value && !!document.getElementById('rb-email').value;
+        case 2: return !!document.getElementById('rb-summary').value;
+        case 3: return !!document.getElementById('rb-edu-degree').value;
+        case 14: return true; // Declaration is optional check but step is valid
+        default: return true; // Most other fields are optional or have defaults
+    }
 }
 
 // Skip optional steps with default values
@@ -246,6 +329,11 @@ async function finishOnboarding() {
     btnNext.textContent = "Generating Roadmap...";
     btnNext.disabled = true;
 
+    if (resumeMode === 'create') {
+        collectBuilderData();
+        userData.resumeStatus = 'created';
+    }
+
     if (user) {
         await setDoc(doc(db, "users", user.uid), {
             ...userData,
@@ -259,14 +347,16 @@ async function finishOnboarding() {
         const nextStepUser = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
         localStorage.setItem("nextStep_user", JSON.stringify({
             ...nextStepUser,
-            targetRole: userData.targetRole
+            targetRole: userData.targetRole,
+            resumeStatus: userData.resumeStatus,
+            resumeData: userData.resumeData
         }));
 
-        // Mock Resume Data for Dashboard
+        // Mock Resume Data for Dashboard (Enhanced with built data)
         localStorage.setItem("nextStep_resume", JSON.stringify({
-            readiness: 45,
-            skills: ['JavaScript', 'HTML'],
-            missing: ['React', 'Node.js']
+            readiness: 65, // Higher readiness if created via builder
+            skills: userData.resumeData?.skills?.split(',') || ['JavaScript', 'HTML'],
+            missing: ['Advanced System Design', 'Cloud Patterns']
         }));
     }
 
@@ -274,4 +364,72 @@ async function finishOnboarding() {
     setTimeout(() => {
         window.location.href = 'resume.html';
     }, 1500);
+}
+
+function collectBuilderData() {
+    userData.resumeData = {
+        personalInfo: {
+            fullName: document.getElementById('rb-full-name').value,
+            email: document.getElementById('rb-email').value,
+            phone: document.getElementById('rb-phone').value,
+            location: document.getElementById('rb-location').value,
+            linkedin: document.getElementById('rb-linkedin').value,
+            portfolio: document.getElementById('rb-portfolio').value
+        },
+        summary: document.getElementById('rb-summary').value,
+        education: {
+            degree: document.getElementById('rb-edu-degree').value,
+            school: document.getElementById('rb-edu-school').value,
+            field: document.getElementById('rb-edu-field').value,
+            years: document.getElementById('rb-edu-years').value,
+            grade: document.getElementById('rb-edu-grade').value
+        },
+        skills: {
+            languages: document.getElementById('rb-skills-langs').value,
+            frameworks: document.getElementById('rb-skills-frames').value,
+            tools: document.getElementById('rb-skills-tools').value,
+            databases: document.getElementById('rb-skills-db').value
+        },
+        project: {
+            title: document.getElementById('rb-proj-title').value,
+            desc: document.getElementById('rb-proj-desc').value,
+            tech: document.getElementById('rb-proj-tech').value,
+            role: document.getElementById('rb-proj-role').value,
+            outcome: document.getElementById('rb-proj-outcome').value,
+            link: document.getElementById('rb-proj-link').value
+        },
+        experience: {
+            company: document.getElementById('rb-exp-company').value,
+            title: document.getElementById('rb-exp-title').value,
+            duration: document.getElementById('rb-exp-years').value,
+            description: document.getElementById('rb-exp-desc').value
+        },
+        careerGap: {
+            reason: document.getElementById('rb-gap-reason').value,
+            activities: document.getElementById('rb-gap-activities').value
+        },
+        internship: {
+            title: document.getElementById('rb-intern-title').value,
+            org: document.getElementById('rb-intern-org').value,
+            duration: document.getElementById('rb-intern-years').value,
+            skills: document.getElementById('rb-intern-skills').value
+        },
+        certification: {
+            name: document.getElementById('rb-cert-name').value,
+            org: document.getElementById('rb-cert-org').value,
+            year: document.getElementById('rb-cert-year').value
+        },
+        achievements: {
+            awards: document.getElementById('rb-achievements').value,
+            activities: document.getElementById('rb-extracurricular').value
+        },
+        softSkills: document.getElementById('rb-soft-skills').value,
+        preferences: {
+            role: document.getElementById('rb-pref-role').value,
+            industry: document.getElementById('rb-pref-industry').value,
+            relocate: document.getElementById('rb-pref-relocate').value
+        },
+        tone: document.getElementById('rb-tone').value,
+        declaration: document.getElementById('rb-declaration').checked
+    };
 }

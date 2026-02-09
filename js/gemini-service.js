@@ -4,18 +4,38 @@
  */
 
 const GeminiService = {
-    apiKey: '',
+    apiKeys: [],
+    currentKeyIndex: 0,
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
 
     /**
-     * Initialize the service with API key
+     * Initialize the service with API keys
      */
     init(apiKey) {
-        this.apiKey = apiKey || window.ENV?.VITE_GEMINI_API_KEY || '';
-        if (this.apiKey) {
-            console.log('[GeminiService] ✅ Initialized with API key');
+        // Collect all available Gemini keys from environment
+        const keys = [];
+        if (apiKey) keys.push(apiKey);
+
+        // Check for indexed keys (VITE_GEMINI_API_KEY_1 to 4)
+        for (let i = 1; i <= 4; i++) {
+            const key = window.ENV?.[`VITE_GEMINI_API_KEY_${i}`];
+            if (key && !key.includes('YOUR_GEMINI_API_KEY')) {
+                keys.push(key);
+            }
+        }
+
+        // Fallback to legacy single key if no indexed keys found
+        if (keys.length === 0 && window.ENV?.VITE_GEMINI_API_KEY) {
+            keys.push(window.ENV.VITE_GEMINI_API_KEY);
+        }
+
+        this.apiKeys = [...new Set(keys)]; // Unique keys
+        this.currentKeyIndex = 0;
+
+        if (this.apiKeys.length > 0) {
+            console.log(`[GeminiService] ✅ Initialized with ${this.apiKeys.length} API key(s)`);
         } else {
-            console.warn('[GeminiService] ⚠️ No API key found. Using demo data.');
+            console.warn('[GeminiService] ⚠️ No API keys found. Using demo data.');
         }
     },
 
@@ -27,12 +47,14 @@ const GeminiService = {
     },
 
     /**
-     * Make API request to Gemini with optional file data and retry logic
+     * Make API request to Gemini with optional file data and retry/rotation logic
      */
-    async _request(prompt, fileData = null, retries = 3, delay = 2000) {
-        if (!this.apiKey) {
-            throw new Error('Gemini API key not configured');
+    async _request(prompt, fileData = null, retries = 3, delay = 1000) {
+        if (this.apiKeys.length === 0) {
+            throw new Error('Gemini API keys not configured');
         }
+
+        const currentApiKey = this.apiKeys[this.currentKeyIndex];
 
         try {
             // Build parts array
@@ -51,7 +73,7 @@ const GeminiService = {
             // Add text prompt
             parts.push({ text: prompt });
 
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
+            const response = await fetch(`${this.baseUrl}?key=${currentApiKey}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,16 +92,21 @@ const GeminiService = {
             if (!response.ok) {
                 const error = await response.json();
 
-                // Handle rate limits with retries
-                if (response.status === 429 && retries > 0) {
-                    console.warn(`[GeminiService] ⏳ Rate limit hit. Retrying in ${delay / 1000}s... (${retries} retries left)`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return this._request(prompt, fileData, retries - 1, delay * 2);
+                // Handle rate limits with Key Rotation 🔄
+                if (response.status === 429) {
+                    if (this.apiKeys.length > 1) {
+                        this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
+                        console.warn(`[GeminiService] 🔄 Rate limit hit on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
+                        // Retry immediately with new key
+                        return this._request(prompt, fileData, retries, delay);
+                    } else if (retries > 0) {
+                        console.warn(`[GeminiService] ⏳ Rate limit hit. Retrying in ${delay / 1000}s... (${retries} retries left)`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return this._request(prompt, fileData, retries - 1, delay * 2);
+                    }
+                    throw new Error('AI Rate Limit Exceeded (429). All API keys are currently limited.');
                 }
 
-                if (response.status === 429) {
-                    throw new Error('AI Rate Limit Exceeded (429). Please wait 30-60 seconds and try again. Google Free Tier has strict limits.');
-                }
                 throw new Error(error.error?.message || 'Gemini API request failed');
             }
 
@@ -87,6 +114,15 @@ const GeminiService = {
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
             return text;
         } catch (error) {
+            // Handle network errors or rate limit strings
+            if (error.message.includes('Resource has been exhausted') || error.message.includes('429')) {
+                if (this.apiKeys.length > 1) {
+                    this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
+                    console.warn(`[GeminiService] 🔄 Retrying with next key after error...`);
+                    return this._request(prompt, fileData, retries, delay);
+                }
+            }
+
             if (error.message.includes('Rate Limit') && retries > 0) {
                 console.warn(`[GeminiService] ⏳ Network error/Rate limit. Retrying in ${delay / 1000}s...`);
                 await new Promise(resolve => setTimeout(resolve, delay));

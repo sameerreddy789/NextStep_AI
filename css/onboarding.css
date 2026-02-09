@@ -351,3 +351,76 @@ body {
     border-radius: 4px;
     margin: 0 2px;
 }
+
+/* Resume Builder Mode */
+.builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.builder-mini-progress {
+    font-size: 14px;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.builder-sections-container {
+    padding: 10px 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.form-group input,
+.form-group select,
+.builder-section textarea {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.builder-section textarea:focus {
+    border-color: var(--primary);
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.mt-10 { margin-top: 10px; }
+.mb-10 { margin-bottom: 10px; }
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.checkbox-label input {
+    width: auto;
+    cursor: pointer;
+}

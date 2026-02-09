@@ -169,19 +169,218 @@
                 </div>
             </div>
 
-            <!-- STEP 5: Resume Upload -->
+            <!-- STEP 5: Resume Selection/Builder -->
             <div class="step-content hidden" id="step-5">
-                <h1 class="step-title">Upload your Resume</h1>
-                <p class="step-subtitle">This is mandatory to generate your roadmap.</p>
-
-                <div class="upload-zone" id="upload-zone">
-                    <span class="upload-icon">📄</span>
-                    <p>Click to browse or drag & drop PDF/DOC</p>
-                    <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" hidden>
+                <div id="resume-choice-view">
+                    <h1 class="step-title">How would you like to provide your resume?</h1>
+                    <p class="step-subtitle">We'll use your details to build a personalized career journey.</p>
+                    <div class="options-grid">
+                        <button class="option-card" onclick="setResumeMode('upload')">
+                            <span class="icon">📤</span>
+                            <span class="label">Upload Resume</span>
+                        </button>
+                        <button class="option-card" onclick="setResumeMode('create')">
+                            <span class="icon">✍️</span>
+                            <span class="label">Create Resume</span>
+                        </button>
+                    </div>
                 </div>
-                <div id="file-preview" class="hidden">
-                    <span id="file-name">filename.pdf</span>
-                    <button id="remove-file">✕</button>
+
+                <!-- Upload Flow -->
+                <div id="upload-flow" class="hidden">
+                    <h1 class="step-title">Upload your Resume</h1>
+                    <p class="step-subtitle">This is mandatory to generate your roadmap.</p>
+                    <div class="upload-zone" id="upload-zone">
+                        <span class="upload-icon">📄</span>
+                        <p>Click to browse or drag & drop PDF/DOC</p>
+                        <input type="file" id="resume-upload" accept=".pdf,.doc,.docx" hidden>
+                    </div>
+                    <div id="file-preview" class="hidden">
+                        <span id="file-name">filename.pdf</span>
+                        <button id="remove-file">✕</button>
+                    </div>
+                </div>
+
+                <!-- Builder Flow -->
+                <div id="builder-flow" class="hidden">
+                    <div class="builder-header">
+                        <h2 id="builder-step-title">Personal Information</h2>
+                        <div class="builder-mini-progress">Section <span id="builder-current-step">1</span> of 14</div>
+                    </div>
+
+                    <div class="builder-sections-container">
+                        <!-- 1. Personal Information -->
+                        <div class="builder-section" id="builder-step-1">
+                            <div class="input-grid">
+                                <div class="form-group">
+                                    <label>Full Name</label>
+                                    <input type="text" id="rb-full-name" placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email Address</label>
+                                    <input type="email" id="rb-email" placeholder="john@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label>Phone Number</label>
+                                    <input type="tel" id="rb-phone" placeholder="+1 234 567 890">
+                                </div>
+                                <div class="form-group">
+                                    <label>City & Country</label>
+                                    <input type="text" id="rb-location" placeholder="New York, USA">
+                                </div>
+                                <div class="form-group">
+                                    <label>LinkedIn Profile (Optional)</label>
+                                    <input type="url" id="rb-linkedin" placeholder="linkedin.com/in/username">
+                                </div>
+                                <div class="form-group">
+                                    <label>GitHub / Portfolio (Optional)</label>
+                                    <input type="url" id="rb-portfolio" placeholder="github.com/username">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Professional Summary -->
+                        <div class="builder-section hidden" id="builder-step-2">
+                            <label>Short summary describing yourself (2-3 lines)</label>
+                            <textarea id="rb-summary" rows="4"
+                                placeholder="Dedicated final year computer science student with a passion for web development..."></textarea>
+                        </div>
+
+                        <!-- 3. Education -->
+                        <div class="builder-section hidden" id="builder-step-3">
+                            <div class="input-grid">
+                                <div class="form-group"><label>Highest Qualification</label><input type="text"
+                                        id="rb-edu-degree" placeholder="B.Tech in CS"></div>
+                                <div class="form-group"><label>Institution</label><input type="text" id="rb-edu-school"
+                                        placeholder="MIT"></div>
+                                <div class="form-group"><label>Field of Study</label><input type="text"
+                                        id="rb-edu-field" placeholder="Computer Science"></div>
+                                <div class="form-group"><label>Duration</label><input type="text" id="rb-edu-years"
+                                        placeholder="2020 - 2024"></div>
+                                <div class="form-group"><label>CGPA / Percentage</label><input type="text"
+                                        id="rb-edu-grade" placeholder="9.0 / 10"></div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Technical Skills -->
+                        <div class="builder-section hidden" id="builder-step-4">
+                            <div class="form-group"><label>Programming Languages</label><input type="text"
+                                    id="rb-skills-langs" placeholder="Java, Python, JS"></div>
+                            <div class="form-group"><label>Frameworks / Libraries</label><input type="text"
+                                    id="rb-skills-frames" placeholder="React, Node.js, Spring Boot"></div>
+                            <div class="form-group"><label>Tools / Technologies</label><input type="text"
+                                    id="rb-skills-tools" placeholder="Git, Docker, AWS"></div>
+                            <div class="form-group"><label>Databases</label><input type="text" id="rb-skills-db"
+                                    placeholder="PostgreSQL, MongoDB"></div>
+                        </div>
+
+                        <!-- 5. Projects -->
+                        <div class="builder-section hidden" id="builder-step-5">
+                            <div class="form-group"><label>Project Title</label><input type="text" id="rb-proj-title"
+                                    placeholder="E-commerce App"></div>
+                            <div class="form-group"><label>Short Description</label><textarea id="rb-proj-desc" rows="2"
+                                    placeholder="A full-stack e-commerce platform..."></textarea></div>
+                            <div class="form-group"><label>Technologies Used</label><input type="text" id="rb-proj-tech"
+                                    placeholder="React, Firebase"></div>
+                            <div class="form-group"><label>Your Role</label><input type="text" id="rb-proj-role"
+                                    placeholder="Lead Backend Developer"></div>
+                            <div class="form-group"><label>Outcome / Goal</label><textarea id="rb-proj-outcome" rows="2"
+                                    placeholder="Solved state management issues..."></textarea></div>
+                            <div class="form-group"><label>Demo/GitHub Link</label><input type="url" id="rb-proj-link"
+                                    placeholder="github.com/project"></div>
+                        </div>
+
+                        <!-- 6. Work Experience -->
+                        <div class="builder-section hidden" id="builder-step-6">
+                            <div class="form-group"><label>Company Name</label><input type="text" id="rb-exp-company"
+                                    placeholder="Google"></div>
+                            <div class="form-group"><label>Job Title</label><input type="text" id="rb-exp-title"
+                                    placeholder="Software Engineer Intern"></div>
+                            <div class="form-group"><label>Duration</label><input type="text" id="rb-exp-years"
+                                    placeholder="Jun 2023 - Aug 2023"></div>
+                            <div class="form-group"><label>Achievements (2-3 points)</label><textarea id="rb-exp-desc"
+                                    rows="3" placeholder="Developed X feature..."></textarea></div>
+                        </div>
+
+                        <!-- 7. Career Gap -->
+                        <div class="builder-section hidden" id="builder-step-7">
+                            <div class="form-group"><label>Reason for gap (if applicable)</label><input type="text"
+                                    id="rb-gap-reason" placeholder="Personal reasons, health, etc."></div>
+                            <div class="form-group"><label>Activities during gap</label><textarea id="rb-gap-activities"
+                                    rows="3" placeholder="Learning new tech, certifications..."></textarea></div>
+                        </div>
+
+                        <!-- 8. Internships -->
+                        <div class="builder-section hidden" id="builder-step-8">
+                            <div class="form-group"><label>Internship Title</label><input type="text"
+                                    id="rb-intern-title" placeholder="Web Developer Intern"></div>
+                            <div class="form-group"><label>Organization</label><input type="text" id="rb-intern-org"
+                                    placeholder="Startup Inc"></div>
+                            <div class="form-group"><label>Duration</label><input type="text" id="rb-intern-years"
+                                    placeholder="3 Months"></div>
+                            <div class="form-group"><label>Key Skills Learned</label><input type="text"
+                                    id="rb-intern-skills" placeholder="Teamwork, React Hooks"></div>
+                        </div>
+
+                        <!-- 9. Certifications -->
+                        <div class="builder-section hidden" id="builder-step-9">
+                            <div class="form-group"><label>Certification Name</label><input type="text"
+                                    id="rb-cert-name" placeholder="AWS Certified Developer"></div>
+                            <div class="form-group"><label>Issuing Organization</label><input type="text"
+                                    id="rb-cert-org" placeholder="Amazon Web Services"></div>
+                            <div class="form-group"><label>Year</label><input type="text" id="rb-cert-year"
+                                    placeholder="2023"></div>
+                        </div>
+
+                        <!-- 10. Achievements -->
+                        <div class="builder-section hidden" id="builder-step-10">
+                            <label>Achievements, Hackathons, Awards</label>
+                            <textarea id="rb-achievements" rows="3" placeholder="Winner of HackMIT 2023..."></textarea>
+                            <label class="mt-10">Clubs / Volunteering</label>
+                            <textarea id="rb-extracurricular" rows="2"
+                                placeholder="Core member of Coding Club..."></textarea>
+                        </div>
+
+                        <!-- 11. Soft Skills -->
+                        <div class="builder-section hidden" id="builder-step-11">
+                            <label>List 3-5 soft skills</label>
+                            <input type="text" id="rb-soft-skills"
+                                placeholder="Communication, Teamwork, Leadership, Adaptability">
+                        </div>
+
+                        <!-- 12. Career Preferences -->
+                        <div class="builder-section hidden" id="builder-step-12">
+                            <div class="form-group"><label>Target Job Role</label><input type="text" id="rb-pref-role"
+                                    placeholder="Backend Engineer"></div>
+                            <div class="form-group"><label>Preferred Industry</label><input type="text"
+                                    id="rb-pref-industry" placeholder="FinTech"></div>
+                            <div class="form-group"><label>Willing to relocate?</label>
+                                <select id="rb-pref-relocate">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 13. Resume Tone -->
+                        <div class="builder-section hidden" id="builder-step-13">
+                            <label>Select Resume Tone</label>
+                            <select id="rb-tone">
+                                <option value="Professional">Professional</option>
+                                <option value="Academic">Academic</option>
+                                <option value="Skill-focused">Skill-focused</option>
+                            </select>
+                        </div>
+
+                        <!-- 14. Declaration -->
+                        <div class="builder-section hidden" id="builder-step-14">
+                            <p class="mb-10">I hereby declare that all information provided is true to the best of my
+                                knowledge.</p>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="rb-declaration"> Include Declaration
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
