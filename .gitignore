@@ -32,3 +32,4 @@ logs/
 *.temp
 .tmp/
 .env
+.firebase/

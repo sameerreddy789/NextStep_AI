@@ -60,6 +60,25 @@ NextStep AI is an intelligent career guidance platform that helps students, fres
 
 ---
 
+## 🏆 Hackathon Demo Guide
+
+**For Judges & Presenters:** This project is **Hackathon Ready**.
+
+### 🛡️ Fail-Safe Demo Mode
+The AI service includes a robust **Fallback Mechanism**. If the Gemini API is rate-limited or unreachable during the presentation, the system will automatically serve high-quality pre-generated interview questions. **The demo will not crash.**
+
+### 🌟 Key Flows to Showcase
+1.  **Resume Analysis**: Upload a resume to see the "Magic Scanning" animation and skill extraction (simulated for speed).
+2.  **AI Interview**:
+    -   Start a "Mixed" interview.
+    -   Show the **Monaco Editor** integration.
+    -   Demonstrate **Speech-to-Text** (allows for natural answers).
+    -   Show the **Toast Notifications** (try submitting empty code).
+3.  **Roadmap**: Generate a personalized roadmap based on the interview performance.
+
+
+---
+
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |

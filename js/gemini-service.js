@@ -98,7 +98,7 @@ const GeminiService = {
                         temperature: 0.7,
                         topK: 40,
                         topP: 0.95,
-                        maxOutputTokens: 2048,
+                        maxOutputTokens: 8192,
                     }
                 })
             });
@@ -110,19 +110,19 @@ const GeminiService = {
             if (!response.ok) {
                 const error = await response.json();
 
-                // Handle rate limits with Key Rotation 🔄
-                if (response.status === 429) {
+                // Handle rate limits (429) & Service Unavailable (503) with Key Rotation 🔄
+                if (response.status === 429 || response.status === 503) {
                     if (this.apiKeys.length > 1) {
                         this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
-                        console.warn(`[GeminiService] 🔄 Rate limit hit on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
+                        console.warn(`[GeminiService] 🔄 ${response.status} Error on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
                         // Retry immediately with new key
                         return this._request(prompt, fileData, retries, delay, onProgress);
                     } else if (retries > 0) {
-                        console.warn(`[GeminiService] ⏳ Rate limit hit. Retrying in ${delay / 1000}s... (${retries} retries left)`);
+                        console.warn(`[GeminiService] ⏳ ${response.status} Error. Retrying in ${delay / 1000}s... (${retries} retries left)`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return this._request(prompt, fileData, retries - 1, delay * 2, onProgress);
                     }
-                    throw new Error('AI service is currently busy. All available servers are at capacity. Please try again in a few moments.');
+                    throw new Error('AI service is currently busy or overloaded. Please try again in a few moments.');
                 }
 
                 // User-friendly error messages
@@ -134,6 +134,8 @@ const GeminiService = {
                         userMessage = 'AI service quota exceeded. Please try again later.';
                     } else if (error.error.message.includes('invalid')) {
                         userMessage = 'Invalid request. Please try again with a different file.';
+                    } else if (response.status === 503) {
+                        userMessage = 'The AI service is temporarily unavailable. Please try again shortly.';
                     }
                 }
                 throw new Error(userMessage);
@@ -149,7 +151,12 @@ const GeminiService = {
             return text;
         } catch (error) {
             // Handle network errors or rate limit strings
-            if (error.message.includes('Resource has been exhausted') || error.message.includes('429')) {
+            if (error.message.includes('Resource has been exhausted') ||
+                error.message.includes('429') ||
+                error.message.includes('503') ||
+                error.message.includes('Service Unavailable') ||
+                error.message.includes('Overloaded')) {
+
                 if (this.apiKeys.length > 1) {
                     this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
                     console.warn(`[GeminiService] 🔄 Retrying with next key after error...`);
@@ -419,28 +426,65 @@ Respond with ONLY a JSON array (no markdown):
         "difficulty": "medium",
         "timeLimit": 300,
         "tips": ["Consider edge cases like empty list", "Discuss time vs space complexity", "Try both iterative and recursive approaches"]
-    },
-    {
-        "type": "text",
-        "category": "Behavioral",
-        "text": "Tell me about a challenging project.",
-        "difficulty": "easy",
-        "timeLimit": 120,
-        "tips": ["Use the STAR method", "Focus on your specific actions", "Highlight the positive outcome"]
     }
 ]`;
+
+        const FALLBACK_QUESTIONS = [
+            {
+                "type": "code",
+                "category": "Data Structures",
+                "text": "Reverse a Linked List",
+                "difficulty": "medium",
+                "timeLimit": 300,
+                "tips": ["Use three pointers: prev, curr, next", "Handle the head update carefully", "Watch for null pointer exceptions"],
+                "testCases": [
+                    { "input": "1->2->3", "expected": "3->2->1", "isHidden": false, "label": "List of 3" },
+                    { "input": "1", "expected": "1", "isHidden": false, "label": "Single Node" }
+                ]
+            },
+            {
+                "type": "text",
+                "category": "Behavioral",
+                "text": "Describe a time you failed.",
+                "difficulty": "easy",
+                "timeLimit": 180,
+                "tips": ["Be honest but focus on growth", "Explain what you learned", "Do not blame others"]
+            },
+            {
+                "type": "code",
+                "category": "Algorithms",
+                "text": "Valid Parentheses",
+                "difficulty": "easy",
+                "timeLimit": 300,
+                "tips": ["Use a stack", "Push opening brackets", "Pop and check matching closing brackets"],
+                "testCases": [
+                    { "input": "()[]{}", "expected": "true", "isHidden": false, "label": "Mixed Brackets" },
+                    { "input": "(]", "expected": "false", "isHidden": false, "label": "Mismatched" }
+                ]
+            },
+            {
+                "type": "text",
+                "category": "System Design",
+                "text": "Design a URL Shortener",
+                "difficulty": "hard",
+                "timeLimit": 600,
+                "tips": ["Clarify requirements first", "Discuss database choice (SQL vs NoSQL)", "Explain the encoding algorithm"]
+            }
+        ];
 
         try {
             const response = await this._request(prompt);
             const parsed = this._parseJSON(response);
             if (parsed && Array.isArray(parsed)) {
-                console.log(`[GeminiService] ✅ Generated ${parsed.length} questions`);
+                console.log(`[GeminiService] ✅ Generated ${parsed.length
+                    } questions`);
                 return parsed;
             }
             throw new Error('Failed to parse questions');
         } catch (error) {
-            console.error('[GeminiService] ❌ Question generation failed:', error);
-            throw error;
+            console.warn('[GeminiService] ⚠️ API Failed, using FALLBACK questions for demo:', error);
+            // HACKATHON SAFEGUARD: Return fallback data instead of crashing 🛡️
+            return FALLBACK_QUESTIONS;
         }
     },
 
@@ -452,24 +496,24 @@ Respond with ONLY a JSON array (no markdown):
 
         const prompt = `Evaluate this interview answer.
 
-Question: ${question.text}
+    Question: ${question.text}
 Category: ${question.category}
 
 Answer: ${answer}
 
 Evaluate this interview answer based on intended problem logic, approach, and reasoning.
-Question: ${question.text} (${question.category})
+    Question: ${question.text} (${question.category})
 Answer: ${answer}
 
 Respond with ONLY a JSON object:
 {
     "outcome": "Correct Answer" | "Incorrect Answer",
-    "score": 0-100,
-    "feedback": "Concise feedback on accuracy",
-    "reasoning": "Brief analysis of the user's logic and approach",
-    "strengths": ["..."],
-    "improvements": ["..."]
-}`;
+        "score": 0 - 100,
+            "feedback": "Concise feedback on accuracy",
+                "reasoning": "Brief analysis of the user's logic and approach",
+                    "strengths": ["..."],
+                        "improvements": ["..."]
+} `;
 
         try {
             const response = await this._request(prompt);
@@ -516,7 +560,7 @@ Respond with ONLY a JSON object:
         const prompt = `You are a highly accurate code execution engine and compiler for ${language}.
 Your task is to execute the provided code against multiple test cases and return a consolidated report.
 
-CODE:
+    CODE:
 ${code}
 
 LANGUAGE: ${language}
@@ -526,27 +570,27 @@ ${testsJson}
 
 For each test case:
 1. Determine the expected output vs actual output of the code.
-2. Capture STDOUT or any compilation/runtime errors.
+2. Capture STDOUT or any compilation / runtime errors.
 
 Respond with ONLY a JSON object:
 {
     "overallConsole": "Consolidated compiler output or runtime logs (e.g., 'Compiling... Build Successful' or 'Traceback...')",
-    "testResults": [
-        {
-            "label": "Test Case Label",
-            "input": "Input provided",
-            "expected": "Expected output",
-            "actual": "What the code produced",
-            "status": "passed" | "failed",
-            "output": "Specific console output for this test"
-        }
-    ]
+        "testResults": [
+            {
+                "label": "Test Case Label",
+                "input": "Input provided",
+                "expected": "Expected output",
+                "actual": "What the code produced",
+                "status": "passed" | "failed",
+                "output": "Specific console output for this test"
+            }
+        ]
 }
 
 IMPORTANT:
 - Be strict about ${language} syntax.
 - If it's a coding challenge where they must implement a function, assume the caller handles the return value check.
-- Return ONLY the JSON object.`;
+    - Return ONLY the JSON object.`;
 
         try {
             const response = await this._request(prompt, null, 3, 1000, onProgress);
@@ -565,7 +609,7 @@ IMPORTANT:
     async analyzeMarketSkills(role, marketSearchData, userSkills) {
         console.log('[GeminiService] 🔍 Categorizing market skills');
 
-        const prompt = `You are a career expert. Analyze these market search results for the role "${role}" and compare them with the user's current skills.
+        const prompt = `You are a career expert.Analyze these market search results for the role "${role}" and compare them with the user's current skills.
 Market Trends context:
 ${JSON.stringify(marketSearchData)}
 
@@ -581,15 +625,15 @@ Status categorization rules:
 Respond with ONLY a JSON object:
 {
     "mustHave": [
-        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "Critical"|"Essential", "desc": "Short market relevance justification" }
+        { "name": "Skill Name", "status": "present" | "partial" | "missing", "priority": "Critical" | "Essential", "desc": "Short market relevance justification" }
     ],
-    "goodToHave": [
-        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "High"|"Medium", "desc": "Short market relevance justification" }
-    ],
-    "futureProof": [
-        { "name": "Skill Name", "status": "present"|"partial"|"missing", "priority": "Growing"|"Emerging", "desc": "Short market relevance justification" }
-    ]
-}`;
+        "goodToHave": [
+            { "name": "Skill Name", "status": "present" | "partial" | "missing", "priority": "High" | "Medium", "desc": "Short market relevance justification" }
+        ],
+            "futureProof": [
+                { "name": "Skill Name", "status": "present" | "partial" | "missing", "priority": "Growing" | "Emerging", "desc": "Short market relevance justification" }
+            ]
+} `;
 
         try {
             const response = await this._request(prompt);
@@ -611,19 +655,19 @@ Respond with ONLY a JSON object:
     async generatePersonalizedRoadmap(resumeData, interviewGaps, targetRole) {
         console.log('[GeminiService] 🗺️ Generating personalized roadmap...');
 
-        const prompt = `Create a personalized 6-week learning roadmap for a ${targetRole} role.
+        const prompt = `Create a personalized 6 - week learning roadmap for a ${targetRole} role.
 
 User Context:
 1. Resume Skills: ${JSON.stringify(resumeData.skills || [])}
-2. Interview Weaknesses (Focus Items): ${JSON.stringify(interviewGaps || [])}
+2. Interview Weaknesses(Focus Items): ${JSON.stringify(interviewGaps || [])}
 
 Instructions:
-- Weeks 1-2 should prioritize fixing the "Interview Weaknesses".
-- Weeks 3-4 should cover core "Must-Have" skills for ${targetRole} that are missing from the Resume.
-- Weeks 5-6 should cover advanced/future-proof topics.
+- Weeks 1 - 2 should prioritize fixing the "Interview Weaknesses".
+- Weeks 3 - 4 should cover core "Must-Have" skills for ${targetRole} that are missing from the Resume.
+- Weeks 5 - 6 should cover advanced / future - proof topics.
 - For EACH topic, provide a specifically generated search query for finding efficient tutorials.
 
-Respond with ONLY a JSON array of objects (no markdown):
+Respond with ONLY a JSON array of objects(no markdown):
 [
     {
         "week": 1,
@@ -659,29 +703,29 @@ Interview Responses:
 ${JSON.stringify(answers)}
 
 Evaluate the candidate across exactly these 6 dimensions with specified weightings:
-1. Technical Skills (20%) - Code correctness, complexity, and algorithmic efficiency.
-2. Problem Solving (20%) - Approach, edge cases, and logical reasoning.
-3. Role Knowledge (20%) - Understanding of ${role} specific concepts and tools.
-4. Experience (15%) - Quality of past project descriptions and situation handling.
-5. Communication (15%) - Clarity, structure, and ability to explain complex ideas.
-6. Professional Demeanor (10%) - Soft skills, attitude, and team collaboration potential.
+1. Technical Skills(20 %) - Code correctness, complexity, and algorithmic efficiency.
+2. Problem Solving(20 %) - Approach, edge cases, and logical reasoning.
+3. Role Knowledge(20 %) - Understanding of ${role} specific concepts and tools.
+4. Experience(15 %) - Quality of past project descriptions and situation handling.
+5. Communication(15 %) - Clarity, structure, and ability to explain complex ideas.
+6. Professional Demeanor(10 %) - Soft skills, attitude, and team collaboration potential.
 
 Respond with ONLY a JSON object:
 {
-    "overallScore": 0-100,
-    "dimensions": [
-        { "name": "Technical Skills", "score": 0-100, "weight": 20, "feedback": "..." },
-        { "name": "Problem Solving", "score": 0-100, "weight": 20, "feedback": "..." },
-        { "name": "Role Knowledge", "score": 0-100, "weight": 20, "feedback": "..." },
-        { "name": "Experience", "score": 0-100, "weight": 15, "feedback": "..." },
-        { "name": "Communication", "score": 0-100, "weight": 15, "feedback": "..." },
-        { "name": "Professional Demeanor", "score": 0-100, "weight": 10, "feedback": "..." }
-    ],
-    "strengths": ["...", "..."],
-    "weaknesses": ["...", "..."],
-    "improvements": ["...", "..."],
-    "summary": "Full overview of performance"
-}`;
+    "overallScore": 0 - 100,
+        "dimensions": [
+            { "name": "Technical Skills", "score": 0 - 100, "weight": 20, "feedback": "..." },
+            { "name": "Problem Solving", "score": 0 - 100, "weight": 20, "feedback": "..." },
+            { "name": "Role Knowledge", "score": 0 - 100, "weight": 20, "feedback": "..." },
+            { "name": "Experience", "score": 0 - 100, "weight": 15, "feedback": "..." },
+            { "name": "Communication", "score": 0 - 100, "weight": 15, "feedback": "..." },
+            { "name": "Professional Demeanor", "score": 0 - 100, "weight": 10, "feedback": "..." }
+        ],
+            "strengths": ["...", "..."],
+                "weaknesses": ["...", "..."],
+                    "improvements": ["...", "..."],
+                        "summary": "Full overview of performance"
+} `;
 
         try {
             const response = await this._request(prompt);

@@ -988,7 +988,7 @@ async function validateCodingSolution() {
     const code = window.EditorManager.getValue().trim();
 
     if (!code || code.length < 10) {
-        showAlert('Please write some code before validating.', '⚠️', 'Empty Solution');
+        showToast('Please write some code before validating.', 'warning');
         return;
     }
 
@@ -1142,7 +1142,7 @@ window.executeLocal = async function () {
     const code = window.EditorManager ? window.EditorManager.getValue() : '';
 
     if (!code || code.length < 5) {
-        showAlert('Please write some code first.', '⚠️', 'Empty Solution');
+        showToast('Please write some code first.', 'warning');
         return;
     }
 
@@ -1150,7 +1150,11 @@ window.executeLocal = async function () {
     const statusEl = document.getElementById('execution-status');
     statusEl.innerHTML = '<span style="color:var(--accent-primary)">⏳ Running Samples...</span>';
 
-    const sampleTests = q.testCases.filter(tc => !tc.isHidden);
+    const sampleTests = (q.testCases || []).filter(tc => !tc.isHidden);
+    if (sampleTests.length === 0) {
+        statusEl.innerHTML = '<span style="color:var(--accent-gold)">⚠️ No test cases available for this question.</span>';
+        return;
+    }
     await runExecutionFlow(code, sampleTests);
 };
 
@@ -1160,7 +1164,7 @@ window.executeGlobal = async function () {
     const code = window.EditorManager ? window.EditorManager.getValue() : '';
 
     if (!code || code.length < 5) {
-        showAlert('Please write some code first.', '⚠️', 'Empty Solution');
+        showToast('Please write some code first.', 'warning');
         return;
     }
 
@@ -1168,7 +1172,12 @@ window.executeGlobal = async function () {
     const statusEl = document.getElementById('execution-status');
     statusEl.innerHTML = '<span style="color:var(--accent-primary)">⏳ evaluating all tests...</span>';
 
-    await runExecutionFlow(code, q.testCases, true);
+    const allTests = q.testCases || [];
+    if (allTests.length === 0) {
+        statusEl.innerHTML = '<span style="color:var(--accent-gold)">⚠️ No test cases available.</span>';
+        return;
+    }
+    await runExecutionFlow(code, allTests, true);
 };
 
 async function runExecutionFlow(code, tests, isGlobal = false) {
@@ -1243,7 +1252,7 @@ window.toggleSpeech = toggleSpeech;
 window.submitAnswer = submitAnswer;
 window.skipQuestion = skipQuestion;
 window.jumpToQuestion = jumpToQuestion;
-window.handleLangChange = handleLangChange;
+// handleLangChange is set on window inside startInterview's DOMContentLoaded callback
 window.showQuestion = showQuestion;
 window.completeInterview = completeInterview;
 window.validateCodingSolution = validateCodingSolution;
