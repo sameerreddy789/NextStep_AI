@@ -728,6 +728,15 @@
             // Reset all sections to closed for fresh start
             document.querySelectorAll('.skill-section').forEach(s => s.classList.remove('open'));
 
+            // Add timeout safety net to prevent infinite loading
+            const analysisTimeout = setTimeout(() => {
+                loading.classList.add('hidden');
+                results.style.opacity = '1';
+                results.style.pointerEvents = 'auto';
+                console.error('[SkillGap] Analysis timeout - taking too long');
+                alert('Analysis took too long. Please try again or check your internet connection.');
+            }, 60000); // 60 second max
+
             try {
                 const resumeDataRaw = localStorage.getItem('nextStep_resume');
                 const resumeData = (resumeDataRaw && resumeDataRaw !== 'undefined' && resumeDataRaw !== 'null') ? JSON.parse(resumeDataRaw) : { skills: {} };
@@ -767,14 +776,40 @@
                 renderSkillList('good-to-have-skills', analysis.goodToHave);
                 renderSkillList('future-proof-skills', analysis.futureProof);
 
-                // 4. Update UI
+                // 4. Update UI - RESTORE VISIBILITY
+                clearTimeout(analysisTimeout); // Clear timeout on success
                 loading.classList.add('hidden');
+                results.style.opacity = '1'; // ← FIX: Restore full opacity
+                results.style.pointerEvents = 'auto'; // ← FIX: Restore interactivity
+
+                // Auto-expand first section with results
+                setTimeout(() => {
+                    const sections = [
+                        { id: 'section-must-have', containerId: 'must-have-skills' },
+                        { id: 'section-good-to-have', containerId: 'good-to-have-skills' },
+                        { id: 'section-future-proof', containerId: 'future-proof-skills' }
+                    ];
+
+                    for (const section of sections) {
+                        const container = document.getElementById(section.containerId);
+                        // Check if container has actual skill items (not just the "no skills" message)
+                        if (container && container.querySelector('.skill-gap-item')) {
+                            document.getElementById(section.id).classList.add('open');
+                            console.log('[SkillGap] Auto-expanded:', section.id);
+                            break; // Only open the first non-empty section
+                        }
+                    }
+                }, 100);
+
                 // Sync Explorer
                 selectedExplorerRole = role;
                 updateExplorerUI();
             } catch (error) {
+                clearTimeout(analysisTimeout); // Clear timeout on error
                 console.error('Skill Gap Analysis Failed:', error);
                 loading.classList.remove('hidden');
+                results.style.opacity = '1'; // Restore visibility even on error
+                results.style.pointerEvents = 'auto';
                 loading.innerHTML = `
                     <div style="color: #ef4444; padding: 40px; text-align:center;">
                         <h3 style="margin-bottom: 12px; font-size: 20px;">Analysis Interrupted</h3>

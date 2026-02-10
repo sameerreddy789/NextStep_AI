@@ -30,7 +30,7 @@ const GeminiService = {
         }
 
         this.apiKeys = [...new Set(keys)]; // Unique keys
-        this.currentKeyIndex = 0;
+        this.currentKeyIndex = 1; // Skip key 1 (daily limit reached)
 
         if (this.apiKeys.length > 0) {
             console.log(`[GeminiService] ✅ Initialized with ${this.apiKeys.length} API key(s)`);
@@ -48,13 +48,23 @@ const GeminiService = {
 
     /**
      * Make API request to Gemini with optional file data and retry/rotation logic
+     * @param {string} prompt - The prompt to send to Gemini
+     * @param {object|null} fileData - Optional file data {mimeType, base64}
+     * @param {number} retries - Number of retry attempts
+     * @param {number} delay - Initial delay between retries (exponential backoff)
+     * @param {function} onProgress - Optional progress callback
      */
-    async _request(prompt, fileData = null, retries = 3, delay = 1000) {
+    async _request(prompt, fileData = null, retries = 3, delay = 1000, onProgress = null) {
         if (this.apiKeys.length === 0) {
-            throw new Error('Gemini API keys not configured');
+            throw new Error('AI service is not configured. Please check your API keys.');
         }
 
         const currentApiKey = this.apiKeys[this.currentKeyIndex];
+
+        // Progress tracking
+        if (onProgress) {
+            onProgress({ stage: 'starting', message: 'Connecting to AI service...' });
+        }
 
         try {
             // Build parts array
@@ -73,36 +83,28 @@ const GeminiService = {
             // Add text prompt
             parts.push({ text: prompt });
 
-            // Create timeout controller
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+            if (onProgress) {
+                onProgress({ stage: 'uploading', message: fileData ? 'Uploading file to AI...' : 'Sending request...' });
+            }
 
-            let response;
-            try {
-                response = await fetch(`${this.baseUrl}?key=${currentApiKey}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{ parts }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 2048,
-                        }
-                    }),
-                    signal: controller.signal
-                });
+            const response = await fetch(`${this.baseUrl}?key=${currentApiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [{ parts }],
+                    generationConfig: {
+                        temperature: 0.7,
+                        topK: 40,
+                        topP: 0.95,
+                        maxOutputTokens: 2048,
+                    }
+                })
+            });
 
-                clearTimeout(timeoutId);
-            } catch (fetchError) {
-                clearTimeout(timeoutId);
-                if (fetchError.name === 'AbortError') {
-                    throw new Error('Request timeout - Gemini API is taking too long to respond');
-                }
-                throw fetchError;
+            if (onProgress) {
+                onProgress({ stage: 'processing', message: 'AI is analyzing...' });
             }
 
             if (!response.ok) {
@@ -114,20 +116,36 @@ const GeminiService = {
                         this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
                         console.warn(`[GeminiService] 🔄 Rate limit hit on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
                         // Retry immediately with new key
-                        return this._request(prompt, fileData, retries, delay);
+                        return this._request(prompt, fileData, retries, delay, onProgress);
                     } else if (retries > 0) {
                         console.warn(`[GeminiService] ⏳ Rate limit hit. Retrying in ${delay / 1000}s... (${retries} retries left)`);
                         await new Promise(resolve => setTimeout(resolve, delay));
-                        return this._request(prompt, fileData, retries - 1, delay * 2);
+                        return this._request(prompt, fileData, retries - 1, delay * 2, onProgress);
                     }
-                    throw new Error('AI Rate Limit Exceeded (429). All API keys are currently limited.');
+                    throw new Error('AI service is currently busy. All available servers are at capacity. Please try again in a few moments.');
                 }
 
-                throw new Error(error.error?.message || 'Gemini API request failed');
+                // User-friendly error messages
+                let userMessage = 'AI service error. Please try again.';
+                if (error.error?.message) {
+                    if (error.error.message.includes('API key')) {
+                        userMessage = 'API key issue detected. Please check your configuration.';
+                    } else if (error.error.message.includes('quota')) {
+                        userMessage = 'AI service quota exceeded. Please try again later.';
+                    } else if (error.error.message.includes('invalid')) {
+                        userMessage = 'Invalid request. Please try again with a different file.';
+                    }
+                }
+                throw new Error(userMessage);
             }
 
             const data = await response.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            if (onProgress) {
+                onProgress({ stage: 'complete', message: 'Analysis complete!' });
+            }
+
             return text;
         } catch (error) {
             // Handle network errors or rate limit strings
@@ -135,14 +153,17 @@ const GeminiService = {
                 if (this.apiKeys.length > 1) {
                     this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
                     console.warn(`[GeminiService] 🔄 Retrying with next key after error...`);
-                    return this._request(prompt, fileData, retries, delay);
+                    return this._request(prompt, fileData, retries, delay, onProgress);
                 }
             }
 
             if (error.message.includes('Rate Limit') && retries > 0) {
-                console.warn(`[GeminiService] ⏳ Network error/Rate limit. Retrying in ${delay / 1000}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-                return this._request(prompt, fileData, retries - 1, delay * 2);
+                // Exponential backoff with jitter
+                const jitter = Math.random() * 1000; // 0-1s random jitter
+                const backoffDelay = delay + jitter;
+                console.warn(`[GeminiService] ⏳ Network error/Rate limit. Retrying in ${Math.round(backoffDelay / 1000)}s...`);
+                await new Promise(resolve => setTimeout(resolve, backoffDelay));
+                return this._request(prompt, fileData, retries - 1, delay * 2, onProgress);
             }
             console.error('[GeminiService] ❌ API Error:', error);
             throw error;
@@ -275,7 +296,7 @@ const GeminiService = {
     /**
      * Analyze PDF file directly using Gemini's multimodal capability
      */
-    async analyzePDF(file, targetRole = 'sde') {
+    async analyzePDF(file, targetRole = 'sde', onProgress = null) {
         console.log('[GeminiService] 📄 Analyzing PDF:', file.name);
 
         const base64 = await this._fileToBase64(file);
@@ -311,14 +332,14 @@ Respond with ONLY a JSON object (no markdown):
             const response = await this._request(prompt, {
                 mimeType: 'application/pdf',
                 base64: base64
-            });
+            }, 3, 1000, onProgress);
             const parsed = this._parseJSON(response);
 
             if (parsed) {
                 console.log('[GeminiService] ✅ PDF analysis complete');
                 return parsed;
             } else {
-                throw new Error('Failed to parse AI response');
+                throw new Error('Unable to parse the AI response. Please try again.');
             }
         } catch (error) {
             console.error('[GeminiService] ❌ PDF analysis failed:', error);
@@ -329,7 +350,7 @@ Respond with ONLY a JSON object (no markdown):
     /**
      * Analyze resume text
      */
-    async analyzeResume(resumeText, targetRole = 'sde') {
+    async analyzeResume(resumeText, targetRole = 'sde', onProgress = null) {
         console.log('[GeminiService] 🔍 Analyzing resume text');
 
         const prompt = `You are an expert resume analyzer. Analyze this resume for a ${targetRole} role.
@@ -363,13 +384,13 @@ Respond with ONLY a JSON object (no markdown):
 }`;
 
         try {
-            const response = await this._request(prompt);
+            const response = await this._request(prompt, null, 3, 1000, onProgress);
             const parsed = this._parseJSON(response);
             if (parsed) {
                 console.log('[GeminiService] ✅ Resume analysis complete');
                 return parsed;
             }
-            throw new Error('Failed to parse AI response');
+            throw new Error('Unable to parse the AI response. Please try again.');
         } catch (error) {
             console.error('[GeminiService] ❌ Resume analysis failed:', error);
             throw error;
@@ -467,7 +488,7 @@ Respond with ONLY a JSON object:
     /**
      * Transcribe audio using Gemini's multimodal capabilities
      */
-    async transcribeAudio(audioBlob) {
+    async transcribeAudio(audioBlob, onProgress = null) {
         console.log('[GeminiService] 🎙️ Transcribing audio...');
 
         const base64 = await this._fileToBase64(audioBlob);
@@ -477,7 +498,7 @@ Respond with ONLY a JSON object:
             const result = await this._request(prompt, {
                 mimeType: audioBlob.type || 'audio/webm',
                 base64: base64
-            });
+            }, 3, 1000, onProgress);
             return result.trim();
         } catch (error) {
             console.error('[GeminiService] ❌ Transcription failed:', error);
@@ -488,7 +509,7 @@ Respond with ONLY a JSON object:
     /**
      * Simulate code execution against multiple test cases
      */
-    async executeCode(code, language, testCases) {
+    async executeCode(code, language, testCases, onProgress = null) {
         console.log(`[GeminiService] ⚙️ Executing ${language} code against ${testCases.length} tests`);
 
         const testsJson = JSON.stringify(testCases);
@@ -528,13 +549,13 @@ IMPORTANT:
 - Return ONLY the JSON object.`;
 
         try {
-            const response = await this._request(prompt);
+            const response = await this._request(prompt, null, 3, 1000, onProgress);
             const parsed = this._parseJSON(response);
             if (parsed && typeof parsed === 'object') {
                 console.log('[GeminiService] ✅ Code execution simulation complete');
                 return parsed;
             }
-            throw new Error('Failed to parse execution report');
+            throw new Error('Unable to parse execution report. Please try again.');
         } catch (error) {
             console.error('[GeminiService] ❌ Execution simulation failed:', error);
             throw error;

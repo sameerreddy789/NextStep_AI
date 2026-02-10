@@ -733,38 +733,69 @@
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const targetRole = userProfile.targetRole || userData.targetRole || 'sde';
 
+            // Progress callback to update UI
+            const onProgress = (update) => {
+                const messages = {
+                    'starting': 'Connecting to AI service...',
+                    'uploading': file.type === 'application/pdf' ? 'Uploading PDF to AI...' : 'Sending resume data...',
+                    'processing': 'AI is analyzing your resume...',
+                    'complete': 'Analysis complete!'
+                };
+
+                if (update.message) {
+                    statusText.textContent = update.message;
+                } else if (messages[update.stage]) {
+                    statusText.textContent = messages[update.stage];
+                }
+
+                // Update progress bar based on stage
+                const progressMap = {
+                    'starting': 10,
+                    'uploading': 30,
+                    'processing': 60,
+                    'complete': 100
+                };
+                if (progressMap[update.stage]) {
+                    progressBar.style.width = progressMap[update.stage] + '%';
+                }
+            };
+
             try {
                 // Use Gemini AI
                 if (file && window.GeminiService && window.GeminiService.isAvailable()) {
                     const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
-                    statusText.textContent = 'AI analyzing your resume...';
-                    progressBar.style.width = '30%';
+                    statusText.textContent = 'Preparing to analyze your resume...';
+                    progressBar.style.width = '5%';
 
                     let aiResult;
                     if (isPDF) {
                         statusText.textContent = 'Extracting text from PDF...';
+                        progressBar.style.width = '15%';
                         const extractedText = await extractTextFromPDF(file);
 
                         if (extractedText && extractedText.trim().length > 100) {
                             console.log('[Resume] Using extracted text for analysis');
                             statusText.textContent = 'AI analyzing resume text...';
-                            aiResult = await window.GeminiService.analyzeResume(extractedText, targetRole);
+                            progressBar.style.width = '25%';
+                            aiResult = await window.GeminiService.analyzeResume(extractedText, targetRole, onProgress);
                         } else {
                             console.log('[Resume] Falling back to multimodal PDF analysis');
                             statusText.textContent = 'AI analyzing PDF layout...';
-                            aiResult = await window.GeminiService.analyzePDF(file, targetRole);
+                            progressBar.style.width = '25%';
+                            aiResult = await window.GeminiService.analyzePDF(file, targetRole, onProgress);
                         }
                     } else {
                         const text = await file.text();
-                        aiResult = await window.GeminiService.analyzeResume(text, targetRole);
+                        progressBar.style.width = '20%';
+                        aiResult = await window.GeminiService.analyzeResume(text, targetRole, onProgress);
                     }
 
                     if (!aiResult) {
                         throw new Error('AI failed to produce a valid analysis. Please try again or check your API key.');
                     }
 
-                    progressBar.style.width = '90%';
+                    progressBar.style.width = '95%';
                     statusText.textContent = 'Finalizing analysis...';
 
                     const result = {
@@ -788,23 +819,54 @@
             } catch (error) {
                 console.error('[Resume] Analysis error:', error);
 
-                // Handle 429 specifically with a fallback
-                if (error.message.includes('429') || error.message.includes('Rate Limit')) {
-                    console.warn('[Resume] AI Rate limited, falling back to local analysis');
-                    statusText.textContent = 'AI busy. Using local analysis engine...';
+                // Determine if we should show a retry option or fallback
+                const isTimeout = error.message.includes('timeout') || error.message.includes('taking longer');
+                const isRateLimit = error.message.includes('429') || error.message.includes('Rate Limit') || error.message.includes('busy');
+                const isNetworkError = error.message.includes('network') || error.message.includes('Connection');
 
-                    // Force a delay to make it feel intentional
-                    await new Promise(resolve => setTimeout(resolve, 1500));
+                // Build user-friendly error message
+                let errorTitle = 'Analysis Error';
+                let errorMessage = error.message;
+                let showRetry = true;
+                let showFallback = false;
+
+                if (isTimeout) {
+                    errorTitle = 'Analysis Taking Too Long';
+                    errorMessage = error.message + '\n\nTips:\n• Try a smaller file\n• Use a text-based resume instead of PDF\n• Retry in a moment';
+                    showFallback = true;
+                } else if (isRateLimit) {
+                    errorTitle = 'Service Busy';
+                    errorMessage = error.message;
+                    showFallback = true;
+                } else if (isNetworkError) {
+                    errorTitle = 'Connection Issue';
+                    errorMessage = error.message + '\n\nPlease check your internet connection and try again.';
+                }
+
+                // Show error dialog with options
+                const userChoice = confirm(
+                    `${errorTitle}\n\n${errorMessage}\n\n` +
+                    (showFallback ? 'Would you like to use local analysis instead? (Click OK for local analysis, Cancel to retry)' : 'Click OK to retry, Cancel to go back.')
+                );
+
+                if (userChoice && showFallback) {
+                    // Use local fallback analysis
+                    console.warn('[Resume] Using local analysis fallback');
+                    statusText.textContent = 'Using local analysis engine...';
+                    progressBar.style.width = '40%';
+
+                    await new Promise(resolve => setTimeout(resolve, 1000));
 
                     const extractedText = await extractTextFromPDF(file);
                     const localResult = calculateATSScore(extractedText || "", targetRole);
 
-                    // Adapt local result to the same schema
+                    progressBar.style.width = '80%';
+
                     const result = {
                         skills: {
                             present: localResult.matchedKeywords.slice(0, 10),
                             partial: [],
-                            missing: [] // We don't have enough data locally for a full gaps list
+                            missing: []
                         },
                         experience: [],
                         projects: [],
@@ -818,19 +880,33 @@
 
                     progressBar.style.width = '100%';
                     setTimeout(() => showResults(result), 500);
-                    return;
+                } else if (userChoice && !showFallback) {
+                    // Retry
+                    analyzeResume(file);
+                } else {
+                    // Cancel - reset UI
+                    document.getElementById('upload-section').classList.remove('hidden');
+                    document.getElementById('analyzing-section').classList.add('hidden');
+                    progressBar.style.width = '0%';
                 }
-
-                // If not handled by fallback, show error to user
-                alert('Analysis Error: ' + error.message);
-                // Reset UI for retry
-                document.getElementById('upload-section').classList.remove('hidden');
-                document.getElementById('analyzing-section').classList.add('hidden');
             }
         }
 
 
         function showResults(data) {
+            // Normalize skills data to expected format {present:[], partial:[], missing:[]}
+            if (data.skills && Array.isArray(data.skills)) {
+                // Skills is a flat array, convert to expected format
+                data.skills = { present: data.skills, partial: [], missing: data.missing || [] };
+            } else if (!data.skills) {
+                data.skills = { present: [], partial: [], missing: [] };
+            } else {
+                // Ensure all sub-arrays exist
+                data.skills.present = data.skills.present || [];
+                data.skills.partial = data.skills.partial || [];
+                data.skills.missing = data.skills.missing || [];
+            }
+
             // Save to localStorage
             localStorage.setItem('nextStep_resume', JSON.stringify(data));
 
@@ -932,7 +1008,7 @@
                 suggestionsEl.appendChild(li);
             });
             // Experience
-            document.getElementById('experience-list').innerHTML = data.experience.map((e, index) => `
+            document.getElementById('experience-list').innerHTML = (data.experience || []).map((e, index) => `
                 <div class="experience-item animate-in" style="animation-delay: ${index * 0.15}s">
                     <h4>${e.role || 'Role'}</h4>
                     <p>${e.company || 'Company'} • ${e.duration || ''}</p>
@@ -940,7 +1016,7 @@
             `).join('');
 
             // Projects
-            document.getElementById('projects-list').innerHTML = data.projects.map((p, index) => `
+            document.getElementById('projects-list').innerHTML = (data.projects || []).map((p, index) => `
                 <div class="project-item animate-in" style="animation-delay: ${index * 0.15}s">
                     <h4>${p.name || 'Project Name'}</h4>
                     <p>${p.tech || ''}</p>
@@ -993,6 +1069,43 @@
                 console.error('[Database] ❌ Error saving resume:', error);
             }
         }
+
+        // Check for pending resume file from onboarding (after analyzeResume is defined)
+        window.addEventListener('load', async () => {
+            // Don't process if already analyzed
+            const resumeData = localStorage.getItem('nextStep_resume');
+            if (resumeData) {
+                return;
+            }
+
+            // Check for pending resume file from onboarding
+            const pendingFileData = localStorage.getItem('pendingResumeFile');
+            if (pendingFileData) {
+                try {
+                    const fileData = JSON.parse(pendingFileData);
+                    console.log('[Resume] Found pending resume file from onboarding:', fileData.name);
+
+                    // Convert base64 back to File object
+                    const response = await fetch(fileData.data);
+                    const blob = await response.blob();
+                    const file = new File([blob], fileData.name, {
+                        type: fileData.type,
+                        lastModified: fileData.lastModified
+                    });
+
+                    // Clear the pending file from storage
+                    localStorage.removeItem('pendingResumeFile');
+
+                    // Automatically analyze the file
+                    console.log('[Resume] Auto-analyzing resume from onboarding...');
+                    setTimeout(() => analyzeResume(file), 100); // Small delay to ensure DOM is ready
+                } catch (error) {
+                    console.error('[Resume] Error processing pending file:', error);
+                    // Clear the corrupted data
+                    localStorage.removeItem('pendingResumeFile');
+                }
+            }
+        });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="js/sidebar.js"></script>

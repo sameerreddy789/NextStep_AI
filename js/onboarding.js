@@ -9,6 +9,7 @@ const totalSteps = 5;
 let resumeMode = 'choice'; // 'choice', 'upload', 'create'
 let builderStep = 1;
 const totalBuilderSteps = 14;
+let uploadedResumeFile = null; // Store the uploaded resume file
 
 let userData = {
     careerGoal: null,
@@ -287,7 +288,7 @@ window.skipStep = () => {
 };
 
 // File Handling
-function handleFileUpload(e) {
+async function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
         document.getElementById('file-name').textContent = file.name;
@@ -295,8 +296,27 @@ function handleFileUpload(e) {
         document.getElementById('upload-zone').classList.add('hidden');
         userData.resumeStatus = 'uploaded';
 
-        // Note: In real app, upload to Firebase Storage here. 
-        // For now, we simulate success.
+        // Store the file for later analysis
+        uploadedResumeFile = file;
+
+        // Convert file to base64 and store in localStorage for transfer to resume.html
+        try {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const fileData = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: event.target.result, // base64 data
+                    lastModified: file.lastModified
+                };
+                localStorage.setItem('pendingResumeFile', JSON.stringify(fileData));
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error storing file:", error);
+        }
+
         validateStep();
     }
 }
@@ -306,6 +326,11 @@ function removeFile() {
     document.getElementById('upload-zone').classList.remove('hidden');
     document.getElementById('resume-upload').value = '';
     userData.resumeStatus = 'pending';
+
+    // Clear stored file data
+    uploadedResumeFile = null;
+    localStorage.removeItem('pendingResumeFile');
+
     validateStep();
 }
 
@@ -352,12 +377,8 @@ async function finishOnboarding() {
             resumeData: userData.resumeData
         }));
 
-        // Mock Resume Data for Dashboard (Enhanced with built data)
-        localStorage.setItem("nextStep_resume", JSON.stringify({
-            readiness: 65, // Higher readiness if created via builder
-            skills: userData.resumeData?.skills?.split(',') || ['JavaScript', 'HTML'],
-            missing: ['Advanced System Design', 'Cloud Patterns']
-        }));
+        // Note: Do NOT set nextStep_resume here - let resume.html handle the actual
+        // AI analysis of the uploaded file via the pendingResumeFile mechanism.
     }
 
     // Redirect to Resume Analysis (Next Step in Flow)
