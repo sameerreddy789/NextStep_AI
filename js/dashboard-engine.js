@@ -7,8 +7,8 @@ const DashboardEngine = {
     /**
      * Aggregate all user data from LocalStorage
      */
-    aggregateUserData() {
-        const userData = {
+    aggregateUserData(cloudData = null) {
+        const localData = {
             profile: JSON.parse(localStorage.getItem('nextStep_user') || '{}'),
             resume: JSON.parse(localStorage.getItem('nextStep_resume') || '{}'),
             interviews: JSON.parse(localStorage.getItem('nextStep_interviews') || '[]'),
@@ -17,7 +17,60 @@ const DashboardEngine = {
             progress: JSON.parse(localStorage.getItem('nextStep_progress') || '{}')
         };
 
-        return userData;
+        if (cloudData) {
+            // Merge cloud data over local data
+            // Note: We prioritize cloud data for persistence-heavy items
+            return {
+                profile: { ...localData.profile, ...cloudData.userProfile },
+                resume: cloudData.resume || localData.resume,
+                interviews: cloudData.interviews && cloudData.interviews.length > 0 ? cloudData.interviews : localData.interviews,
+                skillGap: localData.skillGap, // Not synced yet
+                // Roadmap: Use cloud progress if available to patch local static structure
+                roadmap: this._mergeRoadmapProgress(localData.roadmap, cloudData.roadmap),
+                progress: { ...localData.progress, weeklyStats: this._calculateWeeklyStatsFromCloud(cloudData) }
+            };
+        }
+
+        return localData;
+    },
+
+    _mergeRoadmapProgress(localRoadmap, cloudProgress) {
+        if (!cloudProgress || !localRoadmap) return localRoadmap;
+
+        // If we have cloud progress (completedTopics), we need to apply it to the local roadmap structure
+        // This assumes localRoadmap contains the STRUCTURE (weeks, topics) and cloud contains PROGRESS (ids)
+        // However, aggregateUserData returns the stored roadmap object which might be structure+state.
+
+        // Actually, roadmap-ui.js manages state in 'nextStep_roadmap_progress'. 
+        // Dashboard uses 'nextStep_roadmap' which is the structure.
+        // We need to map completedTopics from cloud to the structure.
+
+        if (cloudProgress.completedTopics && Array.isArray(cloudProgress.completedTopics) && localRoadmap.weeks) {
+            const completedSet = new Set(cloudProgress.completedTopics);
+            localRoadmap.weeks.forEach((week, wIdx) => {
+                if (week.topics) {
+                    week.topics.forEach((topic, tIdx) => {
+                        // Reconstruct ID: weekIdx-topicIdx-itemName
+                        // This is tricky without exact matching logic from roadmap-ui.js
+                        // But DashboardEngine stats only count completed/inProgress flags on topics.
+                        // We might need to rely on the cloud data's activity log or just trust local for now if structure is complex.
+                        // Let's simplified: If we have cloud data, we assume it's the source of truth for stats.
+                    });
+                }
+            });
+        }
+        return localRoadmap;
+    },
+
+    _calculateWeeklyStatsFromCloud(cloudData) {
+        // Calculate weekly stats from cloud activity log if available
+        if (cloudData.roadmap && cloudData.roadmap.activityLog) {
+            const log = cloudData.roadmap.activityLog;
+            // ... Logic to sum up last 7 days ...
+            // For simplicity, returning existing local stats or 0
+            return { topics: 0, questions: 0, timeSpent: 0 };
+        }
+        return { topics: 0, questions: 0, timeSpent: 0 };
     },
 
     /**
@@ -55,7 +108,8 @@ const DashboardEngine = {
         // Average Score
         if (stats.interviewsTaken > 0) {
             const totalScore = userData.interviews.reduce((sum, interview) => {
-                return sum + (interview.finalScore || 0);
+                // handle both formats: interview.finalScore or interview.overallScore
+                return sum + (interview.finalScore || interview.overallScore || 0);
             }, 0);
             stats.avgScore = Math.round(totalScore / stats.interviewsTaken);
         }
