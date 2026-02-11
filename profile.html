@@ -1007,48 +1007,15 @@
             loadSocialLinks(socialLinks);
 
             window.toggleEdit('personal');
-            showNotification('Profile updated successfully!');
+            if (window.UIUtils) window.UIUtils.showToast('Profile updated successfully!', 'success');
 
             // Refresh sidebar immediately
             if (window.SidebarComponent) window.SidebarComponent.generate();
         }
 
-        function showNotification(message) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: linear-gradient(135deg, var(--accent-green), var(--accent-green-dark));
-                color: white;
-                padding: 16px 24px;
-                border-radius: 12px;
-                font-weight: 600;
-                z-index: 1000;
-                animation: slideIn 0.3s ease;
-                box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            if (!document.getElementById('notification-styles')) {
-                const style = document.createElement('style');
-                style.id = 'notification-styles';
-                style.textContent = `
-                    @keyframes slideIn {
-                        from { transform: translateX(100px); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-
-            setTimeout(() => notification.remove(), 3000);
-        }
-
-
     </script>
-    <script src="js/sidebar.js"></script>
+    <script src="js/ui-utils.js"></script>
+    <script src="js/sidebar.js" type="module"></script>
     <script src="js/click-spark.js"></script>
 </body>
 
