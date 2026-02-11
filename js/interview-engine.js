@@ -1,12 +1,13 @@
 import { auth, db } from './firebase-config.js';
-import { doc, setDoc, serverTimestamp, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc, serverTimestamp, collection, addDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { appState } from './app-state.js';
 
-// functions will be exposed to window via window.funcName = funcName after they are defined
-
-/**
- * Interview Engine - Manages the state and logic for AI Interviews
- */
+// Expose critical functions to window for HTML buttons
+window.startInterview = startInterview;
+window.submitAnswer = submitAnswer;
+window.skipQuestion = skipQuestion;
+// toggleSpeech, showConfirm are already attached to window in their definitions
 
 const BOILERPLATES = {
     c: `#include <stdio.h>\n\nint main() {\n    // Write your solution here\n    printf("Hello World");\n    return 0;\n}`,
@@ -22,11 +23,16 @@ let timeLeft = 2700; // 45 minutes global
 let initialTime = 2700;
 let autoSaveInterval = null;
 let AI_QUESTIONS = null;
-let isSpeakerEnabled = localStorage.getItem('nextStep_speaker_enabled') !== 'false'; // Default to true
+let isSpeakerEnabled = localStorage.getItem('nextStep_speaker_enabled') !== 'false';
+
 
 // Initialize on DOM Load
-document.addEventListener('DOMContentLoaded', () => {
-    const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+// Initialize on DOM Load
+document.addEventListener('DOMContentLoaded', async () => {
+    await appState.init(); // Initialize Global State
+
+    // Use appState user data if available
+    const userData = appState.user || JSON.parse(localStorage.getItem('nextStep_user') || '{}');
     const userName = document.getElementById('user-name');
     const userAvatar = document.getElementById('user-avatar');
     const userRole = document.getElementById('user-role');
@@ -1045,18 +1051,11 @@ async function validateCodingSolution() {
 }
 
 // Database Integration
+// Database Integration
 async function saveInterviewToDatabase(data) {
     try {
-        // Wait for auth to initialize if it hasn't yet
-        const user = await new Promise((resolve) => {
-            if (auth.currentUser) return resolve(auth.currentUser);
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-                unsubscribe();
-                resolve(user);
-            });
-            // Timeout after 3 seconds if auth still hasn't settled
-            setTimeout(() => resolve(auth.currentUser), 3000);
-        });
+        // Use AppState user if available
+        const user = appState.user || auth.currentUser;
 
         if (!user) {
             console.log('[Database] ⚠️ User not logged in to Firebase Auth, skipping cloud save');
@@ -1085,10 +1084,29 @@ async function saveInterviewToDatabase(data) {
 
         console.log('[Database] ✅ Interview results saved successfully');
 
+        // Update AppState
+        if (appState.interviews) {
+            appState.interviews.push({
+                ...data,
+                timestamp: new Date() // Approximate for local update
+            });
+            appState.calculateReadiness();
+            if (appState.logActivity) appState.logActivity(); // Update Streak
+            appState.notifyListeners();
+        }
+
         // Analyze skill gaps and update roadmap
         if (window.SkillGapService) {
             console.log('[Database] 🔍 Analyzing skill gaps...');
-            await window.SkillGapService.analyzeAndUpdateRoadmap(data);
+            const newSkills = await window.SkillGapService.analyzeAndUpdateRoadmap(data);
+
+            // 🆕 Instant Local Update
+            if (newSkills && newSkills.length > 0) {
+                if (!appState.skillGap) appState.skillGap = [];
+                appState.skillGap.push(...newSkills);
+                console.log('[Database] 🔄 Local appState.skillGap updated with', newSkills.length, 'skills');
+                appState.notifyListeners();
+            }
         }
     } catch (error) {
         console.error('[Database] ❌ Error saving interview results:', error);
