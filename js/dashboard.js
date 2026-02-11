@@ -1,50 +1,38 @@
-/**
- * dashboard.js
- * Manages the dashboard UI, data visualization, and user progress.
- */
+import { auth } from './firebase-config.js';
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { appState } from './app-state.js';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize Data
-    const userRole = localStorage.getItem('userType') || 'student';
-    const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Initialize Global State
+    const initialized = await appState.init();
 
-    // Initialize Stores
-    if (window.SkillStore) {
-        SkillStore.init();
-    }
+    if (initialized) {
+        // 2. Initial Render
+        renderDashboard(appState);
 
-    // 2. Render User Info
-    renderUserInfo(userData);
-
-    // 3. Render Charts & Stats using DashboardEngine
-    if (window.DashboardEngine) {
-        const aggregatedData = DashboardEngine.aggregateUserData();
-        const stats = DashboardEngine.calculateStatistics(aggregatedData);
-        renderStatsFromEngine(stats);
-        renderCharts();
-
-        // Subscribe to realtime updates
-        DashboardEngine.subscribe((updatedData) => {
-            const newStats = DashboardEngine.calculateStatistics(updatedData);
-            renderStatsFromEngine(newStats);
-            renderCharts();
+        // 3. Subscribe to Updates
+        appState.subscribe((state) => {
+            renderDashboard(state);
         });
     } else {
-        // Fallback to old method
-        renderStats();
-        renderCharts();
+        // Handle unauthenticated or offline state if needed
+        console.log("App state not initialized (User logged out?)");
     }
 
-    // 4. Render Action Items
-    renderActionItems();
-
-    // 5. Initialize Interactive Elements
-    renderTasks();
-    updateWeeklyProgress();
-
-    // 6. Handle Global Logout
-
+    // 4. Initialize Interactive Elements
+    // Any legacy UI inits can go here
 });
+
+function renderDashboard(state) {
+    if (!state.user) return;
+
+    renderUserInfo(state.user);
+    renderStats(state);
+    renderCharts(state); // Donut + Readiness
+    renderStreak(state); // GitHub Graph
+    renderTasks(state);  // Assigned + Personal
+    renderActionItems(state);
+}
 
 function renderUserInfo(user) {
     const greetingEl = document.getElementById('user-greeting-name');
@@ -64,66 +52,78 @@ function renderUserInfo(user) {
     }
 }
 
-function renderStatsFromEngine(stats) {
-    // Update stat cards
-    const skillsCount = document.getElementById('skills-covered');
-    const interviewsEl = document.getElementById('interviews-taken');
-    const avgScoreEl = document.getElementById('avg-score');
-    const streakEl = document.getElementById('day-streak');
+function renderStats(state) {
+    // Derive Stats from State
+    const skillsCovered = (state.resumeData?.skills?.present?.length || 0) + (state.resumeData?.skills?.partial?.length || 0);
+    const interviewsTaken = state.interviews.length;
 
-    if (skillsCount) skillsCount.textContent = stats.skillsCovered || 0;
-    if (interviewsEl) interviewsEl.textContent = stats.interviewsTaken || 0;
-    if (avgScoreEl) avgScoreEl.textContent = `${stats.avgScore || 0}%`;
-    if (streakEl) streakEl.textContent = stats.dayStreak || 0;
+    let avgScore = 0;
+    if (interviewsTaken > 0) {
+        const total = state.interviews.reduce((sum, i) => sum + (i.finalScore || i.overallScore || 0), 0);
+        avgScore = Math.round(total / interviewsTaken);
+    }
 
-    const readinessEl = document.getElementById('readiness-score-big');
-    if (readinessEl) readinessEl.textContent = `${stats.readinessScore || 0}%`;
+    // Calculate Streak
+    const activityDates = Object.keys(state.learningActivity || {}).sort();
+    let dayStreak = 0;
+    if (activityDates.length > 0) {
+        // Simple streak calculation (consecutive days ending yesterday/today)
+        // For now, let's trust the length of recent activity keys or implement better logic
+        // This is a placeholder for the complex streak logic
+        const lastDate = new Date(activityDates[activityDates.length - 1]);
+        const today = new Date();
+        const diffTime = Math.abs(today - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays <= 2) {
+            // Basic streak check
+            dayStreak = activityDates.length; // Simplified
+        }
+    }
 
-    // Update weekly metrics
+    // Update UI
+    const elSkills = document.getElementById('skills-covered');
+    const elInterviews = document.getElementById('interviews-taken');
+    const elAvg = document.getElementById('avg-score');
+    const elStreak = document.getElementById('day-streak');
+    const elReadiness = document.getElementById('readiness-score-big');
+
+    if (elSkills) elSkills.textContent = skillsCovered;
+    if (elInterviews) elInterviews.textContent = interviewsTaken;
+    if (elAvg) elAvg.textContent = `${avgScore}%`;
+    if (elStreak) elStreak.textContent = dayStreak;
+    if (elReadiness) elReadiness.textContent = `${state.readinessScore}%`;
+
+    // Weekly Progress (Derived from current week in roadmap)
     const weeklyTopics = document.getElementById('weekly-topics');
     const weeklyQuestions = document.getElementById('weekly-questions');
     const weeklyTime = document.getElementById('weekly-time');
 
-    if (weeklyTopics) weeklyTopics.textContent = stats.weeklyTopics || 0;
-    if (weeklyQuestions) weeklyQuestions.textContent = stats.weeklyQuestions || 0;
-    if (weeklyTime) weeklyTime.textContent = `${stats.weeklyTime || 0}h`;
+    // Placeholder logic for weekly stats
+    if (weeklyTopics) weeklyTopics.textContent = state.roadmapProgress?.completedTopics?.length || 0;
+    if (weeklyQuestions) weeklyQuestions.textContent = 0; // TODO: Track questions
+    if (weeklyTime) weeklyTime.textContent = '0h'; // TODO: Track time
 }
 
-function renderCharts() {
-    if (window.SkillStore) {
-        const skills = SkillStore.getSkills();
-        const totalSkills = skills.length || 1;
+function renderCharts(state) {
+    // Use Roadmap Progress for the donut chart
+    const totalTasks = state.roadmap?.totalTasks || 100; // Default or from state
+    const completedTasks = state.roadmapProgress?.completedTopics?.length || 0;
+    const completedProgress = Math.round((completedTasks / totalTasks) * 100);
+    const inProgressProgress = 0; // Hard to track individually without more data
+    const pendingProgress = 100 - completedProgress;
 
-        // Categorize progress contribution rather than simple counts
-        let completedProgress = 0;
-        let inProgressProgress = 0;
-
-        skills.forEach(s => {
-            if (s.progress >= 90) {
-                completedProgress += s.progress;
-            } else if (s.progress > 0) {
-                inProgressProgress += s.progress;
-            }
-        });
-
-        const totalPossible = totalSkills * 100;
-        const totalAchieved = completedProgress + inProgressProgress;
-        const pendingProgress = totalPossible - totalAchieved;
-
-        // Draw chart using progress-weighted segments
-        drawPieChart(completedProgress, inProgressProgress, pendingProgress);
-    }
+    drawPieChart(completedProgress, inProgressProgress, pendingProgress, state.readinessScore);
 }
 
 // Draw Static Pie/Donut Chart using progress values
-function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0) {
+// Draw Static Pie/Donut Chart using progress values
+function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0, readinessScore = 0) {
     const total = completedVal + inProgressVal + pendingVal;
     const svg = document.querySelector('.readiness-svg');
     const scoreBig = document.getElementById('readiness-score-big');
 
-    // Calculate Overall Score (Progress Average across all skills)
-    const overallReadiness = window.SkillStore ? SkillStore.getReadiness() : 0;
-    if (scoreBig) scoreBig.textContent = `${overallReadiness}%`;
+    // Update Score
+    if (scoreBig) scoreBig.textContent = `${readinessScore}%`;
 
     // Clear previous
     if (svg) svg.innerHTML = '';
@@ -240,24 +240,60 @@ function hideTooltip() {
 }
 
 // Task & Skill Management
-function renderAssignedTasks() {
-    if (!window.SkillStore) return;
+function renderStreak(state) {
+    const grid = document.getElementById('streak-grid');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    const today = new Date();
+    const daysToShow = 35; // 7 cols x 5 rows
+
+    // Generate last 35 days
+    for (let i = daysToShow - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const count = state.learningActivity?.[dateStr] || 0;
+
+        const cell = document.createElement('div');
+        cell.className = 'streak-cell';
+
+        // Color intensity
+        if (count > 0) cell.classList.add('level-1');
+        if (count > 2) cell.classList.add('level-2');
+        if (count > 4) cell.classList.add('level-3');
+
+        cell.title = `${dateStr}: ${count} activities`;
+        grid.appendChild(cell);
+    }
+}
+
+function renderAssignedTasks(state) {
+    // const state = appState; // Already passed as arg
     const systemList = document.getElementById('system-task-list');
     if (!systemList) return;
 
-    const tasks = SkillStore.getTasks();
-    const systemTasks = tasks.filter(t => t.type === 'system');
+    if (!state.tasks || state.tasks.length === 0) {
+        systemList.innerHTML = '<div class="empty-state-text">No assigned tasks. Generate a roadmap to get started!</div>';
+        return;
+    }
 
-    systemList.innerHTML = systemTasks.map(t => `
+    // Sort: Pending first, then by deadline
+    const sortedTasks = [...state.tasks].sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+    });
+
+    systemList.innerHTML = sortedTasks.map(t => `
         <div class="task-item ${t.completed ? 'completed' : ''}">
-            <div class="task-icon ${t.color}">${t.icon}</div>
+            <div class="task-icon purple">🎯</div>
             <div class="task-content">
                 <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
-                <div class="task-due">${t.due}</div>
+                <div class="task-due">${t.subtitle ? t.subtitle + ' • ' : ''}${t.deadline}</div>
             </div>
             <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'system')">
         </div>
-    `).join('') || '<div class="empty-state-text">No assigned tasks yet.</div>';
+    `).join('');
 }
 
 function renderUserTasks() {
@@ -284,61 +320,66 @@ function renderUserTasks() {
 }
 
 // Global wrapper for initial render
-function renderTasks() {
-    renderAssignedTasks();
-    renderUserTasks();
+function renderTasks(state) {
+    if (!state) return;
+    renderAssignedTasks(state);
+    renderUserTasks(state);
 }
 
-window.toggleTask = (id, type) => {
-    if (window.SkillStore) {
-        SkillStore.toggleTask(id);
-        if (type === 'system') renderAssignedTasks();
-        else renderUserTasks();
-    }
-};
+// Task & Skill Management
+window.toggleTask = async (id, type) => {
+    if (type === 'system') {
+        // Roadmap Task
+        // We need to update Firestore roadmap progress
+        // This logic mimics roadmap-ui.js but from dashboard
+        const state = appState;
+        const currentCompleted = state.roadmapProgress?.completedTopics || [];
+        const isCompleted = currentCompleted.includes(id);
 
-let taskToDeleteId = null;
+        let newCompleted;
+        if (isCompleted) {
+            newCompleted = currentCompleted.filter(t => t !== id);
+        } else {
+            newCompleted = [...currentCompleted, id];
+        }
 
-window.deleteTask = id => {
-    taskToDeleteId = id;
-    const modal = document.getElementById('delete-confirm-modal');
-    if (modal) modal.classList.add('active');
-};
+        // Optimistic Update
+        state.roadmapProgress.completedTopics = newCompleted;
+        state.generateTasksList(); // Regenerate tasks list
+        state.calculateReadiness();
+        state.logActivity(); // Log activity on completion
+        renderDashboard(state); // Re-render immediately
 
-window.closeDeleteModal = () => {
-    taskToDeleteId = null;
-    const modal = document.getElementById('delete-confirm-modal');
-    if (modal) modal.classList.remove('active');
-};
+        // Firestore Update
+        try {
+            const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+            const { db } = await import('./firebase-config.js');
 
-window.confirmDelete = () => {
-    if (taskToDeleteId && window.SkillStore) {
-        SkillStore.deleteTask(taskToDeleteId);
-        renderUserTasks(); // Only refresh personal tasks
-        closeDeleteModal();
-        if (window.showToast) {
-            showToast('Task removed');
+            await setDoc(doc(db, "users", state.user.uid, "roadmap", "progress"), {
+                completedTopics: newCompleted,
+                lastUpdated: new Date()
+            }, { merge: true });
+            console.log('[Dashboard] Task updated in Firestore');
+        } catch (e) {
+            console.error('[Dashboard] Failed to update task:', e);
+            // Revert on failure? For now, just log.
+        }
+
+    } else {
+        // Personal Task
+        if (window.SkillStore) {
+            SkillStore.toggleTask(id);
+            renderUserTasks();
         }
     }
 };
 
-function renderPrioritySkills() {
-    if (!window.SkillStore) return;
-    const skillList = document.getElementById('skill-gaps');
-    if (!skillList) return;
-
-    const skills = SkillStore.getPrioritySkills();
-    skillList.innerHTML = skills.map(s => `
-        <div class="skill-mini-item">
-            <div class="skill-mini-icon">${s.icon || '🚀'}</div>
-            <div class="skill-mini-name">${s.name}</div>
-            <span class="skill-mini-priority ${s.priority === 'Medium' ? 'medium' : ''}">${s.priority}</span>
-            <div onclick="deletePrioritySkill('${s.id}')" style="margin-left: auto; cursor: pointer;">✕</div>
-        </div>
-    `).join('');
+function renderActionItems(state) {
+    if (!state) return;
+    const roadmapDone = state.readinessScore >= 90; // Example threshold
+    const roadmapCard = document.getElementById('action-card-roadmap');
+    if (roadmapCard) roadmapCard.style.display = roadmapDone ? 'none' : 'block';
 }
-
-window.deletePrioritySkill = id => { if (confirm('Remove?')) { SkillStore.deletePrioritySkill(id); renderPrioritySkills(); } };
 
 function updateWeeklyProgress() {
     const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
@@ -351,12 +392,6 @@ function updateWeeklyProgress() {
     if (topicsEl) topicsEl.textContent = topicsDone;
     if (questionsEl) questionsEl.textContent = topicsDone * 5;
     if (timeEl) timeEl.textContent = `${Math.round(topicsDone * 0.75)}h`;
-}
-
-function renderActionItems() {
-    const roadmapDone = localStorage.getItem('nextStep_roadmapCompleted');
-    const roadmapCard = document.getElementById('action-card-roadmap');
-    if (roadmapCard) roadmapCard.style.display = roadmapDone ? 'none' : 'block';
 }
 
 window.DashboardManager = {
