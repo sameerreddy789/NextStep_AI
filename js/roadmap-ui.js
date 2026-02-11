@@ -2,16 +2,41 @@
  * Roadmap UI Manager - Handles interactive elements of the roadmap page
  */
 
+import { auth, db } from './firebase-config.js';
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { appState } from './app-state.js';
+
 let completedTopics = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
 const openWeeks = new Set([0]);
 let totalTaskCount = 0;
 
 // Initialize on DOM Load
-document.addEventListener('DOMContentLoaded', () => {
-    const userRole = localStorage.getItem('userType') || 'student';
-    const isSample = !localStorage.getItem('nextStep_user');
+// Initialize on DOM Load
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize Global State
+    await appState.init();
 
-    if (window.initRoadmap) initRoadmap(userRole, isSample);
+    // Sync local variables from AppState
+    if (appState.roadmapProgress) {
+        completedTopics = appState.roadmapProgress.completedTopics || [];
+        localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
+    }
+
+    const userRole = localStorage.getItem('userType') || 'student';
+    // If we have state.user, we might want to use that role, but for now specific logic is fine.
+    const isSample = !appState.user;
+
+    if (window.initRoadmap) initRoadmap(userRole, isSample, appState.skillGap);
+
+    // Subscribe to updates
+    appState.subscribe(state => {
+        if (state.roadmapProgress && state.roadmapProgress.completedTopics) {
+            completedTopics = state.roadmapProgress.completedTopics;
+            // Update UI if needed, calling updateProgress() which recalculates valid completions
+            if (window.updateProgress) window.updateProgress();
+        }
+    });
 
     // Check for new roadmap success
     const showModal = localStorage.getItem('nextStep_showNewRoadmapModal');
@@ -254,6 +279,9 @@ window.toggleTask = function (taskId, moduleId, checkbox) {
         localStorage.setItem('nextStep_activity_log', JSON.stringify(log));
     }
 
+    // Save to Firestore
+    saveRoadmapToDatabase();
+
     // Sync with Dashboard Tasks
     if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
         SkillStore.syncTaskByTitle(topicName, isNowCompleted);
@@ -306,10 +334,6 @@ window.toggleModule = function (moduleId, taskIds, checkbox) {
             }
         });
     }
-    localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
-    updateModuleMeta(moduleCard, taskIds.length);
-    updateTaskCountsInPlace(topicCard);
-    updateProgress();
 };
 
 function updateModuleMeta(moduleCard, total) {
@@ -382,3 +406,51 @@ window.showRelatedSkills = () => { document.getElementById('skills-panel').class
 window.closeCelebrationModal = () => { ['celebration-modal', 'job-panel', 'skills-panel'].forEach(id => document.getElementById(id).classList.add('hidden')); };
 window.startNewRoadmap = skill => { localStorage.removeItem('nextStep_roadmap_progress'); localStorage.setItem('nextStep_newSkillFocus', skill); localStorage.setItem('nextStep_showNewRoadmapModal', 'true'); closeCelebrationModal(); window.location.reload(); };
 window.closeNewRoadmapModal = () => document.getElementById('new-roadmap-modal').classList.add('hidden');
+
+// Database Integration
+// Database Integration
+async function saveRoadmapToDatabase() {
+    try {
+        const user = appState.user;
+        if (!user) {
+            console.log('[Roadmap] ⚠️ User not logged in, skipping cloud save');
+            return;
+        }
+
+        const activityLog = appState.learningActivity || {}; // Use AppState log, or merge/local?
+        // Actually, log in appState needs to be updated too.
+        // For now, let's sync local log to valid object if appState is empty
+        // But appState.init() should have populated it.
+
+        // Wait, the roadmap-ui modifies 'nextStep_activity_log' in localStorage in toggleTask.
+        // We should probably rely on appState.logActivity() instead?
+        // But toggleTask is here in this file.
+
+        // Let's use the local activity log for now to ensure we capture the click today
+        const localLog = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
+
+        const progressData = {
+            completedTopics: completedTopics,
+            activityLog: localLog,
+            lastUpdated: serverTimestamp()
+        };
+
+        console.log('[Roadmap] Saving progress to Firestore...');
+        await setDoc(doc(db, "users", user.uid, "roadmap", "progress"), progressData, { merge: true });
+
+        // Update AppState
+        appState.roadmapProgress = {
+            completedTopics: completedTopics,
+            activityLog: localLog,
+            lastUpdated: new Date()
+        };
+        // Also update learningActivity in appState so dashboard reflects it immediately
+        appState.learningActivity = localLog;
+        appState.calculateReadiness();
+        appState.notifyListeners(); // This will trigger dashboard update if open
+
+        console.log('[Roadmap] ✅ Progress saved');
+    } catch (error) {
+        console.error('[Roadmap] ❌ Error saving progress:', error);
+    }
+}
