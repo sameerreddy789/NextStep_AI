@@ -121,8 +121,9 @@ const RoadmapEngine = {
                 status: index === 0 ? 'current' : 'upcoming',
                 topics: week.topics.map(t => ({
                     name: t.name,
+                    name: t.name,
                     searchQuery: t.query, // Store query for SERP
-                    items: [t.desc] // Use desc as the first item
+                    items: t.items && t.items.length > 0 ? t.items : [t.desc] // Use granular items if available
                 }))
             }));
         }
