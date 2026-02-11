@@ -673,8 +673,18 @@ Respond with ONLY a JSON array of objects(no markdown):
         "week": 1,
         "title": "Focus: Data Structures Repetitions",
         "topics": [
-            { "name": "Linked Lists", "query": "Linked Lists data structure tutorial for interview", "desc": "Address identified gap in linear data structures." },
-            { "name": "Hash Maps", "query": "Hash Maps implementation guide", "desc": "Core concept reinforcement." }
+            { 
+                "name": "Linked Lists", 
+                "query": "Linked Lists data structure tutorial for interview", 
+                "desc": "Address identified gap in linear data structures.",
+                "items": ["Singly Linked List Operations", "Doubly Linked List", "Cycle Detection", "Reversing a List"]
+            },
+            { 
+                "name": "Hash Maps", 
+                "query": "Hash Maps implementation guide", 
+                "desc": "Core concept reinforcement.",
+                "items": ["Collision Handling", "Internal Implementation", "Common Patterns"]
+            }
         ]
     }
 ]`;
