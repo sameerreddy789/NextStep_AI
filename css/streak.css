@@ -1,0 +1,38 @@
+/* Streak Grid Styles */
+.streak-container {
+    padding: 10px;
+}
+
+.streak-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    grid-auto-flow: column; /* Fill vertically first like GitHub */
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.streak-cell {
+    width: 12px;
+    height: 12px;
+    background-color: rgba(255, 255, 255, 0.05); /* Empty state */
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.streak-cell:hover {
+    transform: scale(1.2);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.streak-cell.level-1 { background-color: rgba(16, 185, 129, 0.4); }
+.streak-cell.level-2 { background-color: rgba(16, 185, 129, 0.7); }
+.streak-cell.level-3 { background-color: rgba(16, 185, 129, 1.0); }
+
+.streak-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 0 4px;
+}
