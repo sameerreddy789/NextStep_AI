@@ -22,6 +22,7 @@ The system extracts skills from resumes through simulated analysis, displays res
 **Tech Stack**:
 - HTML5, CSS3, Vanilla JavaScript (ES6+ with ES Modules)
 - Firebase Auth (Email/Password + Google Sign-In)
+- **Firebase Hosting** (Static asset delivery and global CDN)
 - Cloud Firestore (NoSQL database for user profiles)
 - LocalStorage (client-side caching and offline support)
 - GSAP (smooth animations and transitions)
@@ -81,7 +82,18 @@ The system enforces strict trust boundaries to ensure security:
 - **Firestore** access is controlled by Firebase Security Rules (users can only access their own data)
 - **Data Store** is accessed through store.js utilities only, not directly
 - **Input sanitization** prevents XSS attacks when rendering user data
+- **Input sanitization** prevents XSS attacks when rendering user data
 - **File size limits** (10MB) prevent DoS attacks
+
+### Deployment Architecture
+
+The application adopts a **Serverless Static Site** architecture deployed on **Firebase Hosting**:
+
+1.  **Static Asset Delivery**: HTML, CSS, and JS files are pre-built (or raw ES modules) and served directly from Firebase's SSD-backed global CDN.
+2.  **Edge Caching**: Assets are cached at the nearest edge location to the user, ensuring <100ms load times globally.
+3.  **Atomic Deploys**: Every deployment creates a precise, versioned snapshot. This allows for instant rollbacks if issues are detected.
+4.  **HTTPS Everywhere**: Firebase automatically provisions and manages SSL certificates for secure data transmission.
+
 
 ## Design Decisions
 

@@ -60,6 +60,7 @@ This document covers the resume upload, simulated analysis, results display, int
 - LocalStorage-based data persistence
 - Integration with readiness scoring system
 - Integration with NextStep AI's data model
+- **Production Deployment via Firebase Hosting**
 
 **Out of Scope** (covered by other platform features):
 - Interview module - full practice engine (interview.html)
@@ -409,5 +410,15 @@ These features exist in the platform but are specified separately.
    - THE System SHALL lazy-load heavy components
    - THE System SHALL maintain 60fps animations
    - THE System SHALL minimize JavaScript execution on scroll
+### Requirement 18: Deployment & Hosting (NEW)
 
+**User Story:** As a user, I want to access the platform via a reliable, public URL, so that I can use it from any device without local setup.
+
+#### Acceptance Criteria
+
+1. **Firebase Hosting**: The application SHALL be deployed to Firebase Hosting for global availability.
+2. **CDN Delivery**: Static assets (HTML, CSS, JS) SHALL be served via Firebase's global CDN for low latency.
+3. **SSL Security**: The application SHALL be served over HTTPS with a valid SSL certificate.
+4. **Cache Control**: The hosting configuration SHALL implement appropriate cache-control headers for static assets (long cache for hashed assets, no-cache for HTML).
+5. **Clean URLs**: The hosting configuration SHALL support clean URLs (dropping .html extensions where possible).
 

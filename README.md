@@ -89,6 +89,7 @@ The AI service includes a robust **Fallback Mechanism**. If the Gemini API is ra
 | **Google Gemini API** | Live AI analysis, evaluation, and generation |
 | **SerpAPI** | Real-time market data and learning resources |
 | **Firebase Auth** | Secure User Identity |
+| **Firebase Hosting** | Fast and secure static web hosting |
 | **Cloud Firestore** | Cloud persistence for user profiles |
 | **GSAP** | Sophisticated page transitions and UI animations |
 | **Monaco Editor** | Professional-grade code editing environment |
@@ -157,6 +158,20 @@ NextStep-AI/
 ### Prerequisites
 - A modern web browser (Chrome, Firefox, Edge, Safari)
 - No build tools required! (Uses ES Modules)
+
+### Deployment
+This project is configured for **Firebase Hosting**.
+
+1.  **Install Firebase CLI**
+    ```bash
+    npm install -g firebase-tools
+    ```
+
+2.  **Login and Deploy**
+    ```bash
+    firebase login
+    firebase deploy
+    ```
 
 ### Installation
 
