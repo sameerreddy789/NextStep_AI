@@ -163,16 +163,88 @@ window.openSubtopicPractice = function (sectionTitle, topicName) {
 };
 
 // Initializer
-window.initRoadmap = function (role, isSample, skillGaps = [], aiData = null) {
+window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = null) {
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
 
     // Render Heatmap
     if (window.renderHeatmap) window.renderHeatmap('contribution-graph');
 
-    const sectionsData = isSample
-        ? RoadmapEngine.generateSampleRoadmap(role)
-        : RoadmapEngine.generateFullRoadmap(role, skillGaps, aiData);
+    let sectionsData = null;
+
+    // 1. Try to load persisted roadmap from AppState first
+    if (appState.roadmap && appState.roadmap.weeks) {
+        console.log('[RoadmapUI] 📂 Loading persisted roadmap from AppState');
+        sectionsData = appState.roadmap.weeks;
+    }
+    // 2. If no persisted roadmap, generating one using AI
+    else if (window.GeminiService && appState.user && !isSample) {
+        container.innerHTML = `
+            <div class="roadmap-loading">
+                <div class="loading-spinner"></div>
+                <h3>Building Your Personalized Roadmap...</h3>
+                <p>Analyzing your resume, interview results, and market trends for <strong>${role}</strong>.</p>
+            </div>`;
+
+        try {
+            console.log('[RoadmapUI] 🚀 Starting fresh roadmap generation...');
+
+            // Fetch Resume Data (if not in appState)
+            const resumeData = appState.resumeData || {};
+
+            // analyzing market skills
+            let marketGaps = [];
+            try {
+                // Mock market search data for now (in real app could be SERP results)
+                const mockMarketData = { source: 'LinkedIn/Indeed', date: new Date().toISOString() };
+                const marketAnalysis = await window.GeminiService.analyzeMarketSkills(role, mockMarketData, resumeData.skills || []);
+                if (marketAnalysis && marketAnalysis.mustHave) {
+                    marketGaps = marketAnalysis.mustHave.filter(s => s.status === 'missing');
+                }
+            } catch (err) {
+                console.warn('[RoadmapUI] Market analysis failed, proceeding without it:', err);
+            }
+
+            // Generate Roadmap
+            const generatedWeeks = await window.GeminiService.generatePersonalizedRoadmap(
+                resumeData,
+                skillGaps,
+                marketGaps,
+                role
+            );
+
+            if (generatedWeeks) {
+                sectionsData = window.RoadmapEngine.generateFullRoadmap(role, skillGaps, generatedWeeks);
+
+                // Save to Firestore
+                await setDoc(doc(db, "users", appState.user.uid, "roadmap", "structure"), {
+                    weeks: sectionsData,
+                    totalTasks: sectionsData.reduce((acc, w) => acc + w.topics.reduce((t, m) => t + m.items.length, 0), 0),
+                    generatedAt: serverTimestamp(),
+                    role: role
+                });
+
+                // Update AppState
+                appState.roadmap = { weeks: sectionsData };
+            }
+        } catch (e) {
+            console.error('[RoadmapUI] ❌ Generation failed:', e);
+            // Fallback to static
+            sectionsData = window.RoadmapEngine.generateFullRoadmap(role, skillGaps, null);
+        }
+    }
+    // 3. Fallback / Guest Mode
+    else {
+        sectionsData = isSample
+            ? RoadmapEngine.generateSampleRoadmap(role)
+            : RoadmapEngine.generateFullRoadmap(role, skillGaps, aiData);
+    }
+
+    // Render logic (using sectionsData) ...
+    // Verify sectionsData is valid
+    if (!sectionsData || !Array.isArray(sectionsData)) {
+        sectionsData = RoadmapEngine.generateSampleRoadmap(role);
+    }
 
     container.innerHTML = sectionsData.map((section, idx) => {
         const isDSA = section.title.includes('Data Structures') || idx === 1;

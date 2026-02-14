@@ -652,38 +652,34 @@ Respond with ONLY a JSON object:
     /**
      * Generate a personalized roadmap based on resume, interview gaps, and target role
      */
-    async generatePersonalizedRoadmap(resumeData, interviewGaps, targetRole) {
+    async generatePersonalizedRoadmap(resumeData, interviewGaps, marketGaps, targetRole) {
         console.log('[GeminiService] 🗺️ Generating personalized roadmap...');
 
-        const prompt = `Create a personalized 6 - week learning roadmap for a ${targetRole} role.
+        const prompt = `Create a detailed, personalized 6-week learning roadmap for a ${targetRole} role.
 
 User Context:
-1. Resume Skills: ${JSON.stringify(resumeData.skills || [])}
-2. Interview Weaknesses(Focus Items): ${JSON.stringify(interviewGaps || [])}
+1.  **Resume Skills**: ${JSON.stringify(resumeData.skills || [])}
+2.  **Interview Weaknesses**: ${JSON.stringify(interviewGaps || [])}
+3.  **Role/Market Gaps**: ${JSON.stringify(marketGaps || [])}
 
 Instructions:
-- Weeks 1 - 2 should prioritize fixing the "Interview Weaknesses".
-- Weeks 3 - 4 should cover core "Must-Have" skills for ${targetRole} that are missing from the Resume.
-- Weeks 5 - 6 should cover advanced / future - proof topics.
-- For EACH topic, provide a specifically generated search query for finding efficient tutorials.
+-   **Weeks 1-2 (Foundation & Fixes)**: Prioritize fixing "Interview Weaknesses" and critical "Role Gaps" (Must-Haves).
+-   **Weeks 3-4 (Core Competency)**: Cover remaining "Must-Have" market skills that are missing from the Resume.
+-   **Weeks 5-6 (Advanced & Future)**: Cover "Good-to-Have" skills and advanced/future-proof topics.
+-   **Structure**: Each week should have a clear focus title and 2-3 detailed modules.
+-   **Content**: For EACH topic, provide a specifically generated search query for finding efficient tutorials.
 
-Respond with ONLY a JSON array of objects(no markdown):
+Respond with ONLY a JSON array of objects (no markdown):
 [
     {
         "week": 1,
-        "title": "Focus: Data Structures Repetitions",
+        "title": "Focus: Data Structures & Weaknesses",
         "topics": [
             { 
-                "name": "Linked Lists", 
-                "query": "Linked Lists data structure tutorial for interview", 
+                "name": "Linked Lists Mastery", 
+                "query": "Linked Lists in depth tutorial for interviews", 
                 "desc": "Address identified gap in linear data structures.",
-                "items": ["Singly Linked List Operations", "Doubly Linked List", "Cycle Detection", "Reversing a List"]
-            },
-            { 
-                "name": "Hash Maps", 
-                "query": "Hash Maps implementation guide", 
-                "desc": "Core concept reinforcement.",
-                "items": ["Collision Handling", "Internal Implementation", "Common Patterns"]
+                "items": ["Singly vs Doubly Linked List", "Cycle Detection", "Reversing a List"]
             }
         ]
     }
