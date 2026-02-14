@@ -1,82 +1,85 @@
 /**
- * Pill Navigation - Vanilla JS
- * Animated pill-style navigation with GSAP
+ * Pill Navigation - Sliding Island
+ * Premium 'Mac-like' sliding pill animation
  */
 
 class PillNav {
     constructor(options = {}) {
         this.options = {
             containerSelector: '#pill-nav-container',
-            logo: options.logo || '🚀',
-            logoAlt: options.logoAlt || 'Logo',
-            items: options.items || [],
             activeHref: options.activeHref || '/',
-            ease: options.ease || 'power3.out',
-            baseColor: options.baseColor || '#ffffff',
-            pillColor: options.pillColor || '#6366f1',
-            hoveredPillTextColor: options.hoveredPillTextColor || '#ffffff',
-            pillTextColor: options.pillTextColor || '#ffffff',
-            ...options
+            items: options.items || [],
         };
-
-        this.circleRefs = [];
-        this.timelines = [];
-        this.isMobileMenuOpen = false;
 
         this.init();
     }
 
     init() {
         this.render();
-        this.setupAnimations();
-        this.setupEventListeners();
+        this.cacheDOM();
+        this.setupInteractions();
+        this.setupScrollSpy();
+        this.setInitialActive();
     }
 
     render() {
         const container = document.querySelector(this.options.containerSelector);
         if (!container) return;
 
-        const { logo, logoAlt, items, activeHref, baseColor, pillColor, hoveredPillTextColor, pillTextColor } = this.options;
+        const { items, activeHref } = this.options;
+        const logo = '🚀';
+
+        // Split items: Links vs CTA
+        const navLinks = items.slice(0, items.length - 1);
+        const ctaItem = items[items.length - 1];
 
         container.innerHTML = `
-            <nav class="pill-nav" style="--base: ${baseColor}; --pill-bg: ${pillColor}; --hover-text: ${hoveredPillTextColor}; --pill-text: ${pillTextColor};">
+            <nav class="pill-nav">
+                <!-- Branding -->
                 <div class="nav-branding">
-                    <a class="pill-logo" href="${items[0]?.href || '/'}" aria-label="Home">
-                        ${logo.includes('.') ? `<img src="${logo}" alt="${logoAlt}">` : `<span class="logo-emoji">${logo}</span>`}
+                    <a class="pill-logo" href="index.html" aria-label="Home">
+                        <span class="logo-emoji">${logo}</span>
                     </a>
                     <span class="nav-brand-name">NextStep AI</span>
                 </div>
 
-                <div class="pill-nav-items desktop-only">
+                <!-- Center Links (Desktop) -->
+                <div class="pill-nav-items">
                     <ul class="pill-list" role="menubar">
-                        ${items.map((item, i) => `
-                            <li role="none">
-                                <a role="menuitem" href="${item.href}" 
+                        <div class="nav-slider-pill"></div> <!-- The sliding background -->
+                        ${navLinks.map((item, i) => `
+                            <li class="pill-link-item">
+                                <a href="${item.href}" 
                                    class="pill${activeHref === item.href ? ' is-active' : ''}"
-                                   data-index="${i}">
-                                    <span class="hover-circle" aria-hidden="true"></span>
-                                    <span class="label-stack">
-                                        <span class="pill-label">${item.label}</span>
-                                        <span class="pill-label-hover" aria-hidden="true">${item.label}</span>
-                                    </span>
+                                   data-target="${item.href.startsWith('#') ? item.href.substring(1) : ''}">
+                                    ${item.label}
                                 </a>
                             </li>
                         `).join('')}
                     </ul>
                 </div>
 
-                <button class="mobile-menu-button mobile-only" aria-label="Toggle menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
+                <!-- Right CTA + Mobile Toggle -->
+                <div class="nav-cta-container">
+                    <a href="${ctaItem.href}" class="cta-button desktop-only">
+                        ${ctaItem.label}
+                    </a>
+                    <button class="mobile-menu-button mobile-only" aria-label="Menu">
+                        <svg width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
             </nav>
 
-            <div class="mobile-menu-popover mobile-only" style="--base: ${baseColor}; --pill-bg: ${pillColor}; --hover-text: ${hoveredPillTextColor}; --pill-text: ${pillTextColor};">
+            <!-- Mobile Menu -->
+            <div class="mobile-menu-popover">
                 <ul class="mobile-menu-list">
                     ${items.map((item) => `
                         <li>
-                            <a href="${item.href}" 
-                               class="mobile-menu-link${activeHref === item.href ? ' is-active' : ''}">
+                            <a href="${item.href}" class="mobile-menu-link">
                                 ${item.label}
                             </a>
                         </li>
@@ -86,184 +89,141 @@ class PillNav {
         `;
     }
 
-    setupAnimations() {
-        const pills = document.querySelectorAll('.pill');
-        const totalPills = pills.length;
+    cacheDOM() {
+        this.nav = document.querySelector('.pill-nav');
+        this.pillList = this.nav.querySelector('.pill-list');
+        this.slider = this.nav.querySelector('.nav-slider-pill');
+        this.links = this.nav.querySelectorAll('.pill-list .pill');
+        this.mobileBtn = this.nav.querySelector('.mobile-menu-button');
+        this.mobileMenu = document.querySelector('.mobile-menu-popover');
+    }
 
-        pills.forEach((pill, i) => {
-            // Skip animation for the last item (CTA button)
-            if (i === totalPills - 1) {
-                this.timelines[i] = null;
-                return;
-            }
+    setupInteractions() {
+        // Link Hover Effects
+        this.links.forEach((link) => {
+            link.addEventListener('mouseenter', (e) => this.moveSliderTo(e.target));
+        });
 
-            const circle = pill.querySelector('.hover-circle');
-            const label = pill.querySelector('.pill-label');
-            const hoverLabel = pill.querySelector('.pill-label-hover');
+        // Reset on list leave
+        this.pillList.addEventListener('mouseleave', () => this.resetSlider());
 
-            if (!circle) return;
-
-            this.circleRefs[i] = circle;
-
-            const rect = pill.getBoundingClientRect();
-            const { width: w, height: h } = rect;
-            const R = ((w * w) / 4 + h * h) / (2 * h);
-            const D = Math.ceil(2 * R) + 2;
-            const delta = Math.ceil(R - Math.sqrt(Math.max(0, R * R - (w * w) / 4))) + 1;
-            const originY = D - delta;
-
-            circle.style.width = `${D}px`;
-            circle.style.height = `${D}px`;
-            circle.style.bottom = `-${delta}px`;
-
-            gsap.set(circle, {
-                xPercent: -50,
-                scale: 0,
-                transformOrigin: `50% ${originY}px`
+        // Mobile Menu
+        if (this.mobileBtn) {
+            this.mobileBtn.addEventListener('click', () => {
+                this.mobileMenu.classList.toggle('is-open');
             });
+        }
 
-            if (label) gsap.set(label, { y: 0 });
-            if (hoverLabel) gsap.set(hoverLabel, { y: h + 12, opacity: 0 });
-
-            // Create timeline
-            const tl = gsap.timeline({ paused: true });
-
-            tl.to(circle, {
-                scale: 1.2,
-                xPercent: -50,
-                duration: 0.4,
-                ease: this.options.ease
-            }, 0);
-
-            if (label) {
-                tl.to(label, {
-                    y: -(h + 8),
-                    duration: 0.4,
-                    ease: this.options.ease
-                }, 0);
+        // Close mobile menu on click outside
+        document.addEventListener('click', (e) => {
+            if (this.mobileMenu.classList.contains('is-open') &&
+                !this.mobileMenu.contains(e.target) &&
+                !this.mobileBtn.contains(e.target)) {
+                this.mobileMenu.classList.remove('is-open');
             }
-
-            if (hoverLabel) {
-                gsap.set(hoverLabel, { y: Math.ceil(h + 100), opacity: 0 });
-                tl.to(hoverLabel, {
-                    y: 0,
-                    opacity: 1,
-                    duration: 0.4,
-                    ease: this.options.ease
-                }, 0);
-            }
-
-            this.timelines[i] = tl;
         });
     }
 
+    moveSliderTo(target) {
+        if (!target) {
+            this.slider.style.opacity = '0';
+            return;
+        }
 
-    setupEventListeners() {
-        // Pill hover events
-        document.querySelectorAll('.pill').forEach((pill, i) => {
-            pill.addEventListener('mouseenter', () => this.handleEnter(i));
-            pill.addEventListener('mouseleave', () => this.handleLeave(i));
+        // Get relative position within the UL
+        const listRect = this.pillList.getBoundingClientRect();
+        const itemRect = target.getBoundingClientRect();
+
+        const offsetLeft = itemRect.left - listRect.left;
+        const width = itemRect.width;
+
+        this.slider.style.opacity = '1';
+        this.slider.style.transform = `translateX(${offsetLeft}px)`;
+        this.slider.style.width = `${width}px`;
+
+        // Add transition usually via CSS, but ensure opacity logic holds
+    }
+
+    resetSlider() {
+        // Find active link
+        const activeLink = this.nav.querySelector('.pill-list .pill.is-active');
+        if (activeLink) {
+            this.moveSliderTo(activeLink);
+        } else {
+            this.slider.style.opacity = '0';
+        }
+    }
+
+    setInitialActive() {
+        // Simple timeout to ensure layout is ready
+        setTimeout(() => this.resetSlider(), 100);
+    }
+
+    setupScrollSpy() {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.pill-list .pill');
+
+        if (sections.length === 0) return;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    this.updateActiveLink(id);
+                }
+            });
+        }, { rootMargin: '-30% 0px -60% 0px' }); // Adjusted for accuracy
+
+        sections.forEach(section => observer.observe(section));
+
+        // Handle scroll to top for Home
+        window.addEventListener('scroll', () => {
+            if (window.scrollY < 100) {
+                const homeLink = document.querySelector('.pill-list .pill[href="index.html"]');
+                if (homeLink && !homeLink.classList.contains('is-active')) {
+                    this.updateActiveLinkState(homeLink);
+                }
+            }
+        });
+    }
+
+    updateActiveLink(id) {
+        // Find link matching the ID (conceptual match)
+        // Usually href="#id" or data-target="id"
+        // But our code puts data-target on the link
+        let targetLink = null;
+        this.links.forEach(link => {
+            if (link.dataset.target === id) {
+                targetLink = link;
+            }
         });
 
-        // Mobile menu toggle
-        const mobileBtn = document.querySelector('.mobile-menu-button');
-        if (mobileBtn) {
-            mobileBtn.addEventListener('click', () => this.toggleMobileMenu());
-        }
-
-        // Resize handler
-        window.addEventListener('resize', () => this.setupAnimations());
-
-        // Logo hover
-        const logo = document.querySelector('.pill-logo img, .pill-logo .logo-emoji');
-        if (logo) {
-            document.querySelector('.pill-logo').addEventListener('mouseenter', () => {
-                gsap.to(logo, { rotate: 360, duration: 0.3, ease: this.options.ease });
-            });
+        if (targetLink) {
+            this.updateActiveLinkState(targetLink);
         }
     }
 
-    handleEnter(i) {
-        const tl = this.timelines[i];
-        if (tl) {
-            tl.tweenTo(tl.duration(), { duration: 0.3, ease: this.options.ease });
-        }
-    }
-
-    handleLeave(i) {
-        const tl = this.timelines[i];
-        if (tl) {
-            tl.tweenTo(0, { duration: 0.2, ease: this.options.ease });
-        }
-    }
-
-    toggleMobileMenu() {
-        this.isMobileMenuOpen = !this.isMobileMenuOpen;
-
-        const hamburger = document.querySelector('.mobile-menu-button');
-        const menu = document.querySelector('.mobile-menu-popover');
-        const lines = hamburger?.querySelectorAll('.hamburger-line');
-
-        if (lines) {
-            if (this.isMobileMenuOpen) {
-                gsap.to(lines[0], { rotation: 45, y: 3, duration: 0.3, ease: this.options.ease });
-                gsap.to(lines[1], { rotation: -45, y: -3, duration: 0.3, ease: this.options.ease });
-            } else {
-                gsap.to(lines[0], { rotation: 0, y: 0, duration: 0.3, ease: this.options.ease });
-                gsap.to(lines[1], { rotation: 0, y: 0, duration: 0.3, ease: this.options.ease });
-            }
-        }
-
-        if (menu) {
-            if (this.isMobileMenuOpen) {
-                gsap.set(menu, { visibility: 'visible' });
-                gsap.fromTo(menu,
-                    { opacity: 0, y: 10 },
-                    { opacity: 1, y: 0, duration: 0.3, ease: this.options.ease }
-                );
-            } else {
-                gsap.to(menu, {
-                    opacity: 0,
-                    y: 10,
-                    duration: 0.2,
-                    ease: this.options.ease,
-                    onComplete: () => gsap.set(menu, { visibility: 'hidden' })
-                });
-            }
+    updateActiveLinkState(linkElement) {
+        this.links.forEach(l => l.classList.remove('is-active'));
+        linkElement.classList.add('is-active');
+        // Only move slider if we are not hovering (to avoid conflict)
+        if (!this.pillList.matches(':hover')) {
+            this.moveSliderTo(linkElement);
         }
     }
 }
 
-// Auto-initialize
+// Init
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('pill-nav-container')) {
         new PillNav({
-            logo: '🚀',
-            logoAlt: 'NextStep AI',
             items: [
                 { label: 'Home', href: 'index.html' },
-                { label: 'How It Works', href: '#how-it-works' },
                 { label: 'Features', href: '#features' },
+                { label: 'How It Works', href: '#how-it-works' },
                 { label: 'Get Started', href: 'auth.html' }
             ],
-            activeHref: 'index.html',
-            baseColor: '#0a0a12',
-            pillColor: '#6366f1',
-            hoveredPillTextColor: '#ffffff',
-            pillTextColor: '#ffffff'
+            activeHref: 'index.html'
         });
     }
-
-    // Intercept clicks on auth.html links - redirect to dashboard if already logged in
-    document.addEventListener('click', (e) => {
-        const link = e.target.closest('a[href="auth.html"]');
-        if (link) {
-            // Check if user is already logged in
-            const userData = localStorage.getItem('nextStep_user');
-            if (userData) {
-                e.preventDefault();
-                window.location.href = 'dashboard.html';
-            }
-        }
-    });
 });
