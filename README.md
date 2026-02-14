@@ -156,8 +156,8 @@ NextStep-AI/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- A modern web browser (Chrome, Firefox, Edge, Safari)
-- No build tools required! (Uses ES Modules)
+- Node.js (v14 or higher)
+- npm (Node Package Manager)
 
 ### Deployment
 This project is configured for **Firebase Hosting**.
@@ -185,9 +185,21 @@ This project is configured for **Firebase Hosting**.
    cd CareerPilot
    ```
 
-3. **Open in browser**
-   - Simply open `index.html` in your browser
-   - **Recommended:** Use VS Code "Live Server" to handle ES Modules gracefully
+3. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+   Open http://localhost:5173 to view the app.
+
+5. **Build for Production**
+   ```bash
+   npm run build
+   ```
 
 ---
 
@@ -262,4 +274,3 @@ Built with ❤️ for Hackathon
 <p align="center">
   <strong>© 2026 NextStep AI. All rights reserved.</strong>
 </p>
-# test
