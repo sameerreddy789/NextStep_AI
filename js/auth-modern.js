@@ -102,6 +102,52 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // USER-FRIENDLY ERROR MESSAGES
+    // ==========================================
+    function getAuthErrorMessage(error) {
+        const code = error.code || '';
+        switch (code) {
+            // Login errors
+            case 'auth/wrong-password':
+            case 'auth/invalid-credential':
+                return 'Incorrect password. Please try again.';
+            case 'auth/user-not-found':
+                return 'No account found with this email. Please sign up first.';
+            case 'auth/invalid-email':
+                return 'Please enter a valid email address.';
+            case 'auth/user-disabled':
+                return 'This account has been disabled. Please contact support.';
+            case 'auth/too-many-requests':
+                return 'Too many failed attempts. Please try again after a few minutes.';
+
+            // Signup errors
+            case 'auth/email-already-in-use':
+                return 'An account with this email already exists. Try signing in instead.';
+            case 'auth/weak-password':
+                return 'Password is too weak. Please use at least 6 characters.';
+            case 'auth/operation-not-allowed':
+                return 'This sign-in method is not enabled. Please contact support.';
+
+            // Google Auth errors
+            case 'auth/popup-closed-by-user':
+                return 'Sign-in popup was closed. Please try again.';
+            case 'auth/popup-blocked':
+                return 'Sign-in popup was blocked by your browser. Please allow popups and try again.';
+            case 'auth/cancelled-popup-request':
+                return 'Sign-in was cancelled. Please try again.';
+            case 'auth/account-exists-with-different-credential':
+                return 'An account already exists with this email using a different sign-in method.';
+
+            // Network errors
+            case 'auth/network-request-failed':
+                return 'Network error. Please check your internet connection and try again.';
+
+            default:
+                return 'Something went wrong. Please try again.';
+        }
+    }
+
+    // ==========================================
     // FIREBASE AUTH LOGIC
     // ==========================================
 
@@ -121,11 +167,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            // FirebaseErrorHandler.handleFirebaseError(error, 'Login failed');
+            const friendlyMessage = getAuthErrorMessage(error);
             if (window.Toast) {
-                window.Toast.show(error.message || 'Login failed', 'error');
+                window.Toast.show(friendlyMessage, 'error');
             } else {
-                alert(error.message || 'Login failed');
+                alert(friendlyMessage);
             }
             btn.disabled = false;
             btn.textContent = "Sign In";
@@ -162,11 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            // FirebaseErrorHandler.handleFirebaseError(error, 'Signup failed');
+            const friendlyMessage = getAuthErrorMessage(error);
             if (window.Toast) {
-                window.Toast.show(error.message || 'Signup failed', 'error');
+                window.Toast.show(friendlyMessage, 'error');
             } else {
-                alert(error.message || 'Signup failed');
+                alert(friendlyMessage);
             }
             btn.disabled = false;
             btn.textContent = "Create Account";
@@ -182,11 +228,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error(error);
-            // FirebaseErrorHandler.handleFirebaseError(error, 'Google sign-in failed');
+            const friendlyMessage = getAuthErrorMessage(error);
             if (window.Toast) {
-                window.Toast.show(error.message || 'Google sign-in failed', 'error');
+                window.Toast.show(friendlyMessage, 'error');
             } else {
-                alert(error.message || 'Google sign-in failed');
+                alert(friendlyMessage);
             }
         }
     };

@@ -167,8 +167,7 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
 
-    // Render Heatmap
-    if (window.renderHeatmap) window.renderHeatmap('contribution-graph');
+
 
     let sectionsData = null;
 
