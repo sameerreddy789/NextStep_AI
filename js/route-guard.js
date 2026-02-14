@@ -13,8 +13,47 @@
 (function () {
     const CURRENT_PAGE = window.location.pathname.split('/').pop();
 
-    // Allow Auth page
-    if (CURRENT_PAGE === 'auth.html' || CURRENT_PAGE === '') return;
+    // Allow public pages
+    if (CURRENT_PAGE === 'auth.html' || CURRENT_PAGE === '' || CURRENT_PAGE === 'index.html') return;
+
+    // Quick auth check: if no user data in localStorage, redirect immediately
+    const storedUser = localStorage.getItem('nextStep_user');
+    if (!storedUser) {
+        window.location.href = 'auth.html';
+        return;
+    }
+
+    // Async Firebase auth verification (catches stale localStorage)
+    import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js").then(({ getAuth, onAuthStateChanged }) => {
+        import("https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js").then(({ initializeApp }) => {
+            // Use existing app if available, or init from window.ENV
+            const cfg = window.ENV || {};
+            try {
+                const app = initializeApp({
+                    apiKey: cfg.VITE_FIREBASE_API_KEY,
+                    authDomain: cfg.VITE_FIREBASE_AUTH_DOMAIN,
+                    projectId: cfg.VITE_FIREBASE_PROJECT_ID,
+                }, 'route-guard-check');
+                const authInstance = getAuth(app);
+                onAuthStateChanged(authInstance, (user) => {
+                    if (!user && CURRENT_PAGE !== 'auth.html' && CURRENT_PAGE !== 'index.html' && CURRENT_PAGE !== '') {
+                        // Firebase says no user — clear stale localStorage and redirect
+                        localStorage.removeItem('nextStep_user');
+                        localStorage.removeItem('nextStep_onboardingCompleted');
+                        localStorage.removeItem('nextStep_resume');
+                        localStorage.removeItem('nextStep_interview');
+                        localStorage.removeItem('nextStep_roadmapCompleted');
+                        window.location.href = 'auth.html';
+                    }
+                });
+            } catch (e) {
+                // App may already exist, which is fine
+                console.warn('[RouteGuard] Auth check skipped:', e.message);
+            }
+        });
+    }).catch(() => {
+        console.warn('[RouteGuard] Could not load Firebase Auth for verification');
+    });
 
     // Check LocalStorage Flags
     const state = {
@@ -35,91 +74,110 @@
     function showBlockedPopup(title, message, redirectUrl) {
         // Ensure DOM is ready before appending
         const appendPopup = () => {
-            // Create popup overlay
+            // Create popup overlay using safe DOM methods (no innerHTML for dynamic content)
             const overlay = document.createElement('div');
             overlay.id = 'route-guard-popup';
-            overlay.innerHTML = `
-                <div class="rg-popup-overlay">
-                    <div class="rg-popup">
-                        <div class="rg-popup-icon">🔒</div>
-                        <h3 class="rg-popup-title">${title}</h3>
-                        <p class="rg-popup-message">${message}</p>
-                        <button class="rg-popup-btn" onclick="window.location.href='${redirectUrl}'">
-                            Continue →
-                        </button>
-                    </div>
-                </div>
-                <style>
-                    .rg-popup-overlay {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        bottom: 0;
-                        background: rgba(0, 0, 0, 0.85);
-                        backdrop-filter: blur(8px);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        z-index: 99999;
-                        animation: rgFadeIn 0.3s ease;
-                    }
-                    .rg-popup {
-                        background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%);
-                        border: 1px solid rgba(99, 102, 241, 0.3);
-                        border-radius: 24px;
-                        padding: 40px;
-                        max-width: 420px;
-                        width: 90%;
-                        text-align: center;
-                        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
-                        animation: rgSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-                    }
-                    .rg-popup-icon {
-                        font-size: 48px;
-                        margin-bottom: 16px;
-                    }
-                    .rg-popup-title {
-                        font-size: 22px;
-                        font-weight: 700;
-                        color: #fff;
-                        margin-bottom: 12px;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .rg-popup-message {
-                        color: #94a3b8;
-                        font-size: 15px;
-                        line-height: 1.6;
-                        margin-bottom: 24px;
-                        font-family: 'Inter', sans-serif;
-                    }
-                    .rg-popup-btn {
-                        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                        color: white;
-                        border: none;
-                        padding: 14px 32px;
-                        border-radius: 12px;
-                        font-size: 15px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        font-family: 'Inter', sans-serif;
-                        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-                    }
-                    .rg-popup-btn:hover {
-                        transform: translateY(-2px);
-                        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
-                    }
-                    @keyframes rgFadeIn {
-                        from { opacity: 0; }
-                        to { opacity: 1; }
-                    }
-                    @keyframes rgSlideUp {
-                        from { transform: translateY(30px); opacity: 0; }
-                        to { transform: translateY(0); opacity: 1; }
-                    }
-                </style>
+
+            const popupOverlay = document.createElement('div');
+            popupOverlay.className = 'rg-popup-overlay';
+
+            const popup = document.createElement('div');
+            popup.className = 'rg-popup';
+
+            const icon = document.createElement('div');
+            icon.className = 'rg-popup-icon';
+            icon.textContent = '🔒';
+
+            const heading = document.createElement('h3');
+            heading.className = 'rg-popup-title';
+            heading.textContent = title;
+
+            const msg = document.createElement('p');
+            msg.className = 'rg-popup-message';
+            msg.textContent = message;
+
+            const btn = document.createElement('button');
+            btn.className = 'rg-popup-btn';
+            btn.textContent = 'Continue →';
+            btn.addEventListener('click', () => { window.location.href = redirectUrl; });
+
+            popup.append(icon, heading, msg, btn);
+            popupOverlay.appendChild(popup);
+            overlay.appendChild(popupOverlay);
+
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .rg-popup-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.85);
+                    backdrop-filter: blur(8px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 99999;
+                    animation: rgFadeIn 0.3s ease;
+                }
+                .rg-popup {
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16162a 100%);
+                    border: 1px solid rgba(99, 102, 241, 0.3);
+                    border-radius: 24px;
+                    padding: 40px;
+                    max-width: 420px;
+                    width: 90%;
+                    text-align: center;
+                    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(99, 102, 241, 0.1);
+                    animation: rgSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                .rg-popup-icon {
+                    font-size: 48px;
+                    margin-bottom: 16px;
+                }
+                .rg-popup-title {
+                    font-size: 22px;
+                    font-weight: 700;
+                    color: #fff;
+                    margin-bottom: 12px;
+                    font-family: 'Inter', sans-serif;
+                }
+                .rg-popup-message {
+                    color: #94a3b8;
+                    font-size: 15px;
+                    line-height: 1.6;
+                    margin-bottom: 24px;
+                    font-family: 'Inter', sans-serif;
+                }
+                .rg-popup-btn {
+                    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                    color: white;
+                    border: none;
+                    padding: 14px 32px;
+                    border-radius: 12px;
+                    font-size: 15px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-family: 'Inter', sans-serif;
+                    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+                }
+                .rg-popup-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+                }
+                @keyframes rgFadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes rgSlideUp {
+                    from { transform: translateY(30px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
             `;
+            overlay.appendChild(style);
             document.body.appendChild(overlay);
         };
 

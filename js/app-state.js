@@ -202,7 +202,13 @@ export const appState = {
     reset() {
         this.user = null;
         this.resumeData = null;
+        this.skillGap = null;
         this.interviews = [];
+        this.roadmap = null;
+        this.roadmapProgress = null;
+        this.tasks = [];
+        this.readinessScore = 0;
+        this.learningActivity = {};
         this.notifyListeners();
     }
 };

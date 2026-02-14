@@ -713,6 +713,15 @@
     </footer>
 
     <script src="js/env-config.js"></script>
+    <script>
+        // Redirect logged-in users to dashboard
+        (function () {
+            const user = localStorage.getItem('nextStep_user');
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        })();
+    </script>
     <script src="js/pill-nav.js"></script>
     <script src="js/card-stack.js"></script>
     <script src="js/orbital-timeline.js"></script>

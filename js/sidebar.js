@@ -319,13 +319,10 @@ window.closeLogoutModal = function () {
 };
 
 window.confirmLogout = function () {
-    // Clear all app specific keys
-    const keysToRemove = [
-        'userType', 'userProfile', 'nextStep_user', 'nextStep_resume',
-        'nextStep_profile', 'nextStep_interview', 'nextStep_skills',
-        'nextStep_tasks', 'nextStep_roadmapCompleted', 'nextStep_roadmap'
-    ];
-    keysToRemove.forEach(key => localStorage.removeItem(key));
+    // Clear all app-specific localStorage keys (prefix-based wipe)
+    Object.keys(localStorage)
+        .filter(k => k.startsWith('nextStep_') || k === 'userType' || k === 'userProfile' || k === 'pendingResumeFile')
+        .forEach(k => localStorage.removeItem(k));
 
     // Also sign out from AppState/Firebase
     try {

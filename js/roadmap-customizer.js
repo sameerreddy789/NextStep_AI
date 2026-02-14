@@ -32,7 +32,11 @@ window.roadmapCustomizer = {
         const btn = document.getElementById(this.btnId);
 
         if (!prompt) {
-            alert('Please enter a request for the AI.');
+            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
+                UIUtils.showToast('Please enter a request for the AI.', 'warning');
+            } else {
+                alert('Please enter a request for the AI.');
+            }
             return;
         }
 

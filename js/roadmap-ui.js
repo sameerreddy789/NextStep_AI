@@ -12,7 +12,6 @@ const openWeeks = new Set([0]);
 let totalTaskCount = 0;
 
 // Initialize on DOM Load
-// Initialize on DOM Load
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Global State
     await appState.init();

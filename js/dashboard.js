@@ -423,7 +423,11 @@ window.saveNewTask = () => {
     const title = titleInput.value.trim();
 
     if (!title) {
-        alert('Please enter a task title');
+        if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
+            UIUtils.showToast('Please enter a task title', 'warning');
+        } else {
+            alert('Please enter a task title');
+        }
         return;
     }
 

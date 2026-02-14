@@ -688,81 +688,31 @@
         import { auth, db } from './js/firebase-config.js';
         import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { appState } from './js/app-state.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const hasInterview = localStorage.getItem('nextStep_interview');
-            const hasResume = localStorage.getItem('nextStep_resume');
+            // Wait for appState to initialize
+            const isLoggedIn = await appState.init();
 
-            // Check for existing AI roadmap
-            let aiRoadmap = JSON.parse(localStorage.getItem('nextStep_ai_roadmap') || 'null');
-
-            const roadmapData = JSON.parse(localStorage.getItem('nextStep_roadmap') || '{"skills":[]}');
-            const skillGaps = roadmapData.skills || [];
+            const hasInterview = isLoggedIn && (appState.interviews.length > 0 || localStorage.getItem('nextStep_interview'));
+            const hasResume = isLoggedIn && (appState.resumeData || localStorage.getItem('nextStep_resume'));
 
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const userRole = userData.targetRole || 'sde';
 
+            const roadmapData = JSON.parse(localStorage.getItem('nextStep_roadmap') || '{"skills":[]}');
+            const skillGaps = appState.skillGap || roadmapData.skills || [];
+
             // Gated Access Logic
-            if (!hasInterview && !hasResume && !aiRoadmap) {
+            if (!hasInterview && !hasResume) {
                 document.getElementById('gated-modal').classList.remove('hidden');
             } else {
-                // If we have interview data but NO AI Roadmap yet, let's generate it!
-                if (!aiRoadmap && (hasInterview || hasResume)) {
-                    console.log("[Roadmap] 🤖 AI Generation Triggered...");
+                // Let roadmap-ui.js handle ALL generation logic (single orchestrator)
+                await initRoadmap(userRole, false, skillGaps);
 
-                    // Show a non-blocking toast or loading indicator
-                    const loader = document.createElement('div');
-                    loader.id = 'ai-roadmap-loader';
-                    loader.innerHTML = `
-                        <div style="position: fixed; bottom: 24px; right: 24px; background: var(--bg-card); border: 1px solid var(--accent-primary); padding: 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; gap: 12px; animation: slideInRight 0.5s ease;">
-                            <div class="loader-spinner" style="width: 20px; height: 20px; border: 2px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <div>
-                                <div style="font-weight: 600; color: #fff;">Building Personal Plan...</div>
-                                <div style="font-size: 12px; color: var(--text-muted);">Analyzing interview & resume</div>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(loader);
-
-                    try {
-                        const resumeData = JSON.parse(localStorage.getItem('nextStep_resume') || '{}');
-                        const interviewData = JSON.parse(localStorage.getItem('nextStep_interview_autosave') || '{}');
-
-                        // Use Gemini to generate
-                        // Note: We need to ensure GeminiService is ready. It inits on DOMContentLoaded.
-                        // We might need a slight delay or check.
-                        if (window.GeminiService) {
-                            aiRoadmap = await window.GeminiService.generatePersonalizedRoadmap(
-                                resumeData,
-                                skillGaps, // Using skillGaps as proxy for interview weaknesses 
-                                userRole
-                            );
-
-                            if (aiRoadmap) {
-                                localStorage.setItem('nextStep_ai_roadmap', JSON.stringify(aiRoadmap));
-                                console.log("[Roadmap] ✅ AI Roadmap Saved!");
-                            }
-                        }
-                    } catch (err) {
-                        console.error("[Roadmap] ❌ Generation failed:", err);
-                    } finally {
-                        const loaderEl = document.getElementById('ai-roadmap-loader');
-                        if (loaderEl) loaderEl.remove();
-                    }
-                }
-
-                // Initialize UI with (potentially new) AI Data
-                // Pass aiRoadmap to initRoadmap
-                initRoadmap(userRole, false, skillGaps, aiRoadmap);
-
-                // Track if we need to show a "nudge" for interview
-                if (!hasInterview) {
-                    console.log("[Roadmap] Unlocked via Resume. Suggested: Complete interview for better accuracy.");
-                }
-
-                // Fix: Mark roadmap as completed to allow dashboard access
+                // Mark roadmap as completed to allow dashboard access
                 localStorage.setItem('nextStep_roadmapCompleted', 'true');
-                console.log("Roadmap generated. Dashboard access unlocked.");
+                console.log("Roadmap loaded. Dashboard access unlocked.");
 
                 // Sync with Firestore
                 onAuthStateChanged(auth, async (user) => {

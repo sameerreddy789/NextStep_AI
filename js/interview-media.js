@@ -43,7 +43,11 @@ class InterviewMedia {
             } else if (err.name === 'NotReadableError') {
                 msg = "Camera is currently in use by another application.";
             }
-            alert(msg);
+            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
+                UIUtils.showToast(msg, 'error', 5000);
+            } else {
+                alert(msg);
+            }
             return false;
         }
     }
@@ -132,7 +136,11 @@ class InterviewMedia {
         // Check browser support
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             console.warn("Speech Recognition not supported in this browser.");
-            alert("Note: Speech-to-Text is not supported in this browser. Please use Chrome or Edge for the best experience.");
+            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
+                UIUtils.showToast('Speech-to-Text is not supported in this browser. Please use Chrome or Edge.', 'warning', 5000);
+            } else {
+                alert("Note: Speech-to-Text is not supported in this browser. Please use Chrome or Edge for the best experience.");
+            }
             return false;
         }
 
@@ -166,7 +174,11 @@ class InterviewMedia {
             if (event.error !== 'no-speech') {
                 console.error("Speech recognition error", event.error);
                 if (event.error === 'not-allowed') {
-                    alert("Microphone access blocked for speech recognition. Please check your tracking protection or permission settings.");
+                    if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
+                        UIUtils.showToast('Microphone access blocked. Please check your permission settings.', 'error', 5000);
+                    } else {
+                        alert("Microphone access blocked for speech recognition. Please check your tracking protection or permission settings.");
+                    }
                 }
             }
         };

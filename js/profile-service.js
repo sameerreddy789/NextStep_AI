@@ -16,9 +16,8 @@ const ProfileService = {
             const profileDoc = await getDoc(doc(db, "users", uid, "profile", "data"));
             if (profileDoc.exists()) {
                 const data = profileDoc.data();
-                // Sync to localStorage keys used across the app
+                // Sync to localStorage — use dedicated profile key, don't overwrite auth user data
                 localStorage.setItem('nextStep_profile', JSON.stringify(data));
-                localStorage.setItem('nextStep_user', JSON.stringify(data));
                 return data;
             }
             return null;
@@ -47,9 +46,8 @@ const ProfileService = {
 
             await setDoc(doc(db, "users", uid, "profile", "data"), dataToSave, { merge: true });
 
-            // Also update local storage for immediate access across all keys
+            // Also update local storage for immediate access
             localStorage.setItem('nextStep_profile', JSON.stringify(mergedData));
-            localStorage.setItem('nextStep_user', JSON.stringify(mergedData));
 
             console.log('[ProfileService] Profile saved and synced locally');
             return true;

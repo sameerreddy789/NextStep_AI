@@ -80,12 +80,12 @@
                                 <div class="overview-value" id="view-role-alt">Software Developer</div>
                             </div>
                             <div class="overview-item">
-                                <span class="overview-label">Daily Time Spent</span>
-                                <div class="overview-value">1h 30m</div>
+                                <span class="overview-label">Interviews Taken</span>
+                                <div class="overview-value" id="stat-daily-time">—</div>
                             </div>
                             <div class="overview-item">
-                                <span class="overview-label">Total Learning</span>
-                                <div class="overview-value">124 hrs</div>
+                                <span class="overview-label">Roadmap Progress</span>
+                                <div class="overview-value" id="stat-total-learning">—</div>
                             </div>
                         </div>
                     </div>
@@ -95,9 +95,9 @@
                         <div class="streak-header">
                             <h3><span class="flame-icon">🔥</span> Daily Learning Streak</h3>
                             <div class="streak-stats">
-                                <span class="streak-badge">Current: 7 Days</span>
-                                <span class="streak-badge orange">Max: 14 Days</span>
-                                <span class="streak-badge">Total Active: 42 Days</span>
+                                <span class="streak-badge" id="stat-current-streak">Current: 0 Days</span>
+                                <span class="streak-badge orange" id="stat-max-streak">Max: 0 Days</span>
+                                <span class="streak-badge" id="stat-total-active">Total Active: 0 Days</span>
                             </div>
                         </div>
                         <div class="heatmap-container">
@@ -122,30 +122,36 @@
                             <div class="mini-card-icon">🚀</div>
                             <div class="mini-card-info">
                                 <h4>Roadmap Done</h4>
-                                <div class="value">65%</div>
+                                <div class="value" id="stat-roadmap-pct">0%</div>
                             </div>
                         </div>
                         <div class="progress-mini-card">
                             <div class="mini-card-icon">🤝</div>
                             <div class="mini-card-info">
                                 <h4>Interviews</h4>
-                                <div class="value" id="stat-interviews-alt">3</div>
+                                <div class="value" id="stat-interviews-alt">0</div>
                             </div>
                         </div>
                         <div class="progress-mini-card">
                             <div class="mini-card-icon">🎯</div>
                             <div class="mini-card-info">
                                 <h4>Skills</h4>
-                                <div class="value" id="stat-skills-alt">8</div>
+                                <div class="value" id="stat-skills-alt">0</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Social Media Links Showcase -->
                     <div class="insight-card social-showcase-section" id="social-showcase-card">
-                        <div class="section-header-inline">
-                            <h3 class="section-title">🔗 Professional Profiles</h3>
-                            <span class="section-subtitle-inline">Connect & Collaborate</span>
+                        <div class="section-header-inline"
+                            style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 class="section-title">🔗 Professional Profiles</h3>
+                                <span class="section-subtitle-inline">Connect &amp; Collaborate</span>
+                            </div>
+                            <button class="btn-edit" onclick="toggleEdit('social')" style="white-space: nowrap;">
+                                <span>✏️</span> Edit Links
+                            </button>
                         </div>
                         <div class="social-showcase-grid" id="social-showcase-grid">
                             <!-- LinkedIn Card -->
@@ -181,6 +187,40 @@
                                     <p class="social-showcase-action" id="leetcode-action">View Profile</p>
                                 </div>
                             </a>
+                        </div>
+                    </div>
+
+                    <!-- Social Links Edit Panel (separate from personal edit) -->
+                    <div class="insight-card hidden" id="social-edit">
+                        <h3 class="section-title">🔗 Edit Professional Links</h3>
+                        <div class="edit-form-container">
+                            <div class="form-group">
+                                <label class="form-label">LinkedIn URL</label>
+                                <input type="url" class="form-input social-input" id="edit-linkedin"
+                                    placeholder="https://linkedin.com/in/yourprofile" data-platform="linkedin">
+                                <div class="input-helper">Add your LinkedIn to showcase your professional background
+                                </div>
+                                <div class="input-validation" id="linkedin-validation"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">GitHub URL</label>
+                                <input type="url" class="form-input social-input" id="edit-github"
+                                    placeholder="https://github.com/yourusername" data-platform="github">
+                                <div class="input-helper">Share your repositories and open-source contributions</div>
+                                <div class="input-validation" id="github-validation"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">LeetCode URL</label>
+                                <input type="url" class="form-input social-input" id="edit-leetcode"
+                                    placeholder="https://leetcode.com/yourprofile" data-platform="leetcode">
+                                <div class="input-helper">Highlight your coding practice and problem-solving skills
+                                </div>
+                                <div class="input-validation" id="leetcode-validation"></div>
+                            </div>
+                        </div>
+                        <div class="edit-actions">
+                            <button class="btn btn-secondary" onclick="toggleEdit('social')">Cancel</button>
+                            <button class="btn btn-primary" onclick="saveSocialLinks()">Save Links</button>
                         </div>
                     </div>
 
@@ -222,38 +262,6 @@
                                 <input type="date" class="form-input" id="edit-dob" value="1998-06-15">
                             </div>
 
-                            <!-- Social Media Links -->
-                            <div class="form-group full-width">
-                                <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
-                                    <span>🔗</span> Professional Links
-                                </label>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">LinkedIn URL</label>
-                                <input type="url" class="form-input social-input" id="edit-linkedin"
-                                    placeholder="https://linkedin.com/in/yourprofile" data-platform="linkedin">
-                                <div class="input-helper">Add your LinkedIn to showcase your professional background
-                                </div>
-                                <div class="input-validation" id="linkedin-validation"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">GitHub URL</label>
-                                <input type="url" class="form-input social-input" id="edit-github"
-                                    placeholder="https://github.com/yourusername" data-platform="github">
-                                <div class="input-helper">Share your repositories and open-source contributions</div>
-                                <div class="input-validation" id="github-validation"></div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">LeetCode URL</label>
-                                <input type="url" class="form-input social-input" id="edit-leetcode"
-                                    placeholder="https://leetcode.com/yourprofile" data-platform="leetcode">
-                                <div class="input-helper">Highlight your coding practice and problem-solving skills
-                                </div>
-                                <div class="input-validation" id="leetcode-validation"></div>
-                            </div>
                         </div>
                         <div class="edit-actions">
                             <button class="btn btn-secondary" onclick="toggleEdit('personal')">Cancel</button>
@@ -594,47 +602,131 @@
         import { auth } from './js/firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import ProfileService from './js/profile-service.js';
+        import { appState } from './js/app-state.js';
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Wait for appState to fully load from Firestore
+            await appState.init();
+
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     loadProfile(user.uid);
-                    renderHeatmap();
                 } else {
-                    // Fallback to local storage or redirect
                     loadProfile();
-                    renderHeatmap();
                 }
+                populateRealStats();
+                renderHeatmap();
             });
         });
+
+        // Populate stats from real data sources
+        function populateRealStats() {
+            // --- Interviews Taken ---
+            const interviews = appState.interviews || [];
+            const interviewCount = interviews.length;
+            const elDaily = document.getElementById('stat-daily-time');
+            if (elDaily) elDaily.textContent = interviewCount;
+
+            const elInterviewsAlt = document.getElementById('stat-interviews-alt');
+            if (elInterviewsAlt) elInterviewsAlt.textContent = interviewCount;
+
+            // --- Roadmap Progress ---
+            const completedTopics = appState.roadmapProgress?.completedTopics || [];
+            const roadmapSkills = appState.roadmap?.skills || [];
+            let totalTopics = 0;
+            roadmapSkills.forEach(week => {
+                (week.topics || []).forEach(topic => {
+                    totalTopics += (topic.items || []).length;
+                });
+            });
+            const roadmapPct = totalTopics > 0 ? Math.round((completedTopics.length / totalTopics) * 100) : 0;
+
+            const elTotalLearning = document.getElementById('stat-total-learning');
+            if (elTotalLearning) elTotalLearning.textContent = `${roadmapPct}%`;
+
+            const elRoadmapPct = document.getElementById('stat-roadmap-pct');
+            if (elRoadmapPct) elRoadmapPct.textContent = `${roadmapPct}%`;
+
+            // --- Skills ---
+            const skillCount = (appState.resumeData?.skills?.present?.length || 0)
+                + (appState.resumeData?.skills?.partial?.length || 0);
+            const elSkillsAlt = document.getElementById('stat-skills-alt');
+            if (elSkillsAlt) elSkillsAlt.textContent = skillCount;
+
+            // --- Streak from learningActivity ---
+            const activity = appState.learningActivity || {};
+            const activityDates = Object.keys(activity).sort();
+            const totalActive = activityDates.length;
+
+            let currentStreak = 0;
+            let maxStreak = 0;
+            if (activityDates.length > 0) {
+                // Calculate streaks
+                let streak = 1;
+                for (let i = 1; i < activityDates.length; i++) {
+                    const prev = new Date(activityDates[i - 1]);
+                    const curr = new Date(activityDates[i]);
+                    const diffDays = Math.round((curr - prev) / (1000 * 60 * 60 * 24));
+                    if (diffDays === 1) {
+                        streak++;
+                    } else {
+                        maxStreak = Math.max(maxStreak, streak);
+                        streak = 1;
+                    }
+                }
+                maxStreak = Math.max(maxStreak, streak);
+
+                // Check if the last date is today or yesterday for current streak
+                const lastDate = new Date(activityDates[activityDates.length - 1]);
+                const today = new Date();
+                const diffToday = Math.round((today - lastDate) / (1000 * 60 * 60 * 24));
+                currentStreak = diffToday <= 1 ? streak : 0;
+            }
+
+            const elCurrentStreak = document.getElementById('stat-current-streak');
+            if (elCurrentStreak) elCurrentStreak.textContent = `Current: ${currentStreak} Days`;
+
+            const elMaxStreak = document.getElementById('stat-max-streak');
+            if (elMaxStreak) elMaxStreak.textContent = `Max: ${maxStreak} Days`;
+
+            const elTotalActive = document.getElementById('stat-total-active');
+            if (elTotalActive) elTotalActive.textContent = `Total Active: ${totalActive} Days`;
+        }
 
         function renderHeatmap() {
             const heatmap = document.getElementById('heatmap');
             if (!heatmap) return;
             heatmap.innerHTML = '';
 
+            const activity = appState.learningActivity || {};
             const boxCount = 12 * 7; // 12 weeks
             const today = new Date();
 
             for (let i = boxCount - 1; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(today.getDate() - i);
+                const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
 
                 const day = document.createElement('div');
                 day.className = 'day-box';
 
-                // Random intensity (simulating data)
-                const intensity = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0;
+                // Use real activity data: count actions for that day
+                const dayActivity = activity[dateKey] || 0;
+                let intensity = 0;
+                if (dayActivity >= 4) intensity = 4;
+                else if (dayActivity >= 3) intensity = 3;
+                else if (dayActivity >= 2) intensity = 2;
+                else if (dayActivity >= 1) intensity = 1;
+
                 day.className += ` l${intensity}`;
 
-                // Format date for tooltip
                 const dateStr = date.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                 });
 
-                day.title = `${dateStr}: ${intensity === 0 ? 'No activity' : intensity + ' level activity'}`;
+                day.title = `${dateStr}: ${dayActivity === 0 ? 'No activity' : dayActivity + ' action(s)'}`;
                 heatmap.appendChild(day);
             }
         }
@@ -740,7 +832,7 @@
                         if (showcaseEl) {
                             showcaseEl.href = '#';
                             showcaseEl.classList.add('empty-state');
-                            showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'personal\'); return false;');
+                            showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'social\'); return false;');
                         }
                         if (actionEl) {
                             actionEl.textContent = '+ Add Profile';
@@ -754,7 +846,7 @@
                     if (showcaseEl) {
                         showcaseEl.href = '#';
                         showcaseEl.classList.add('empty-state');
-                        showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'personal\'); return false;');
+                        showcaseEl.setAttribute('onclick', 'window.toggleEdit(\'social\'); return false;');
                     }
                     if (actionEl) {
                         actionEl.textContent = '+ Add Profile';
@@ -1011,6 +1103,73 @@
 
             // Refresh sidebar immediately
             if (window.SidebarComponent) window.SidebarComponent.generate();
+        }
+
+        window.saveSocialLinks = async function () {
+            const user = auth.currentUser;
+
+            // Validate and collect social media links
+            const socialLinks = {};
+            const platforms = ['linkedin', 'github', 'leetcode'];
+            let hasValidationError = false;
+
+            platforms.forEach(platform => {
+                const inputEl = document.getElementById(`edit-${platform}`);
+                const validationEl = document.getElementById(`${platform}-validation`);
+                const url = inputEl ? inputEl.value.trim() : '';
+
+                if (url) {
+                    const validation = validateURL(url, platform);
+
+                    if (!validation.valid) {
+                        hasValidationError = true;
+                        if (inputEl) inputEl.classList.add('invalid');
+                        if (validationEl) {
+                            validationEl.textContent = validation.message;
+                            validationEl.classList.add('error');
+                            validationEl.classList.remove('success');
+                        }
+                    } else {
+                        if (inputEl) {
+                            inputEl.classList.remove('invalid');
+                            inputEl.classList.add('valid');
+                        }
+                        if (validationEl) {
+                            validationEl.textContent = validation.message;
+                            validationEl.classList.add('success');
+                            validationEl.classList.remove('error');
+                        }
+                        socialLinks[platform] = { url, visible: true };
+                    }
+                } else {
+                    if (inputEl) inputEl.classList.remove('invalid', 'valid');
+                    if (validationEl) {
+                        validationEl.textContent = '';
+                        validationEl.classList.remove('error', 'success');
+                    }
+                }
+            });
+
+            if (hasValidationError) {
+                if (window.UIUtils) window.UIUtils.showToast('Please fix the invalid URLs before saving.', 'warning');
+                return;
+            }
+
+            const data = { socialLinks };
+
+            if (user) {
+                await ProfileService.saveProfile(user.uid, data);
+            } else {
+                const current = JSON.parse(localStorage.getItem('nextStep_profile') || '{}');
+                const merged = { ...current, ...data };
+                localStorage.setItem('nextStep_profile', JSON.stringify(merged));
+            }
+
+            // Update showcase UI
+            loadSocialLinks(socialLinks);
+
+            window.toggleEdit('social');
+            if (window.UIUtils) window.UIUtils.showToast('Professional links updated!', 'success');
         }
 
     </script>

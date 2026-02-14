@@ -1,7 +1,7 @@
 
 import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // State
 let currentStep = 1;
@@ -29,7 +29,6 @@ const btnBack = document.getElementById('btn-back');
 // Init
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Check Auth
     // Check Auth & Redirect if already onboarded
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -341,7 +340,7 @@ async function saveProgress() {
         try {
             await setDoc(doc(db, "users", user.uid), {
                 ...userData,
-                updatedAt: new Date().toISOString()
+                updatedAt: serverTimestamp()
             }, { merge: true });
         } catch (e) {
             console.error("Save error:", e);
@@ -363,7 +362,7 @@ async function finishOnboarding() {
         await setDoc(doc(db, "users", user.uid), {
             ...userData,
             onboardingCompleted: true,
-            completedAt: new Date().toISOString()
+            completedAt: serverTimestamp()
         }, { merge: true });
 
         // Update Local Storage for Dashboard compatibility

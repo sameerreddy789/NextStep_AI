@@ -117,8 +117,11 @@
                                         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                                     </svg>
                                     <input type="password" id="signup-password" class="form-input"
-                                        placeholder="Create a password" required>
+                                        placeholder="Create a password" required minlength="6">
                                 </div>
+                                <span class="form-hint"
+                                    style="display:block; font-size:12px; color:#94a3b8; margin-top:6px;">Must be at
+                                    least 6 characters</span>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Create Account</button>
