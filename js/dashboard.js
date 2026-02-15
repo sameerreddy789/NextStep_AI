@@ -26,11 +26,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 function renderDashboard(state) {
     if (!state.user) return;
 
+    // Store ref for filter function
+    window.appStateRef = state;
+
     renderUserInfo(state.user);
     renderStats(state);
-    renderCharts(state); // Donut + Readiness
-    renderStreak(state); // GitHub Graph
-    renderTasks(state);  // Assigned + Personal
+    renderActivityPulse(state);
+    renderCharts(state);    // Donut + Readiness
+    renderTasks(state);     // Assigned + Personal
     renderActionItems(state);
 }
 
@@ -91,28 +94,18 @@ function renderStats(state) {
     if (elInterviews) elInterviews.textContent = interviewsTaken;
     if (elAvg) elAvg.textContent = `${avgScore}%`;
     if (elStreak) elStreak.textContent = dayStreak;
-    if (elReadiness) elReadiness.textContent = `${state.readinessScore}%`;
+    if (elReadiness) elReadiness.textContent = `${state.readinessScore || 0}%`;
 
-    // Weekly Progress (Derived from current week in roadmap)
-    const weeklyTopics = document.getElementById('weekly-topics');
-    const weeklyQuestions = document.getElementById('weekly-questions');
-    const weeklyTime = document.getElementById('weekly-time');
-
-    // Placeholder logic for weekly stats
-    if (weeklyTopics) weeklyTopics.textContent = state.roadmapProgress?.completedTopics?.length || 0;
-    if (weeklyQuestions) weeklyQuestions.textContent = 0; // TODO: Track questions
-    if (weeklyTime) weeklyTime.textContent = '0h'; // TODO: Track time
 }
 
 function renderCharts(state) {
-    // Use Roadmap Progress for the donut chart
-    const totalTasks = state.roadmap?.totalTasks || 100; // Default or from state
+    const totalTasks = state.roadmap?.totalTasks || 0;
     const completedTasks = state.roadmapProgress?.completedTopics?.length || 0;
-    const completedProgress = Math.round((completedTasks / totalTasks) * 100);
-    const inProgressProgress = 0; // Hard to track individually without more data
-    const pendingProgress = 100 - completedProgress;
+    const completedProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const inProgressProgress = 0;
+    const pendingProgress = Math.max(0, 100 - completedProgress);
 
-    drawPieChart(completedProgress, inProgressProgress, pendingProgress, state.readinessScore);
+    drawPieChart(completedProgress, inProgressProgress, pendingProgress, state.readinessScore || 0);
 }
 
 // Draw Static Pie/Donut Chart using progress values
@@ -123,7 +116,7 @@ function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0, readi
     const scoreBig = document.getElementById('readiness-score-big');
 
     // Update Score
-    if (scoreBig) scoreBig.textContent = `${readinessScore}%`;
+    if (scoreBig) scoreBig.textContent = `${readinessScore || 0}%`;
 
     // Clear previous
     if (svg) svg.innerHTML = '';
@@ -239,37 +232,221 @@ function hideTooltip() {
     }
 }
 
-// Task & Skill Management
-function renderStreak(state) {
-    const grid = document.getElementById('streak-grid');
-    if (!grid) return;
 
-    grid.innerHTML = '';
+// ====== Activity Pulse — ring tracker with drill-down ======
+let selectedPulseDay = null;
+
+function renderActivityPulse(state) {
+    const timeline = document.getElementById('pulse-timeline');
+    const insightEl = document.getElementById('pulse-insight');
+    const totalEl = document.getElementById('pulse-total');
+    const streakEl = document.getElementById('streak-count');
+    const detailPanel = document.getElementById('pulse-detail');
+    if (!timeline) return;
+
+    timeline.innerHTML = '';
     const today = new Date();
-    const daysToShow = 35; // 7 cols x 5 rows
+    const dayOfWeek = today.getDay();
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-    // Generate last 35 days
-    for (let i = daysToShow - 1; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(today.getDate() - i);
+    // Monday of this week
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    const dailyGoal = 3; // daily target for ring fill
+    let totalWeek = 0;
+    let bestDay = { name: '', count: 0 };
+    let activeDays = 0;
+    const weekData = [];
+
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
         const dateStr = d.toISOString().split('T')[0];
-        const count = state.learningActivity?.[dateStr] || 0;
+        const isToday = d.toDateString() === today.toDateString();
 
-        const cell = document.createElement('div');
-        cell.className = 'streak-cell';
+        // Activity count
+        const activityCount = state.learningActivity?.[dateStr] || 0;
 
-        // Color intensity
-        if (count > 0) cell.classList.add('level-1');
-        if (count > 2) cell.classList.add('level-2');
-        if (count > 4) cell.classList.add('level-3');
+        // Tasks completed that day
+        let tasksOnDay = [];
+        if (state.tasks) {
+            state.tasks.forEach(t => {
+                if (t.completed && t.completedAt) {
+                    const cDate = new Date(t.completedAt).toISOString().split('T')[0];
+                    if (cDate === dateStr) tasksOnDay.push(t);
+                }
+            });
+        }
 
-        cell.title = `${dateStr}: ${count} activities`;
-        grid.appendChild(cell);
+        const dayTotal = Math.max(activityCount, tasksOnDay.length);
+        totalWeek += dayTotal;
+        if (dayTotal > 0) activeDays++;
+        if (dayTotal > bestDay.count) bestDay = { name: dayNames[i], count: dayTotal };
+
+        const fillPercent = Math.min(Math.round((dayTotal / dailyGoal) * 100), 100);
+
+        weekData.push({ dateStr, dayTotal, tasksOnDay, isToday, fillPercent, label: dayNames[i] });
+
+        // Build ring node
+        const node = document.createElement('div');
+        node.className = 'pulse-day';
+        if (isToday) node.classList.add('is-today');
+        if (dayTotal > 0) node.classList.add('active');
+        if (selectedPulseDay === i) node.classList.add('selected');
+
+        const displayLabel = isToday ? 'Today' : dayNames[i];
+
+        node.innerHTML = `
+            <div class="pulse-ring" style="--fill: ${fillPercent}">
+                <span class="pulse-count">${dayTotal || '·'}</span>
+            </div>
+            <span class="pulse-day-label">${displayLabel}</span>
+        `;
+
+        node.addEventListener('click', () => {
+            if (selectedPulseDay === i) {
+                // Toggle off
+                selectedPulseDay = null;
+                detailPanel.classList.remove('expanded');
+                detailPanel.innerHTML = '';
+                node.classList.remove('selected');
+            } else {
+                selectedPulseDay = i;
+                expandPulseDetail(weekData[i], detailPanel);
+                // Update ring visuals
+                timeline.querySelectorAll('.pulse-day').forEach((n, idx) => {
+                    n.classList.toggle('selected', idx === i);
+                });
+            }
+        });
+
+        timeline.appendChild(node);
+    }
+
+    // Total
+    if (totalEl) {
+        totalEl.textContent = `${totalWeek} done`;
+    }
+
+    // Streak
+    if (streakEl) {
+        const streak = calculateStreak(state);
+        streakEl.textContent = streak;
+    }
+
+    // Smart insight
+    if (insightEl) {
+        insightEl.textContent = generateInsight(totalWeek, activeDays, bestDay, state);
+    }
+
+    // Restore expanded detail if a day was selected
+    if (selectedPulseDay !== null && weekData[selectedPulseDay]) {
+        expandPulseDetail(weekData[selectedPulseDay], detailPanel);
     }
 }
 
+function expandPulseDetail(dayData, panel) {
+    if (!panel) return;
+
+    let itemsHTML = '';
+    if (dayData.tasksOnDay.length > 0) {
+        itemsHTML = dayData.tasksOnDay.map(t => `
+            <div class="detail-item">
+                <span class="detail-item-icon">✅</span>
+                <span>${t.title}</span>
+            </div>
+        `).join('');
+    } else if (dayData.dayTotal > 0) {
+        itemsHTML = `
+            <div class="detail-item">
+                <span class="detail-item-icon">📊</span>
+                <span>${dayData.dayTotal} activit${dayData.dayTotal > 1 ? 'ies' : 'y'} logged</span>
+            </div>
+        `;
+    } else {
+        itemsHTML = `<div class="detail-empty">No activity on ${dayData.label}</div>`;
+    }
+
+    panel.innerHTML = `
+        <div class="detail-header">
+            <span class="detail-title">${dayData.isToday ? 'Today' : dayData.label} — ${dayData.dateStr}</span>
+            <button class="detail-close" onclick="closePulseDetail()">✕</button>
+        </div>
+        <div class="detail-items">${itemsHTML}</div>
+    `;
+
+    requestAnimationFrame(() => panel.classList.add('expanded'));
+}
+
+window.closePulseDetail = () => {
+    selectedPulseDay = null;
+    const panel = document.getElementById('pulse-detail');
+    if (panel) {
+        panel.classList.remove('expanded');
+        setTimeout(() => { panel.innerHTML = ''; }, 350);
+    }
+    document.querySelectorAll('.pulse-day.selected').forEach(n => n.classList.remove('selected'));
+};
+
+function calculateStreak(state) {
+    const activity = state.learningActivity || {};
+    const dates = Object.keys(activity).filter(d => activity[d] > 0).sort().reverse();
+    if (dates.length === 0) return 0;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterdayStr = yesterdayDate.toISOString().split('T')[0];
+
+    // Streak must include today or yesterday
+    if (dates[0] !== todayStr && dates[0] !== yesterdayStr) return 0;
+
+    let streak = 0;
+    let checkDate = new Date(dates[0]);
+
+    while (true) {
+        const check = checkDate.toISOString().split('T')[0];
+        if (activity[check] && activity[check] > 0) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
+function generateInsight(totalWeek, activeDays, bestDay, state) {
+    if (totalWeek === 0) return 'Start your week — complete a task to light up the rings';
+
+    const insights = [];
+
+    if (activeDays >= 5) {
+        insights.push(`On fire — ${activeDays} active days this week`);
+    } else if (activeDays >= 3) {
+        insights.push(`Solid progress — ${activeDays} active days`);
+    } else {
+        insights.push(`${activeDays} day${activeDays !== 1 ? 's' : ''} active — keep building momentum`);
+    }
+
+    if (bestDay.count >= 3) {
+        insights.push(`Best day: ${bestDay.name} with ${bestDay.count} tasks`);
+    }
+
+    // Pick one at random-ish based on day
+    const idx = new Date().getDay() % insights.length;
+    return insights[idx];
+}
+
+
+
+// Current filter state
+let currentTaskFilter = 'all';
+
 function renderAssignedTasks(state) {
-    // const state = appState; // Already passed as arg
     const systemList = document.getElementById('system-task-list');
     if (!systemList) return;
 
@@ -278,23 +455,84 @@ function renderAssignedTasks(state) {
         return;
     }
 
+    // Apply filter
+    let filteredTasks = [...state.tasks];
+    if (currentTaskFilter === 'pending') {
+        filteredTasks = filteredTasks.filter(t => !t.completed);
+    } else if (currentTaskFilter === 'completed') {
+        filteredTasks = filteredTasks.filter(t => t.completed);
+    }
+
     // Sort: Pending first, then by deadline
-    const sortedTasks = [...state.tasks].sort((a, b) => {
+    filteredTasks.sort((a, b) => {
         if (a.completed === b.completed) return 0;
         return a.completed ? 1 : -1;
     });
 
-    systemList.innerHTML = sortedTasks.map(t => `
+    if (filteredTasks.length === 0) {
+        const msg = currentTaskFilter === 'completed'
+            ? 'No completed tasks yet. Keep going!'
+            : currentTaskFilter === 'pending'
+                ? 'All tasks completed! 🎉'
+                : 'No tasks found.';
+        systemList.innerHTML = `<div class="empty-state-text">${msg}</div>`;
+        return;
+    }
+
+    systemList.innerHTML = filteredTasks.map(t => {
+        const completedDateHTML = t.completed && t.completedAt
+            ? `<div class="task-completed-date">Completed ${formatCompletedDate(t.completedAt)}</div>`
+            : t.completed
+                ? `<div class="task-completed-date">Completed</div>`
+                : '';
+
+        return `
         <div class="task-item ${t.completed ? 'completed' : ''}">
             <div class="task-icon purple">🎯</div>
             <div class="task-content">
                 <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
                 <div class="task-due">${t.subtitle ? t.subtitle + ' • ' : ''}${t.deadline}</div>
+                ${completedDateHTML}
             </div>
             <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'system')">
         </div>
-    `).join('');
+    `}).join('');
 }
+
+// Format completion date
+function formatCompletedDate(dateInput) {
+    try {
+        const d = new Date(dateInput);
+        const now = new Date();
+        const diff = now - d;
+        const mins = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+
+        if (mins < 1) return 'just now';
+        if (mins < 60) return `${mins}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        if (days < 7) return `${days}d ago`;
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch {
+        return '';
+    }
+}
+
+// Filter tasks handler
+window.filterTasks = function (filter) {
+    currentTaskFilter = filter;
+
+    // Update active tab
+    document.querySelectorAll('.task-filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+    });
+
+    // Re-render with current app state
+    if (window.appStateRef) {
+        renderAssignedTasks(window.appStateRef);
+    }
+};
 
 function renderUserTasks() {
     if (!window.SkillStore) return;
@@ -330,8 +568,6 @@ function renderTasks(state) {
 window.toggleTask = async (id, type) => {
     if (type === 'system') {
         // Roadmap Task
-        // We need to update Firestore roadmap progress
-        // This logic mimics roadmap-ui.js but from dashboard
         const state = appState;
         const currentCompleted = state.roadmapProgress?.completedTopics || [];
         const isCompleted = currentCompleted.includes(id);
@@ -346,6 +582,16 @@ window.toggleTask = async (id, type) => {
         // Optimistic Update
         state.roadmapProgress.completedTopics = newCompleted;
         state.generateTasksList(); // Regenerate tasks list
+
+        // Record completedAt timestamp on each task
+        if (state.tasks) {
+            state.tasks.forEach(t => {
+                if (t.id === id) {
+                    t.completedAt = t.completed ? new Date().toISOString() : null;
+                }
+            });
+        }
+
         state.calculateReadiness();
         state.logActivity(); // Log activity on completion
         renderDashboard(state); // Re-render immediately
@@ -381,18 +627,8 @@ function renderActionItems(state) {
     if (roadmapCard) roadmapCard.style.display = roadmapDone ? 'none' : 'block';
 }
 
-function updateWeeklyProgress() {
-    const progressData = JSON.parse(localStorage.getItem('nextStep_roadmap_progress') || '[]');
-    const topicsDone = progressData.length;
 
-    const topicsEl = document.getElementById('weekly-topics');
-    const questionsEl = document.getElementById('weekly-questions');
-    const timeEl = document.getElementById('weekly-time');
 
-    if (topicsEl) topicsEl.textContent = topicsDone;
-    if (questionsEl) questionsEl.textContent = topicsDone * 5;
-    if (timeEl) timeEl.textContent = `${Math.round(topicsDone * 0.75)}h`;
-}
 
 window.DashboardManager = {
     refresh: () => {
