@@ -366,15 +366,32 @@ async function finishOnboarding() {
         }, { merge: true });
 
         // Update Local Storage for Dashboard compatibility
-        localStorage.setItem("nextStep_onboardingCompleted", "true");
-        localStorage.setItem("userType", userData.careerGoal === 'Student' ? 'student' : 'careerGap');
-        const nextStepUser = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-        localStorage.setItem("nextStep_user", JSON.stringify({
-            ...nextStepUser,
-            targetRole: userData.targetRole,
-            resumeStatus: userData.resumeStatus,
-            resumeData: userData.resumeData
-        }));
+        try {
+            localStorage.setItem("nextStep_onboardingCompleted", "true");
+            localStorage.setItem("userType", userData.careerGoal === 'Student' ? 'student' : 'careerGap');
+            const nextStepUser = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            localStorage.setItem("nextStep_user", JSON.stringify({
+                ...nextStepUser,
+                targetRole: userData.targetRole,
+                resumeStatus: userData.resumeStatus,
+                resumeData: userData.resumeData
+            }));
+        } catch (e) {
+            console.error("LocalStorage Error (Quota Exceeded?):", e);
+            // Fallback: Clear pending file to make space, then try saving user flags again
+            localStorage.removeItem('pendingResumeFile');
+            try {
+                localStorage.setItem("nextStep_onboardingCompleted", "true");
+                const nextStepUser = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+                localStorage.setItem("nextStep_user", JSON.stringify({
+                    ...nextStepUser,
+                    targetRole: userData.targetRole,
+                    resumeStatus: userData.resumeStatus
+                }));
+            } catch (retryError) {
+                console.error("Critical: Could not save user state even after clearing file", retryError);
+            }
+        }
 
         // Note: Do NOT set nextStep_resume here - let resume.html handle the actual
         // AI analysis of the uploaded file via the pendingResumeFile mechanism.

@@ -42,7 +42,9 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase
+import { getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const analytics = getAnalytics(app);
