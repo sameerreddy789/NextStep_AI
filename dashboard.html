@@ -86,69 +86,61 @@
                 </div>
             </div>
 
-            <!-- Grid Layout -->
-            <div class="dashboard-grid">
-                <!-- Top Row: Weekly Progress & Job Readiness -->
-                <div class="top-row">
-                    <!-- Weekly Progress & Recent Activity -->
-                    <div class="card">
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+
+                <!-- LEFT COLUMN -->
+                <div class="dash-col">
+                    <!-- Activity Pulse -->
+                    <div class="card pulse-card" id="pulse-card">
                         <div class="card-header">
-                            <h3 class="card-title">Weekly Progress</h3>
-                        </div>
-
-                        <!-- Key Metrics -->
-                        <div class="weekly-metrics">
-                            <div class="metric-item">
-                                <div class="metric-value" id="weekly-topics">0</div>
-                                <div class="metric-label">Topics</div>
+                            <div class="pulse-header-left">
+                                <h3 class="card-title">This Week</h3>
+                                <span class="pulse-insight" id="pulse-insight">—</span>
                             </div>
-                            <div class="metric-divider"></div>
-                            <div class="metric-item">
-                                <div class="metric-value" id="weekly-questions">0</div>
-                                <div class="metric-label">Questions</div>
-                            </div>
-                            <div class="metric-divider"></div>
-                            <div class="metric-item">
-                                <div class="metric-value" id="weekly-time">0h</div>
-                                <div class="metric-label">Time Spent</div>
+                            <div class="pulse-header-right">
+                                <span class="pulse-total" id="pulse-total">0 done</span>
+                                <span class="streak-badge" id="streak-badge"><span class="streak-fire">🔥</span> <span
+                                        id="streak-count">0</span></span>
                             </div>
                         </div>
-
-                        <!-- Streak Grid -->
-                        <div class="streak-container">
-                            <div class="streak-grid" id="streak-grid">
-                                <!-- Grid injected by JS -->
-                            </div>
-                            <div class="streak-labels">
-                                <span>Mon</span><span>Wed</span><span>Fri</span>
-                            </div>
-                        </div>
-
-                        <!-- Recent Activity List -->
-                        <div class="recent-activity-container">
-                            <h4 class="section-subtitle">RECENTLY COMPLETED</h4>
-                            <div class="activity-list" id="recent-activity-list">
-                                <div class="empty-state-text">Start learning to see activity here!</div>
-                            </div>
-                        </div>
+                        <div class="pulse-timeline" id="pulse-timeline"></div>
+                        <div class="pulse-detail" id="pulse-detail"></div>
                     </div>
 
+                    <!-- Assigned Tasks -->
+                    <div class="card" id="assigned-tasks-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Assigned Tasks</h3>
+                            <span class="badge-system">Roadmap</span>
+                        </div>
+                        <div class="task-filter-tabs" id="task-filter-tabs">
+                            <button class="task-filter-tab active" data-filter="all"
+                                onclick="filterTasks('all')">All</button>
+                            <button class="task-filter-tab" data-filter="pending"
+                                onclick="filterTasks('pending')">Pending</button>
+                            <button class="task-filter-tab" data-filter="completed"
+                                onclick="filterTasks('completed')">Completed</button>
+                        </div>
+                        <div class="task-list" id="system-task-list"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT COLUMN -->
+                <div class="dash-col">
                     <!-- Job Readiness -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Job Readiness Overview</h3>
+                            <h3 class="card-title">Job Readiness</h3>
                         </div>
                         <div class="readiness-chart" id="readiness-chart-section">
                             <div class="pie-chart-container">
                                 <div class="pie-donut">
-                                    <svg class="readiness-svg" viewBox="-1.1 -1.1 2.2 2.2">
-                                        <!-- Segments injected by JS -->
-                                    </svg>
+                                    <svg class="readiness-svg" viewBox="-1.1 -1.1 2.2 2.2"></svg>
                                     <div class="pie-center-content">
                                         <span class="pie-value" id="readiness-score-big">0%</span>
                                         <span class="pie-label">Readiness</span>
                                     </div>
-                                    <!-- Tooltip -->
                                     <div id="chart-tooltip" class="chart-tooltip">
                                         <div class="tooltip-status">Status</div>
                                         <div class="tooltip-percent">0%</div>
@@ -174,37 +166,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Split Task View -->
-                <div class="card task-split-container">
-                    <div class="task-column">
-                        <div class="card-header">
-                            <h3 class="card-title">Assigned Tasks</h3>
-                            <span class="badge-system">System</span>
-                        </div>
-                        <div class="task-list" id="system-task-list">
-                            <!-- System Tasks injected by JS -->
-                        </div>
-                    </div>
-
-                    <div class="vertical-divider"></div>
-
-                    <div class="task-column">
+                    <!-- My To-Do -->
+                    <div class="card" id="personal-tasks-card">
                         <div class="card-header">
                             <h3 class="card-title">My To-Do</h3>
                             <button class="add-icon-btn" onclick="openAddModal('task')">+</button>
                         </div>
                         <div class="task-list" id="personal-task-list">
-                            <!-- Personal Tasks injected by JS -->
                             <div class="empty-state-text">No personal tasks yet. Add one to stay on track.</div>
                         </div>
                     </div>
                 </div>
 
-
-                <!-- Skill Gaps -->
-                <!-- Skill Gaps -->
+            </div>
 
 
         </main>
@@ -330,18 +305,18 @@
         }
 
         .stat-card-new {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
+            background: rgba(10, 10, 15, 0.2);
+            border: 1px solid var(--glass-border);
             border-radius: 16px;
             padding: 20px;
-            transition: all 0.3s ease-in-out;
+            transition: border-color 0.25s ease, background 0.25s ease;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
         .stat-card-new:hover {
-            transform: translateY(-4px) scale(1.02);
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
-            border-color: rgba(16, 185, 129, 0.5);
-            box-shadow: 0 0 25px rgba(16, 185, 129, 0.3), 0 10px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(16, 185, 129, 0.03);
+            border-color: rgba(16, 185, 129, 0.25);
         }
 
         .stat-card-header {
@@ -375,6 +350,7 @@
 
         .stat-card-new:hover .stat-card-value {
             color: var(--accent-green);
+            transition: color 0.25s ease;
         }
 
         .stat-card-change {
@@ -386,23 +362,311 @@
             color: var(--accent-green);
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 24px;
+        /* Dashboard Content — two independent flex columns */
+        .dashboard-content {
+            display: flex;
+            gap: 14px;
         }
 
-        .top-row {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 24px;
+        .dash-col {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dash-col:first-child {
+            flex: 1.6;
+            min-width: 0;
+        }
+
+        .dash-col:last-child {
+            flex: 0.8;
+            min-width: 0;
         }
 
         @media (max-width: 1024px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
+            .dashboard-content {
+                flex-direction: column;
             }
         }
+
+        /* ====== Activity Pulse ====== */
+        .pulse-card {
+            padding: 18px 20px 10px;
+            align-self: start;
+        }
+
+        .pulse-card .card-header {
+            align-items: flex-start;
+        }
+
+        .pulse-header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .pulse-insight {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .pulse-header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .streak-badge {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 9px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #fbbf24;
+        }
+
+        .streak-fire {
+            font-size: 13px;
+        }
+
+        .pulse-total {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.3px;
+        }
+
+        /* Timeline Row */
+        .pulse-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0 6px;
+            gap: 2px;
+            position: relative;
+        }
+
+        /* Individual Day Node */
+        .pulse-day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            flex: 1;
+            position: relative;
+        }
+
+        /* Connector line between rings */
+        .pulse-day:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: 50%;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0.04),
+                    rgba(255, 255, 255, 0.08),
+                    rgba(255, 255, 255, 0.04));
+            z-index: 0;
+        }
+
+        /* Activity Ring — conic gradient donut */
+        .pulse-ring {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: conic-gradient(var(--ring-color, rgba(255, 255, 255, 0.06)) calc(var(--fill, 0) * 1%),
+                    rgba(255, 255, 255, 0.03) calc(var(--fill, 0) * 1%));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s ease;
+            z-index: 1;
+        }
+
+        /* Inner cutout for donut effect */
+        .pulse-ring::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            background: var(--bg-card, #0a0a0f);
+            transition: box-shadow 0.25s ease;
+        }
+
+        .pulse-count {
+            position: relative;
+            z-index: 2;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Active day — green ring + lit up count */
+        .pulse-day.active .pulse-count {
+            color: var(--text-primary);
+        }
+
+        .pulse-day.active .pulse-ring {
+            --ring-color: #10b981;
+        }
+
+        .pulse-day.active .pulse-ring::after {
+            box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.08);
+        }
+
+        /* Today — blue accent with breathing glow */
+        .pulse-day.is-today .pulse-ring {
+            --ring-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+        }
+
+        .pulse-day.is-today .pulse-ring::after {
+            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);
+        }
+
+        .pulse-day.is-today.active .pulse-ring {
+            animation: ringBreath 3s ease-in-out infinite;
+        }
+
+        @keyframes ringBreath {
+
+            0%,
+            100% {
+                box-shadow:
+                    0 0 0 2px rgba(59, 130, 246, 0.12),
+                    0 0 12px rgba(59, 130, 246, 0.06);
+            }
+
+            50% {
+                box-shadow:
+                    0 0 0 4px rgba(59, 130, 246, 0.08),
+                    0 0 24px rgba(59, 130, 246, 0.12);
+            }
+        }
+
+        /* Selected — ring scales up with halo */
+        .pulse-day.selected .pulse-ring {
+            transform: scale(1.15);
+            box-shadow:
+                0 0 0 2px rgba(255, 255, 255, 0.12),
+                0 0 16px rgba(255, 255, 255, 0.04);
+        }
+
+        /* Day label */
+        .pulse-day-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .pulse-day.is-today .pulse-day-label {
+            color: #60a5fa;
+            font-weight: 700;
+        }
+
+        /* ====== Drill-down Detail Panel ====== */
+        .pulse-detail {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                padding 0.35s ease,
+                opacity 0.25s ease;
+            opacity: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .pulse-detail.expanded {
+            max-height: 220px;
+            padding-top: 12px;
+            margin-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 1;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .detail-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .detail-close {
+            font-size: 14px;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            transition: background 0.2s ease;
+        }
+
+        .detail-close:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+
+        .detail-items {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .detail-item-icon {
+            font-size: 11px;
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .detail-empty {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 10px 0;
+            text-align: center;
+        }
+
+
 
         .chart-container {
             padding: 20px 0;
@@ -471,10 +735,12 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            background: rgba(255, 255, 255, 0.02);
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--glass-bg);
+            box-shadow:
+                inset 0 0 20px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: none;
         }
 
         .pie-center-content {
@@ -632,16 +898,15 @@
             align-items: center;
             gap: 12px;
             padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--glass-bg);
             border-radius: 10px;
             transition: var(--transition-fast);
+            border: 1px solid transparent;
         }
 
         .task-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(99, 102, 241, 0.3);
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
-            transform: translateX(5px);
+            background: var(--glass-bg-hover);
+            border-color: rgba(255, 255, 255, 0.06);
         }
 
         .task-icon {
@@ -798,41 +1063,8 @@
             color: var(--accent-gold);
         }
 
-        /* Weekly Progress Styles */
-        .weekly-metrics {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-bottom: 24px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
 
-        .metric-item {
-            text-align: center;
-        }
 
-        .metric-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 4px;
-        }
-
-        .metric-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .metric-divider {
-            width: 1px;
-            height: 30px;
-            background: rgba(255, 255, 255, 0.1);
-        }
 
         .simple-chart-container {
             margin-bottom: 24px;
@@ -889,7 +1121,7 @@
             align-items: center;
             gap: 12px;
             padding: 10px;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--glass-bg);
             border-radius: 8px;
             border: 1px solid transparent;
             transition: 0.2s;
@@ -965,12 +1197,15 @@
         }
 
         .modal-content {
-            background: var(--bg-card);
+            background: var(--glass-bg);
             padding: 24px;
             border-radius: 16px;
             width: 90%;
             max-width: 400px;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: 0 20px 60px -10px rgba(0, 0, 0, 0.5);
         }
 
         .modal-header {
@@ -1040,27 +1275,7 @@
             text-decoration: none;
         }
 
-        /* Split Task View Styles */
-        .task-split-container {
-            display: flex;
-            gap: 0;
-            padding: 0;
-            min-height: 400px;
-        }
 
-        .task-column {
-            flex: 1;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .vertical-divider {
-            width: 1px;
-            background: var(--border-color);
-            margin: 24px 0;
-            opacity: 0.5;
-        }
 
         .badge-system {
             background: rgba(59, 130, 246, 0.1);
@@ -1073,58 +1288,56 @@
             font-weight: 600;
         }
 
-        @media (max-width: 768px) {
-            .task-split-container {
-                flex-direction: column;
-            }
-
-            .vertical-divider {
-                display: none;
-            }
-
-            .task-column {
-                border-bottom: 1px solid var(--border-color);
-            }
-
-            .task-column:last-child {
-                border-bottom: none;
-            }
-        }
-
-        /* Streak Grid Styles */
-        .streak-grid {
-            display: grid;
-            grid-template-rows: repeat(7, 1fr);
-            grid-auto-flow: column;
+        /* Task Filter Tabs */
+        .task-filter-tabs {
+            display: flex;
             gap: 4px;
-            height: 100px;
+            margin-bottom: 16px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .streak-cell {
-            width: 12px;
-            height: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 2px;
-            transition: all 0.2s;
+        .task-filter-tab {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
         }
 
-        .streak-cell:hover {
-            transform: scale(1.2);
-            z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .task-filter-tab:hover {
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.04);
         }
 
-        .streak-cell.level-1 {
-            background: rgba(16, 185, 129, 0.3);
+        .task-filter-tab.active {
+            color: white;
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.3);
         }
 
-        .streak-cell.level-2 {
-            background: rgba(16, 185, 129, 0.6);
+        /* Task completion date */
+        .task-completed-date {
+            font-size: 11px;
+            color: var(--accent-green);
+            opacity: 0.8;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .streak-cell.level-3 {
-            background: rgba(16, 185, 129, 0.9);
-            box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+        .task-completed-date::before {
+            content: '✓';
+            font-size: 10px;
         }
     </style>
 
