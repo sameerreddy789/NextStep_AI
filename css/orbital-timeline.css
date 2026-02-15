@@ -192,15 +192,19 @@
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     width: 260px;
-    background: rgba(10, 10, 18, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
+    background: rgba(10, 10, 18, 0.4);
+    /* Ultra Clear */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
     padding: 1.5rem;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s ease;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 20px 50px -10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .orbital-node.expanded .node-card {

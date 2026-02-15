@@ -14,7 +14,7 @@
 
 .pill-nav {
     --nav-h: 80px;
-    --logo-size: 42px;
+    --logo-size: 44px;
 
     width: 100%;
     height: var(--nav-h);
@@ -26,23 +26,19 @@
     padding: 0 64px;
     box-sizing: border-box;
 
-    /* Locked & Legible Background */
-    background: rgba(8, 8, 12, 0.685);
-    /* Darker base */
-    backdrop-filter: blur(20px) saturate(120%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    /* Premium Glass Background - Ultra Clear */
+    background: rgba(10, 10, 15, 0.2);
+    backdrop-filter: blur(8px) saturate(140%);
+    -webkit-backdrop-filter: blur(8px) saturate(140%);
 
     /* Glow Separator */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow:
-        0 4px 40px rgba(0, 0, 0, 0.5),
-        /* Deep Shadow */
-        0 0 25px rgba(99, 102, 241, 0.2),
-        /* Brand Glow */
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 4px 30px rgba(0, 0, 0, 0.2),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 
     pointer-events: auto;
-    transition: all 0.3s ease;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (max-width: 1024px) {

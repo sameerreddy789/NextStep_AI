@@ -41,68 +41,68 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         .faq-section {
-            padding: 80px 0;
-            background: linear-gradient(180deg, transparent, rgba(99, 102, 241, 0.05));
+            padding: 100px 0;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.03), transparent 70%);
         }
 
         .faq-section .section-title {
-            font-size: 64px !important;
-            letter-spacing: -0.04em;
-            margin-bottom: 12px;
-            background: var(--gradient-primary);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: clamp(32px, 5vw, 48px) !important;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+            text-align: center;
         }
 
         .faq-section .section-badge {
             background: transparent !important;
-            border: none !important;
-            padding: 0 !important;
-            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+            padding: 6px 16px !important;
+            border-radius: 100px;
+            color: var(--text-secondary);
             font-size: 12px;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .faq-section .section-subtitle {
-            font-size: 13px;
-            opacity: 0.5;
-            margin-top: 4px;
-        }
-
-        .faq-container {
-            max-width: 680px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .faq-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 24px;
+            display: inline-block;
             backdrop-filter: blur(10px);
         }
 
+        .faq-container {
+            max-width: 720px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .faq-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: var(--transition-normal);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+        }
+
         .faq-item:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.03);
-            transform: translateX(4px);
+            border-color: var(--glass-border-hover);
+            background: var(--glass-bg-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
         }
 
         .faq-item.open {
-            border-color: rgba(99, 102, 241, 0.4);
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow:
+                0 0 0 1px rgba(99, 102, 241, 0.1),
+                0 20px 40px -10px rgba(0, 0, 0, 0.4);
         }
 
         .faq-trigger {
             width: 100%;
-            padding: 16px 22px;
+            padding: 24px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -112,7 +112,7 @@
         }
 
         .faq-question {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
             letter-spacing: -0.01em;
@@ -120,39 +120,42 @@
         }
 
         .faq-icon-wrapper {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition-smooth);
             flex-shrink: 0;
         }
 
         .faq-item.open .faq-icon-wrapper {
-            background: rgba(99, 102, 241, 0.15);
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
             transform: rotate(180deg);
+            color: white;
         }
 
         .faq-icon-wrapper svg {
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             fill: none;
-            stroke: var(--text-muted);
-            stroke-width: 3;
+            stroke: var(--text-secondary);
+            stroke-width: 2.5;
             transition: all 0.3s ease;
         }
 
         .faq-item.open .faq-icon-wrapper svg {
-            stroke: var(--accent-primary);
+            stroke: white;
         }
 
         .faq-content {
             display: grid;
             grid-template-rows: 0fr;
-            transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .faq-item.open .faq-content {
@@ -161,10 +164,10 @@
 
         .faq-inner {
             min-height: 0;
-            padding: 0 22px 20px;
+            padding: 0 32px 32px;
             opacity: 0;
-            transform: translateY(-8px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .faq-item.open .faq-inner {
@@ -173,91 +176,98 @@
         }
 
         .faq-answer {
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text-muted);
-            opacity: 0.8;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-secondary);
         }
 
         /* Feature Highlights Section */
         .features-highlights {
-            padding: 80px 0;
+            padding: 100px 0;
             background: transparent;
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-            margin-top: 40px;
+            gap: 32px;
+            margin-top: 64px;
         }
 
         .feat-card {
-            background: linear-gradient(180deg, rgba(20, 25, 35, 0.8) 0%, rgba(30, 35, 45, 0.4) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
+            background: rgba(10, 10, 15, 0.2);
+            /* Ultra Clear */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-        }
-
-        .feat-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            padding: 1px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
         }
 
         .feat-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            background: linear-gradient(180deg, rgba(25, 30, 40, 0.9) 0%, rgba(35, 40, 50, 0.5) 100%);
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px var(--glow-color);
+            transform: translateY(-12px);
+            /* Background tint based on card type is handled below or via glow-color variable opacity if desired, 
+               but for now let's keep it subtle or use a specific tint if requested. 
+               The user asked to retain green glow but these are blue/purple/orange. 
+               I will assume they meant the "glow" color variable logic. */
+            background: rgba(20, 25, 30, 0.6);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow:
+                0 30px 60px -10px rgba(0, 0, 0, 0.5),
+                0 0 30px var(--glow-color);
+            /* This retains the specific glow color */
         }
 
         .feat-card.blue {
-            --glow-color: rgba(59, 130, 246, 0.15);
+            --glow-color: rgba(59, 130, 246, 0.2);
             --accent: #3b82f6;
         }
 
         .feat-card.purple {
-            --glow-color: rgba(139, 92, 246, 0.15);
+            --glow-color: rgba(139, 92, 246, 0.2);
             --accent: #8b5cf6;
         }
 
         .feat-card.orange {
-            --glow-color: rgba(249, 115, 22, 0.15);
+            --glow-color: rgba(249, 115, 22, 0.2);
             --accent: #f97316;
         }
 
         .feat-header {
-            padding: 32px 32px 10px;
+            padding: 40px 40px 24px;
         }
 
         .feat-icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 26px;
             margin-bottom: 24px;
-            background: linear-gradient(135deg, var(--accent), rgba(255, 255, 255, 0.1));
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            color: var(--accent);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .feat-card:hover .feat-icon-box {
+            background: var(--accent);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1) rotate(5deg);
         }
 
         .feat-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
             color: white;
             margin-bottom: 12px;
@@ -265,14 +275,14 @@
         }
 
         .feat-desc {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--text-secondary);
-            line-height: 1.5;
+            line-height: 1.6;
             margin-bottom: 24px;
         }
 
         .feat-body {
-            padding: 0 32px 32px;
+            padding: 0 40px 40px;
             flex-grow: 1;
         }
 
@@ -282,30 +292,41 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
 
         .feat-bullet {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 13px;
-            color: var(--text-muted);
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
             font-weight: 500;
         }
 
         .feat-bullet-icon {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.03);
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--accent);
             flex-shrink: 0;
             font-size: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .feat-bullet:hover {
+            color: white;
+        }
+
+        .feat-bullet:hover .feat-bullet-icon {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
         }
 
         @media (max-width: 992px) {
@@ -327,7 +348,7 @@
         .footer-social-icon,
         .faq-icon-wrapper,
         .node-circle {
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1) !important;
             display: inline-flex;
             align-items: center;
             justify-content: center;
