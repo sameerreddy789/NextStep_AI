@@ -665,12 +665,12 @@ function formatCompletedDate(dateInput) {
     }
 }
 
-// Filter tasks handler
+// Filter tasks handler (Assigned Tasks only)
 window.filterTasks = function (filter) {
     currentTaskFilter = filter;
 
-    // Update active tab
-    document.querySelectorAll('.task-filter-tab').forEach(tab => {
+    // Update active tab — scoped to assigned card
+    document.querySelectorAll('#task-filter-tabs .task-filter-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.filter === filter);
     });
 
@@ -680,13 +680,40 @@ window.filterTasks = function (filter) {
     }
 };
 
+// Personal tasks filter
+let currentPersonalFilter = 'all';
+
+window.filterPersonalTasks = function (filter) {
+    currentPersonalFilter = filter;
+
+    // Update active tab — scoped to personal card
+    document.querySelectorAll('#personal-filter-tabs .task-filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+    });
+
+    renderUserTasks();
+};
+
 function renderUserTasks() {
     if (!window.SkillStore) return;
     const personalList = document.getElementById('personal-task-list');
     if (!personalList) return;
 
     const tasks = SkillStore.getTasks();
-    const personalTasks = tasks.filter(t => t.type === 'personal');
+    let personalTasks = tasks.filter(t => t.type === 'personal');
+
+    // Apply filter
+    if (currentPersonalFilter === 'done') {
+        personalTasks = personalTasks.filter(t => t.completed);
+    }
+
+    if (personalTasks.length === 0) {
+        const msg = currentPersonalFilter === 'done'
+            ? 'No completed tasks yet.'
+            : 'No personal tasks yet. Add one to stay on track.';
+        personalList.innerHTML = `<div class="empty-state-text">${msg}</div>`;
+        return;
+    }
 
     personalList.innerHTML = personalTasks.map(t => `
         <div class="task-item ${t.completed ? 'completed' : ''}">
@@ -700,7 +727,7 @@ function renderUserTasks() {
                 <div class="task-delete-btn" onclick="deleteTask('${t.id}')">✕</div>
             </div>
         </div>
-    `).join('') || '<div class="empty-state-text">No personal tasks yet. Add one to stay on track.</div>';
+    `).join('');
 }
 
 // Global wrapper for initial render

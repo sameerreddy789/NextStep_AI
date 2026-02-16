@@ -111,7 +111,7 @@
                     </div>
 
                     <!-- Assigned Tasks -->
-                    <div class="card" id="assigned-tasks-card">
+                    <div class="card task-card-equal" id="assigned-tasks-card">
                         <div class="card-header">
                             <h3 class="card-title">Assigned Tasks</h3>
                             <span class="badge-system">Roadmap</span>
@@ -124,7 +124,7 @@
                             <button class="task-filter-tab" data-filter="completed"
                                 onclick="filterTasks('completed')">Completed</button>
                         </div>
-                        <div class="task-list" id="system-task-list"></div>
+                        <div class="task-list task-list-scroll" id="system-task-list"></div>
                     </div>
                 </div>
 
@@ -170,12 +170,18 @@
                     </div>
 
                     <!-- My To-Do -->
-                    <div class="card" id="personal-tasks-card">
+                    <div class="card task-card-equal" id="personal-tasks-card">
                         <div class="card-header">
                             <h3 class="card-title">My To-Do</h3>
                             <button class="add-icon-btn" onclick="openAddModal('task')">+</button>
                         </div>
-                        <div class="task-list" id="personal-task-list">
+                        <div class="task-filter-tabs" id="personal-filter-tabs">
+                            <button class="task-filter-tab active" data-filter="all"
+                                onclick="filterPersonalTasks('all')">All</button>
+                            <button class="task-filter-tab" data-filter="done"
+                                onclick="filterPersonalTasks('done')">Done</button>
+                        </div>
+                        <div class="task-list task-list-scroll" id="personal-task-list">
                             <div class="empty-state-text">No personal tasks yet. Add one to stay on track.</div>
                         </div>
                     </div>
@@ -1065,14 +1071,57 @@
         .task-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+        }
+
+        /* Task cards — same fixed height, lined up */
+        .task-card-equal {
+            display: flex;
+            flex-direction: column;
+            max-height: 280px;
+            flex: 0 0 auto;
+            overflow: hidden;
+        }
+
+        .task-card-equal .card-header {
+            flex-shrink: 0;
+        }
+
+        .task-card-equal .task-filter-tabs {
+            flex-shrink: 0;
+        }
+
+        /* Task list fills remaining card space, scrolls if needed */
+        .task-list-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        /* Custom scrollbar */
+        .task-list-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .task-list-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .task-list-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+        }
+
+        .task-list-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .task-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px;
+            padding: 11px 12px;
             background: var(--glass-bg);
             border-radius: 10px;
             transition: var(--transition-fast);
