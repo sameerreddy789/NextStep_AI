@@ -1381,8 +1381,10 @@ pre {
 
 .main-content {
     flex: 1;
+    min-width: 0;
     margin-left: 260px;
     padding: var(--spacing-xl);
+    overflow-x: hidden;
     transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
