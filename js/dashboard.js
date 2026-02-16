@@ -108,26 +108,42 @@ function renderCharts(state) {
     drawPieChart(completedProgress, inProgressProgress, pendingProgress, state.readinessScore || 0);
 }
 
-// Draw Static Pie/Donut Chart using progress values
-// Draw Static Pie/Donut Chart using progress values
+// Draw Liquid Glass Pie/Donut Chart — Frosted Glass Ring
 function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0, readinessScore = 0) {
     const total = completedVal + inProgressVal + pendingVal;
     const svg = document.querySelector('.readiness-svg');
     const scoreBig = document.getElementById('readiness-score-big');
 
-    // Update Score
     if (scoreBig) scoreBig.textContent = `${readinessScore || 0}%`;
-
-    // Clear previous
     if (svg) svg.innerHTML = '';
+    if (!svg) return;
+
+    const R = 0.82;            // Ring radius
+    const STROKE = 0.26;       // Ring thickness
+    const GAP = 0.008;         // Small gap between segments
 
     const segments = [
-        { val: pendingVal, class: 'segment-pending', color: '#E5E7EB', label: 'Not Started', legendId: 'legend-pending' },
-        { val: inProgressVal, class: 'segment-progress', color: '#3B82F6', label: 'In Progress', legendId: 'legend-progress' },
-        { val: completedVal, class: 'segment-completed', color: '#10B981', label: 'Completed', legendId: 'legend-completed' }
+        {
+            val: pendingVal,
+            color: '#C8CCD4', colorLight: '#E8EBF0', colorMid: '#D1D5DB', colorDark: '#9CA3AF',
+            glowColor: 'rgba(200, 204, 212, 0.4)',
+            label: 'Not Started', legendId: 'legend-pending'
+        },
+        {
+            val: inProgressVal,
+            color: '#3B82F6', colorLight: '#93C5FD', colorMid: '#60A5FA', colorDark: '#2563EB',
+            glowColor: 'rgba(59, 130, 246, 0.5)',
+            label: 'In Progress', legendId: 'legend-progress'
+        },
+        {
+            val: completedVal,
+            color: '#10B981', colorLight: '#6EE7B7', colorMid: '#34D399', colorDark: '#059669',
+            glowColor: 'rgba(16, 185, 129, 0.5)',
+            label: 'Completed', legendId: 'legend-completed'
+        }
     ];
 
-    // Update Legend Percentages
+    // Update legend
     segments.forEach(seg => {
         const el = document.getElementById(seg.legendId);
         if (el) {
@@ -136,76 +152,169 @@ function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0, readi
         }
     });
 
-    if (total === 0) {
-        // Draw background circle
-        if (svg) {
-            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', '0');
-            circle.setAttribute('cy', '0');
-            circle.setAttribute('r', '1');
-            circle.setAttribute('fill', 'rgba(255,255,255,0.05)');
-            circle.setAttribute('stroke', 'rgba(255,255,255,0.1)');
-            circle.setAttribute('stroke-width', '0.05');
-            svg.appendChild(circle);
-        }
-        return;
-    }
+    // --- SVG Defs ---
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
 
+    // Outer glow filter (wide soft bloom)
+    const outerGlow = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    outerGlow.setAttribute('id', 'ring-outer-glow');
+    outerGlow.setAttribute('x', '-80%'); outerGlow.setAttribute('y', '-80%');
+    outerGlow.setAttribute('width', '260%'); outerGlow.setAttribute('height', '260%');
+    outerGlow.innerHTML = `
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.06" result="blur"/>
+        <feFlood flood-color="rgba(200,210,240,0.35)" result="color"/>
+        <feComposite in="color" in2="blur" operator="in" result="glow"/>
+        <feMerge>
+            <feMergeNode in="glow"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    `;
+    defs.appendChild(outerGlow);
+
+    // Soft ambient glow filter for the base ring
+    const ambientGlow = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    ambientGlow.setAttribute('id', 'ring-ambient');
+    ambientGlow.setAttribute('x', '-60%'); ambientGlow.setAttribute('y', '-60%');
+    ambientGlow.setAttribute('width', '220%'); ambientGlow.setAttribute('height', '220%');
+    ambientGlow.innerHTML = `
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.04" result="blur"/>
+        <feFlood flood-color="rgba(220,225,240,0.25)" result="color"/>
+        <feComposite in="color" in2="blur" operator="in" result="ambientGlow"/>
+        <feMerge>
+            <feMergeNode in="ambientGlow"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    `;
+    defs.appendChild(ambientGlow);
+
+    // Segment hover glow filter
+    const segGlow = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+    segGlow.setAttribute('id', 'seg-hover-glow');
+    segGlow.setAttribute('x', '-60%'); segGlow.setAttribute('y', '-60%');
+    segGlow.setAttribute('width', '220%'); segGlow.setAttribute('height', '220%');
+    segGlow.innerHTML = `
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0.045" result="blur"/>
+        <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+    `;
+    defs.appendChild(segGlow);
+
+    // Frosted glass ring gradient (luminous white-to-light-blue)
+    const ringGrad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+    ringGrad.setAttribute('id', 'frosted-ring-grad');
+    ringGrad.setAttribute('x1', '0'); ringGrad.setAttribute('y1', '-1');
+    ringGrad.setAttribute('x2', '0'); ringGrad.setAttribute('y2', '1');
+    ringGrad.setAttribute('gradientUnits', 'userSpaceOnUse');
+    ringGrad.innerHTML = `
+        <stop offset="0%" stop-color="#F0F4FF" stop-opacity="0.95"/>
+        <stop offset="30%" stop-color="#E2E8F0" stop-opacity="0.88"/>
+        <stop offset="60%" stop-color="#D6DCE8" stop-opacity="0.82"/>
+        <stop offset="100%" stop-color="#CBD5E1" stop-opacity="0.75"/>
+    `;
+    defs.appendChild(ringGrad);
+
+    // Per-segment gradients
+    segments.forEach((seg, i) => {
+        if (seg.val === 0) return;
+        const grad = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+        grad.setAttribute('id', `seg-grad-${i}`);
+        grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+        grad.setAttribute('x1', '-1'); grad.setAttribute('y1', '-1');
+        grad.setAttribute('x2', '1'); grad.setAttribute('y2', '1');
+        grad.innerHTML = `
+            <stop offset="0%" stop-color="${seg.colorLight}" stop-opacity="0.95"/>
+            <stop offset="45%" stop-color="${seg.colorMid}" stop-opacity="1"/>
+            <stop offset="100%" stop-color="${seg.colorDark}" stop-opacity="0.9"/>
+        `;
+        defs.appendChild(grad);
+    });
+
+    svg.appendChild(defs);
+
+    // ===== LAYER 1: Outer soft glow ring (wide, diffuse) =====
+    const glowRing = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    glowRing.setAttribute('cx', '0');
+    glowRing.setAttribute('cy', '0');
+    glowRing.setAttribute('r', String(R));
+    glowRing.setAttribute('fill', 'none');
+    glowRing.setAttribute('stroke', 'rgba(210, 218, 235, 0.20)');
+    glowRing.setAttribute('stroke-width', String(STROKE + 0.08));
+    glowRing.setAttribute('filter', 'url(#ring-outer-glow)');
+    svg.appendChild(glowRing);
+
+    // ===== LAYER 2: Main frosted glass ring =====
+    const mainRing = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    mainRing.setAttribute('cx', '0');
+    mainRing.setAttribute('cy', '0');
+    mainRing.setAttribute('r', String(R));
+    mainRing.setAttribute('fill', 'none');
+    mainRing.setAttribute('stroke', 'url(#frosted-ring-grad)');
+    mainRing.setAttribute('stroke-width', String(STROKE));
+    mainRing.setAttribute('filter', 'url(#ring-ambient)');
+    svg.appendChild(mainRing);
+
+    // ===== LAYER 3: Inner highlight (subtle lighter stroke on inner edge) =====
+    const innerHighlight = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    innerHighlight.setAttribute('cx', '0');
+    innerHighlight.setAttribute('cy', '0');
+    innerHighlight.setAttribute('r', String(R));
+    innerHighlight.setAttribute('fill', 'none');
+    innerHighlight.setAttribute('stroke', 'rgba(255, 255, 255, 0.12)');
+    innerHighlight.setAttribute('stroke-width', String(STROKE - 0.06));
+    innerHighlight.style.pointerEvents = 'none';
+    svg.appendChild(innerHighlight);
+
+    if (total === 0) return;
+
+    // ===== LAYER 4: Colored segments on top =====
+    const circumference = 2 * Math.PI * R;
     let cumPercent = 0;
 
     function getCoordinatesForPercent(percent) {
-        const x = Math.cos(2 * Math.PI * percent);
-        const y = Math.sin(2 * Math.PI * percent);
+        const x = R * Math.cos(2 * Math.PI * percent);
+        const y = R * Math.sin(2 * Math.PI * percent);
         return [x, y];
     }
 
-    // Add background circle for the "donut" look
-    const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    bgCircle.setAttribute('cx', '0');
-    bgCircle.setAttribute('cy', '0');
-    bgCircle.setAttribute('r', '1');
-    bgCircle.setAttribute('fill', 'rgba(255,255,255,0.02)');
-    svg.appendChild(bgCircle);
-
-    segments.forEach(seg => {
+    segments.forEach((seg, i) => {
         if (seg.val === 0) return;
 
         const percent = seg.val / total;
-        const startPercent = cumPercent;
-        const endPercent = cumPercent + percent;
+        // small gap
+        const adjustedPercent = Math.max(0, percent - GAP);
+        const startPercent = cumPercent + (GAP / 2);
 
-        // Calculate coordinates for the arc
         const [startX, startY] = getCoordinatesForPercent(startPercent);
-        const [endX, endY] = getCoordinatesForPercent(endPercent);
+        const [endX, endY] = getCoordinatesForPercent(startPercent + adjustedPercent);
 
-        // SVG Path Command - Donut segment (thick ring)
-        const largeArcFlag = percent > 0.5 ? 1 : 0;
-        const pathData = `M ${startX} ${startY} A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`;
+        const largeArcFlag = adjustedPercent > 0.5 ? 1 : 0;
+        const pathData = `M ${startX} ${startY} A ${R} ${R} 0 ${largeArcFlag} 1 ${endX} ${endY}`;
 
-        if (svg) {
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', pathData);
-            path.setAttribute('fill', 'none');
-            path.setAttribute('stroke', seg.color);
-            path.setAttribute('stroke-width', '0.22');
-            path.setAttribute('class', 'pie-ring-segment');
-            path.style.transition = 'stroke-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', `url(#seg-grad-${i})`);
+        path.setAttribute('stroke-width', String(STROKE - 0.02));
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('class', 'pie-ring-segment');
+        path.style.transition = 'stroke-width 0.4s cubic-bezier(0.23, 1, 0.32, 1), filter 0.4s ease';
+        path.style.cursor = 'pointer';
 
-            // Enhanced Interactivity
-            path.addEventListener('mouseenter', () => {
-                showTooltip(seg.label, Math.round(percent * 100));
-                path.setAttribute('stroke-width', '0.28');
-                path.style.filter = 'drop-shadow(0 0 4px ' + seg.color + '44)';
-            });
-            path.addEventListener('mouseleave', () => {
-                hideTooltip();
-                path.setAttribute('stroke-width', '0.22');
-                path.style.filter = 'none';
-            });
+        // Hover: glow bloom
+        path.addEventListener('mouseenter', () => {
+            showTooltip(seg.label, Math.round(percent * 100));
+            path.setAttribute('stroke-width', String(STROKE + 0.04));
+            path.setAttribute('filter', 'url(#seg-hover-glow)');
+        });
+        path.addEventListener('mouseleave', () => {
+            hideTooltip();
+            path.setAttribute('stroke-width', String(STROKE - 0.02));
+            path.removeAttribute('filter');
+        });
 
-            svg.appendChild(path);
-        }
-
+        svg.appendChild(path);
         cumPercent += percent;
     });
 }
