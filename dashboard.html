@@ -1074,13 +1074,20 @@
             gap: 10px;
         }
 
-        /* Task cards — same fixed height, lined up */
+        /* Task cards — base height */
         .task-card-equal {
             display: flex;
             flex-direction: column;
-            max-height: 280px;
+            max-height: 300px;
+            min-height: 300px;
             flex: 0 0 auto;
             overflow: hidden;
+        }
+
+        /* Assigned Tasks — taller */
+        #assigned-tasks-card.task-card-equal {
+            max-height: 631px;
+            min-height: 631px;
         }
 
         .task-card-equal .card-header {
@@ -1109,12 +1116,12 @@
         }
 
         .task-list-scroll::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(60, 75, 244, 0.314);
             border-radius: 4px;
         }
 
         .task-list-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(60, 75, 244, 0.61);
         }
 
         .task-item {
