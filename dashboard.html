@@ -91,20 +91,22 @@
 
                 <!-- LEFT COLUMN -->
                 <div class="dash-col">
-                    <!-- Activity Pulse -->
-                    <div class="card pulse-card" id="pulse-card">
+                    <!-- Momentum System -->
+                    <div class="card pulse-card momentum-card" id="pulse-card">
                         <div class="card-header">
                             <div class="pulse-header-left">
-                                <h3 class="card-title">This Week</h3>
+                                <h3 class="card-title">Momentum</h3>
                                 <span class="pulse-insight" id="pulse-insight">—</span>
                             </div>
                             <div class="pulse-header-right">
-                                <span class="pulse-total" id="pulse-total">0 done</span>
+                                <span class="momentum-status" id="pulse-total">Momentum not started.</span>
                                 <span class="streak-badge" id="streak-badge"><span class="streak-fire">🔥</span> <span
                                         id="streak-count">0</span></span>
                             </div>
                         </div>
+                        <div class="momentum-crown-wrap" id="momentum-crown"></div>
                         <div class="pulse-timeline" id="pulse-timeline"></div>
+                        <div class="weekly-progress-strip" id="weekly-progress-strip"></div>
                         <div class="pulse-detail" id="pulse-detail"></div>
                     </div>
 
@@ -391,19 +393,43 @@
             }
         }
 
-        /* ====== Activity Pulse ====== */
-        .pulse-card {
-            padding: 14px 16px 8px;
+        /* ====== Momentum System ====== */
+        .momentum-card {
+            padding: 20px 24px 14px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.35),
+                0 2px 8px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
-        .pulse-card .card-header {
+        /* Noise texture overlay */
+        .momentum-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            opacity: 0.025;
+            pointer-events: none;
+            z-index: 0;
+            mix-blend-mode: overlay;
+        }
+
+        .momentum-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .momentum-card .card-header {
             align-items: flex-start;
+            margin-bottom: 2px;
         }
 
         .pulse-header-left {
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
         }
 
         .pulse-insight {
@@ -411,6 +437,7 @@
             color: var(--text-muted);
             font-weight: 400;
             line-height: 1.4;
+            opacity: 0.85;
         }
 
         .pulse-header-right {
@@ -437,142 +464,198 @@
             font-size: 13px;
         }
 
-        .pulse-total {
+        .momentum-status {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 500;
             color: var(--text-muted);
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
 
-        /* Timeline Row */
+        /* ---- Consistency Crown ---- */
+        .momentum-crown-wrap {
+            display: flex;
+            justify-content: center;
+            padding: 0 8%;
+            margin: 6px 0 0;
+        }
+
+        .momentum-crown-wrap svg {
+            width: 100%;
+            height: 6px;
+            overflow: visible;
+        }
+
+        /* ---- Timeline Row ---- */
         .pulse-timeline {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0 4px;
-            gap: 2px;
+            padding: 14px 0 8px;
+            gap: 0;
             position: relative;
         }
 
-        /* Individual Day Node */
+        /* ---- Day Node ---- */
         .pulse-day {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             cursor: pointer;
             flex: 1;
             position: relative;
+            z-index: 2;
         }
 
-        /* Connector line between rings */
+        /* ---- Animated connector pulse wave ---- */
         .pulse-day:not(:first-child)::before {
             content: '';
             position: absolute;
-            top: 16px;
+            top: 18px;
             right: 50%;
             width: 100%;
             height: 1px;
             background: linear-gradient(90deg,
-                    rgba(255, 255, 255, 0.04),
-                    rgba(255, 255, 255, 0.08),
-                    rgba(255, 255, 255, 0.04));
+                    rgba(16, 185, 129, 0.0),
+                    rgba(16, 185, 129, 0.12),
+                    rgba(59, 130, 246, 0.12),
+                    rgba(59, 130, 246, 0.0));
+            background-size: 200% 100%;
+            animation: connectorPulse 8s ease-in-out infinite;
             z-index: 0;
         }
 
-        /* Activity Ring — conic gradient donut */
+        @keyframes connectorPulse {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+                opacity: 0.4;
+            }
+
+            50% {
+                background-position: 100% 50%;
+                opacity: 1;
+            }
+        }
+
+        /* ---- Ring — progressive gradient donut ---- */
         .pulse-ring {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: conic-gradient(var(--ring-color, rgba(255, 255, 255, 0.06)) calc(var(--fill, 0) * 1%),
-                    rgba(255, 255, 255, 0.03) calc(var(--fill, 0) * 1%));
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 0.25s ease;
-            z-index: 1;
+            transition:
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease,
+                filter 0.3s ease;
+            z-index: 2;
         }
 
-        /* Inner cutout for donut effect */
+        /* Ring track + fill via conic-gradient */
+        .pulse-ring::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg,
+                    var(--ring-start, rgba(255, 255, 255, 0.05)) 0%,
+                    var(--ring-end, rgba(255, 255, 255, 0.05)) calc(var(--fill, 0) * 1%),
+                    rgba(255, 255, 255, 0.04) calc(var(--fill, 0) * 1%),
+                    rgba(255, 255, 255, 0.04) 100%);
+            z-index: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Inner cutout — donut hole */
         .pulse-ring::after {
             content: '';
             position: absolute;
             inset: 5px;
             border-radius: 50%;
             background: var(--bg-card, #0a0a0f);
-            transition: box-shadow 0.25s ease;
+            transition: box-shadow 0.3s ease;
+            z-index: 1;
         }
 
         .pulse-count {
             position: relative;
-            z-index: 2;
+            z-index: 3;
             font-size: 11px;
             font-weight: 700;
             color: var(--text-muted);
             font-variant-numeric: tabular-nums;
+            transition: color 0.3s ease;
         }
 
-        /* Active day — green ring + lit up count */
+        /* Hover lift */
+        .pulse-day:hover .pulse-ring {
+            transform: scale(1.08);
+        }
+
+        /* ---- Active state ---- */
         .pulse-day.active .pulse-count {
             color: var(--text-primary);
         }
 
-        .pulse-day.active .pulse-ring {
-            --ring-color: #10b981;
-        }
-
         .pulse-day.active .pulse-ring::after {
-            box-shadow: inset 0 0 8px rgba(16, 185, 129, 0.08);
+            box-shadow: inset 0 0 6px rgba(16, 185, 129, 0.06);
         }
 
-        /* Today — blue accent with breathing glow */
+        .pulse-day.active .pulse-day-label {
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        /* ---- Today — breathing glow ---- */
         .pulse-day.is-today .pulse-ring {
-            --ring-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
         }
 
         .pulse-day.is-today .pulse-ring::after {
-            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.1);
+            box-shadow: inset 0 0 8px rgba(59, 130, 246, 0.08);
         }
 
         .pulse-day.is-today.active .pulse-ring {
-            animation: ringBreath 3s ease-in-out infinite;
+            animation: momentumBreath 4s ease-in-out infinite;
         }
 
-        @keyframes ringBreath {
+        @keyframes momentumBreath {
 
             0%,
             100% {
+                transform: scale(1);
                 box-shadow:
                     0 0 0 2px rgba(59, 130, 246, 0.12),
-                    0 0 12px rgba(59, 130, 246, 0.06);
+                    0 0 8px rgba(59, 130, 246, 0.06);
             }
 
             50% {
+                transform: scale(1.02);
                 box-shadow:
-                    0 0 0 4px rgba(59, 130, 246, 0.08),
-                    0 0 24px rgba(59, 130, 246, 0.12);
+                    0 0 0 3px rgba(59, 130, 246, 0.08),
+                    0 0 14px rgba(59, 130, 246, 0.1);
             }
         }
 
-        /* Selected — ring scales up with halo */
+        /* ---- Selected state ---- */
         .pulse-day.selected .pulse-ring {
-            transform: scale(1.15);
+            transform: scale(1.12);
             box-shadow:
-                0 0 0 2px rgba(255, 255, 255, 0.12),
-                0 0 16px rgba(255, 255, 255, 0.04);
+                0 0 0 2px rgba(255, 255, 255, 0.1),
+                0 0 12px rgba(255, 255, 255, 0.04);
         }
 
-        /* Day label */
+        /* ---- Day label ---- */
         .pulse-day-label {
             font-size: 10px;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.35);
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            transition: color 0.3s ease;
         }
 
         .pulse-day.is-today .pulse-day-label {
@@ -580,31 +663,34 @@
             font-weight: 700;
         }
 
-        /* ====== Drill-down Detail Panel ====== */
+        /* ====== Detail Slide Panel ====== */
         .pulse-detail {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                padding 0.35s ease,
-                opacity 0.25s ease;
             opacity: 0;
+            transform: translateY(8px);
+            transition:
+                max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease 0.05s,
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
             margin: 0;
             padding: 0;
         }
 
         .pulse-detail.expanded {
-            max-height: 220px;
-            padding-top: 12px;
-            margin-top: 8px;
+            max-height: 300px;
+            padding-top: 14px;
+            margin-top: 10px;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             opacity: 1;
+            transform: translateY(0);
         }
 
         .detail-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .detail-title {
@@ -625,19 +711,60 @@
             border-radius: 6px;
             background: transparent;
             border: none;
-            transition: background 0.2s ease;
+            transition: background 0.2s ease, transform 0.2s ease;
         }
 
         .detail-close:hover {
             background: rgba(255, 255, 255, 0.06);
             color: white;
+            transform: scale(1.1);
         }
 
+        /* Stats Grid */
+        .detail-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .detail-stat-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .detail-stat-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .detail-stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .detail-stat-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        /* Task items in detail */
         .detail-items {
             display: flex;
             flex-direction: column;
             gap: 4px;
-            max-height: 140px;
+            max-height: 100px;
             overflow-y: auto;
         }
 
@@ -666,7 +793,55 @@
             text-align: center;
         }
 
+        /* ---- Weekly Progress Strip ---- */
+        .weekly-progress-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 4px;
+            margin-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
 
+        .weekly-strip-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .weekly-strip-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .weekly-strip-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .weekly-strip-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .weekly-strip-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .weekly-strip-divider {
+            width: 1px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.06);
+        }
 
         .chart-container {
             padding: 20px 0;

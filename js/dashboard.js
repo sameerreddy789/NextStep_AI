@@ -233,7 +233,7 @@ function hideTooltip() {
 }
 
 
-// ====== Activity Pulse — ring tracker with drill-down ======
+// ====== Momentum System — ring tracker with progressive fills ======
 let selectedPulseDay = null;
 
 function renderActivityPulse(state) {
@@ -242,6 +242,7 @@ function renderActivityPulse(state) {
     const totalEl = document.getElementById('pulse-total');
     const streakEl = document.getElementById('streak-count');
     const detailPanel = document.getElementById('pulse-detail');
+    const crownWrap = document.getElementById('momentum-crown');
     if (!timeline) return;
 
     timeline.innerHTML = '';
@@ -299,8 +300,20 @@ function renderActivityPulse(state) {
 
         const displayLabel = isToday ? 'Today' : dayNames[i];
 
+        // Progressive gradient fill — green→blue spectrum
+        // Glow intensity proportional to fill
+        const glowIntensity = fillPercent / 100;
+        const glowRadius = Math.round(4 + glowIntensity * 8);
+        const glowAlpha = (0.08 + glowIntensity * 0.25).toFixed(2);
+
+        let ringStyle = `--fill: ${fillPercent};`;
+        if (fillPercent > 0) {
+            ringStyle += ` --ring-start: #10b981; --ring-end: #3b82f6;`;
+            ringStyle += ` filter: drop-shadow(0 0 ${glowRadius}px rgba(16, 185, 129, ${glowAlpha}));`;
+        }
+
         node.innerHTML = `
-            <div class="pulse-ring" style="--fill: ${fillPercent}">
+            <div class="pulse-ring" style="${ringStyle}">
                 <span class="pulse-count">${dayTotal || '·'}</span>
             </div>
             <span class="pulse-day-label">${displayLabel}</span>
@@ -311,11 +324,11 @@ function renderActivityPulse(state) {
                 // Toggle off
                 selectedPulseDay = null;
                 detailPanel.classList.remove('expanded');
-                detailPanel.innerHTML = '';
+                setTimeout(() => { detailPanel.innerHTML = ''; }, 400);
                 node.classList.remove('selected');
             } else {
                 selectedPulseDay = i;
-                expandPulseDetail(weekData[i], detailPanel);
+                expandPulseDetail(weekData[i], detailPanel, state);
                 // Update ring visuals
                 timeline.querySelectorAll('.pulse-day').forEach((n, idx) => {
                     n.classList.toggle('selected', idx === i);
@@ -326,9 +339,9 @@ function renderActivityPulse(state) {
         timeline.appendChild(node);
     }
 
-    // Total
+    // Smart Microcopy
     if (totalEl) {
-        totalEl.textContent = `${totalWeek} done`;
+        totalEl.textContent = generateMomentumStatus(totalWeek, activeDays);
     }
 
     // Streak
@@ -337,19 +350,151 @@ function renderActivityPulse(state) {
         streakEl.textContent = streak;
     }
 
-    // Smart insight
+    // Dynamic insight
     if (insightEl) {
         insightEl.textContent = generateInsight(totalWeek, activeDays, bestDay, state);
     }
 
+    // Consistency Crown
+    const consistencyScore = Math.round((activeDays / 7) * 100);
+    renderConsistencyCrown(crownWrap, consistencyScore);
+
+    // Weekly Progress Strip
+    renderWeeklyProgressStrip(state, totalWeek);
+
     // Restore expanded detail if a day was selected
     if (selectedPulseDay !== null && weekData[selectedPulseDay]) {
-        expandPulseDetail(weekData[selectedPulseDay], detailPanel);
+        expandPulseDetail(weekData[selectedPulseDay], detailPanel, state);
     }
 }
 
-function expandPulseDetail(dayData, panel) {
+// ---- Smart Microcopy ----
+function generateMomentumStatus(totalWeek, activeDays) {
+    if (totalWeek === 0) return 'Momentum not started.';
+    if (totalWeek === 1) return 'Streak initiated.';
+    if (activeDays >= 6) return 'Peak momentum.';
+    if (activeDays >= 5) return 'Deep in flow state.';
+    if (activeDays >= 3) return "You're building rhythm.";
+    if (activeDays >= 2) return 'Gaining traction.';
+    return `${totalWeek} completed.`;
+}
+
+// ---- Consistency Crown SVG ----
+function renderConsistencyCrown(container, score) {
+    if (!container) return;
+    const total = 100;
+    const fillWidth = (score / total) * 100;
+
+    container.innerHTML = `
+        <svg viewBox="0 0 100 6" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.5"/>
+                    <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.5"/>
+                </linearGradient>
+            </defs>
+            <rect x="0" y="2" width="100" height="2" rx="1" fill="rgba(255,255,255,0.04)"/>
+            <rect x="0" y="2" width="${fillWidth}" height="2" rx="1" fill="url(#crownGrad)" style="transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"/>
+        </svg>
+    `;
+}
+
+// ---- Weekly Progress Strip ----
+function renderWeeklyProgressStrip(state, totalWeek) {
+    const strip = document.getElementById('weekly-progress-strip');
+    if (!strip) return;
+
+    // Topics: completed roadmap topics this week
+    const completedTopics = state.roadmapProgress?.completedTopics?.length || 0;
+    // Use weekly activity-correlated count (tasks done this week)
+    const weeklyTopics = totalWeek;
+
+    // Questions: interview questions answered this week
+    let weeklyQuestions = 0;
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    monday.setHours(0, 0, 0, 0);
+
+    if (state.interviews && state.interviews.length > 0) {
+        state.interviews.forEach(interview => {
+            const iDate = new Date(interview.date || interview.createdAt);
+            if (iDate >= monday) {
+                weeklyQuestions += interview.questionCount || interview.questions?.length || 5;
+            }
+        });
+    }
+
+    // Time Spent: estimate from activities (15 min per activity unit)
+    const totalMinutes = totalWeek * 15;
+    const timeStr = totalMinutes >= 60
+        ? `${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60 > 0 ? (totalMinutes % 60) + 'm' : ''}`
+        : `${totalMinutes}m`;
+    const timeDisplay = totalMinutes === 0 ? '0h' : timeStr.trim();
+
+    strip.innerHTML = `
+        <span class="weekly-strip-title">Weekly Progress</span>
+        <div class="weekly-strip-stats">
+            <div class="weekly-strip-stat">
+                <span class="weekly-strip-value">${weeklyTopics}</span>
+                <span class="weekly-strip-label">Topics</span>
+            </div>
+            <div class="weekly-strip-divider"></div>
+            <div class="weekly-strip-stat">
+                <span class="weekly-strip-value">${weeklyQuestions}</span>
+                <span class="weekly-strip-label">Questions</span>
+            </div>
+            <div class="weekly-strip-divider"></div>
+            <div class="weekly-strip-stat">
+                <span class="weekly-strip-value">${timeDisplay}</span>
+                <span class="weekly-strip-label">Time Spent</span>
+            </div>
+        </div>
+    `;
+}
+
+// ---- Enriched Detail Panel ----
+function expandPulseDetail(dayData, panel, state) {
     if (!panel) return;
+
+    // Stats
+    const tasksCompleted = dayData.tasksOnDay.length;
+    const focusTime = dayData.dayTotal > 0 ? `${dayData.dayTotal * 15}m` : '0m';
+
+    // Skills improved
+    let skillsTouched = 0;
+    if (dayData.tasksOnDay.length > 0) {
+        const uniqueSkills = new Set(dayData.tasksOnDay.map(t => t.subtitle || t.category || 'general'));
+        skillsTouched = uniqueSkills.size;
+    }
+
+    // Consistency delta
+    const weekActivity = state?.learningActivity || {};
+    const totalActiveDays = Object.keys(weekActivity).filter(d => weekActivity[d] > 0).length;
+    const consistencyDelta = totalActiveDays > 0 ? `+${Math.round((totalActiveDays / 7) * 100)}%` : '—';
+
+    const statsHTML = `
+        <div class="detail-stats-grid">
+            <div class="detail-stat-item">
+                <span class="detail-stat-value">${tasksCompleted}</span>
+                <span class="detail-stat-label">Tasks Done</span>
+            </div>
+            <div class="detail-stat-item">
+                <span class="detail-stat-value">${focusTime}</span>
+                <span class="detail-stat-label">Focus Time</span>
+            </div>
+            <div class="detail-stat-item">
+                <span class="detail-stat-value">${skillsTouched}</span>
+                <span class="detail-stat-label">Skills Touched</span>
+            </div>
+            <div class="detail-stat-item">
+                <span class="detail-stat-value">${consistencyDelta}</span>
+                <span class="detail-stat-label">Consistency</span>
+            </div>
+        </div>
+    `;
 
     let itemsHTML = '';
     if (dayData.tasksOnDay.length > 0) {
@@ -375,6 +520,7 @@ function expandPulseDetail(dayData, panel) {
             <span class="detail-title">${dayData.isToday ? 'Today' : dayData.label} — ${dayData.dateStr}</span>
             <button class="detail-close" onclick="closePulseDetail()">✕</button>
         </div>
+        ${statsHTML}
         <div class="detail-items">${itemsHTML}</div>
     `;
 
@@ -386,7 +532,7 @@ window.closePulseDetail = () => {
     const panel = document.getElementById('pulse-detail');
     if (panel) {
         panel.classList.remove('expanded');
-        setTimeout(() => { panel.innerHTML = ''; }, 350);
+        setTimeout(() => { panel.innerHTML = ''; }, 400);
     }
     document.querySelectorAll('.pulse-day.selected').forEach(n => n.classList.remove('selected'));
 };
@@ -436,7 +582,7 @@ function generateInsight(totalWeek, activeDays, bestDay, state) {
         insights.push(`Best day: ${bestDay.name} with ${bestDay.count} tasks`);
     }
 
-    // Pick one at random-ish based on day
+    // Pick one based on day
     const idx = new Date().getDay() % insights.length;
     return insights[idx];
 }
