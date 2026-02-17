@@ -87,19 +87,42 @@ function getCookie(name) {
                     <style>
                         #auth-checking-loader {
                             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                            background: #0f172a; z-index: 999999;
-                            display: flex; justify-content: center; align-items: center;
-                            color: white; font-family: sans-serif; flex-direction: column;
+                            background: radial-gradient(circle at center, #1e293b, #0f172a); 
+                            z-index: 999999;
+                            display: flex; justify-content: center; align-items: center; flex-direction: column;
+                            color: white; font-family: 'Inter', sans-serif;
+                            backdrop-filter: blur(10px);
+                        }
+                        .rg-logo-container {
+                            position: relative; margin-bottom: 30px;
+                        }
+                        .rg-logo-glow {
+                            width: 80px; height: 80px; background: #6366f1; border-radius: 50%;
+                            filter: blur(40px); opacity: 0.5; position: absolute; top: 50%; left: 50%;
+                            transform: translate(-50%, -50%); animation: rg-pulse 2s infinite;
+                        }
+                        .rg-logo {
+                            font-size: 40px; position: relative; z-index: 2;
                         }
                         .rg-spinner {
-                            width: 50px; height: 50px; border: 3px solid rgba(255,255,255,0.3);
-                            border-radius: 50%; border-top-color: #6366f1;
-                            animation: rg-spin 1s ease-in-out infinite; margin-bottom: 20px;
+                            width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.1);
+                            border-radius: 50%; border-top-color: #818cf8;
+                            animation: rg-spin 1s linear infinite; margin-top: 20px;
+                        }
+                        .rg-text {
+                            font-size: 14px; color: #94a3b8; font-weight: 500; letter-spacing: 0.5px;
+                            margin-top: 15px; animation: rg-fade 1.5s infinite alternate;
                         }
                         @keyframes rg-spin { to { transform: rotate(360deg); } }
+                        @keyframes rg-pulse { 0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); } }
+                        @keyframes rg-fade { from { opacity: 0.6; } to { opacity: 1; } }
                     </style>
+                    <div class="rg-logo-container">
+                        <div class="rg-logo-glow"></div>
+                        <div class="rg-logo">🚀</div>
+                    </div>
+                    <div class="rg-text">NextStep AI</div>
                     <div class="rg-spinner"></div>
-                <p>Verifying session...</p>
                 `;
                 // Append to documentElement (<html>) because body might not exist yet if script is in <head>
                 if (document.body) {
