@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 500);
     }
 
+    // Render Interview History
+    renderInterviewHistory();
+
     // Auto-save logic
     autoSaveInterval = setInterval(() => {
         if (answers.length > 0) {
@@ -1298,3 +1301,91 @@ window.jumpToQuestion = jumpToQuestion;
 window.showQuestion = showQuestion;
 window.completeInterview = completeInterview;
 window.validateCodingSolution = validateCodingSolution;
+
+// Render History
+function renderInterviewHistory() {
+    try {
+        const historySection = document.getElementById('interview-history-section');
+        const historyList = document.getElementById('history-list');
+        const historyCount = document.querySelector('.history-count');
+
+        if (!historySection || !historyList) return;
+
+        // Fetch from LocalStorage
+        const rawHistory = localStorage.getItem('nextStep_interviews');
+        if (!rawHistory) {
+            historySection.classList.add('hidden');
+            return;
+        }
+
+        const interviews = JSON.parse(rawHistory);
+        if (!Array.isArray(interviews) || interviews.length === 0) {
+            historySection.classList.add('hidden');
+            return;
+        }
+
+        // Show section
+        historySection.classList.remove('hidden');
+        if (historyCount) historyCount.textContent = `${interviews.length} session${interviews.length !== 1 ? 's' : ''}`;
+        historyList.innerHTML = '';
+
+        // Reverse to show newest first
+        [...interviews].reverse().forEach((interview, index) => {
+            const date = new Date(interview.timestamp);
+            const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+            // Calculate Score (if not present, default to 0)
+            const score = interview.overallScore || 0;
+            let scoreClass = 'score-low';
+            if (score >= 80) scoreClass = 'score-high';
+            else if (score >= 50) scoreClass = 'score-mid';
+
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            card.style.cssText = `
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 16px;
+                padding: 20px;
+                transition: transform 0.2s, background 0.2s;
+                cursor: pointer;
+            `;
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                    <div>
+                        <span class="badge badge-${interview.mode === 'mixed' ? 'gold' : 'blue'}" 
+                              style="font-size: 11px; text-transform: uppercase;">
+                            ${interview.mode || 'Adaptive'}
+                        </span>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-top: 6px;">
+                            ${dateStr} • ${timeStr}
+                        </div>
+                    </div>
+                    <div class="score-badge ${scoreClass}" 
+                         style="font-size: 18px; font-weight: 700; color: ${score >= 80 ? '#4ade80' : score >= 50 ? '#facc15' : '#f87171'};">
+                        ${score}%
+                    </div>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <div style="font-size: 14px; color: var(--text-secondary);">
+                        <span style="color: #fff; font-weight: 600;">${interview.answers ? interview.answers.length : 0}</span> questions answered
+                    </div>
+                </div>
+                <!-- <button class="btn btn-sm btn-outline" style="width: 100%; border-color: rgba(255,255,255,0.2);" disabled title="Detailed view coming soon">
+                    View Analysis
+                </button> -->
+            `;
+
+            // Hover effect
+            card.onmouseenter = () => { card.style.background = 'rgba(255, 255, 255, 0.08)'; card.style.transform = 'translateY(-2px)'; };
+            card.onmouseleave = () => { card.style.background = 'rgba(255, 255, 255, 0.05)'; card.style.transform = 'translateY(0)'; };
+
+            historyList.appendChild(card);
+        });
+
+    } catch (e) {
+        console.error('Error rendering history:', e);
+    }
+}
+window.renderInterviewHistory = renderInterviewHistory;
