@@ -15,7 +15,7 @@ let userData = {
     careerGoal: null,
     targetRole: null,
     jobReadyTimeline: null,
-    preparationStyle: null,
+    dailyCommitment: null, // replaced preparationStyle
     resumeStatus: 'pending',
     resumeData: null // For built resume
 };
@@ -254,7 +254,7 @@ function validateStep() {
         case 1: isValid = !!userData.careerGoal; break;
         case 2: isValid = !!userData.targetRole; break;
         case 3: isValid = !!userData.jobReadyTimeline; break;
-        case 4: isValid = !!userData.preparationStyle; break;
+        case 4: isValid = !!userData.dailyCommitment; break;
         case 5:
             if (resumeMode === 'choice') isValid = false;
             else if (resumeMode === 'upload') isValid = userData.resumeStatus === 'uploaded';
@@ -281,7 +281,7 @@ window.skipStep = () => {
     if (currentStep === 3) {
         userData.jobReadyTimeline = '3-6 months'; // Default
     } else if (currentStep === 4) {
-        userData.preparationStyle = 'Somewhat structured'; // Default
+        userData.dailyCommitment = '2 hours/day'; // Default
     }
     nextStep();
 };

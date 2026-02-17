@@ -23,23 +23,44 @@ function getCookie(name) {
     // Check LocalStorage Flags
     const state = {
         onboarding: localStorage.getItem('nextStep_onboardingCompleted') === 'true',
+        resume: !!localStorage.getItem('nextStep_resume'),
         roadmap: localStorage.getItem('nextStep_roadmapCompleted') === 'true'
     };
 
-    // 1. Basic Redirects based on flags
-    if (CURRENT_PAGE === 'dashboard.html') {
+    // 1. Strict Flow Enforcement
+    // Sequence: Onboarding -> Resume -> Interview -> Dashboard/Roadmap
+
+    if (CURRENT_PAGE === 'dashboard.html' || CURRENT_PAGE === 'roadmap.html' || CURRENT_PAGE === 'studio.html') {
         if (!state.onboarding) {
             window.location.href = 'onboarding.html';
             return;
         }
-    } else if (CURRENT_PAGE === 'onboarding.html') {
-        if (state.onboarding) {
-            window.location.href = 'dashboard.html';
+        if (!state.resume) {
+            window.location.href = 'resume.html';
+            return;
+        }
+        if (!state.roadmap) {
+            // "Roadmap" flag is set after Interview + Roadmap Generation
+            window.location.href = 'interview.html';
+            return;
+        }
+    } else if (CURRENT_PAGE === 'interview.html') {
+        if (!state.onboarding) {
+            window.location.href = 'onboarding.html';
+            return;
+        }
+        if (!state.resume) {
+            window.location.href = 'resume.html';
             return;
         }
     } else if (CURRENT_PAGE === 'resume.html') {
         if (!state.onboarding) {
             window.location.href = 'onboarding.html';
+            return;
+        }
+    } else if (CURRENT_PAGE === 'onboarding.html') {
+        if (state.roadmap) {
+            window.location.href = 'dashboard.html';
             return;
         }
     }

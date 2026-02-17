@@ -667,9 +667,32 @@
             }
 
             // Check if already analyzed
-            const resumeData = localStorage.getItem('nextStep_resume');
-            if (resumeData) {
-                showResults(JSON.parse(resumeData));
+            const rawResumeData = localStorage.getItem('nextStep_resume');
+            if (rawResumeData) {
+                try {
+                    let parsedData = JSON.parse(rawResumeData);
+
+                    // Handle wrapper object from auth-modern.js
+                    if (parsedData.status && parsedData.data !== undefined) {
+                        if (parsedData.status === 'pending' || !parsedData.data) {
+                            // If pending or empty, clear it and show upload
+                            localStorage.removeItem('nextStep_resume');
+                            return;
+                        }
+                        parsedData = parsedData.data;
+                    }
+
+                    // Check for valid analysis data
+                    if (parsedData.score !== undefined || (parsedData.skills && parsedData.skills.present)) {
+                        showResults(parsedData);
+                    } else {
+                        // Invalid data, clear it
+                        localStorage.removeItem('nextStep_resume');
+                    }
+                } catch (e) {
+                    console.error('Error parsing resume data:', e);
+                    localStorage.removeItem('nextStep_resume');
+                }
             }
         });
 
