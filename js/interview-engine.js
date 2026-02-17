@@ -44,6 +44,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         userRole.textContent = roleNames[userData.targetRole] || userData.targetRole;
     }
 
+    // Check for restriction flag from RouteGuard
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('restriction')) {
+        setTimeout(() => {
+            if (window.showAlert) {
+                window.showAlert(
+                    "You must complete the interview to unlock your personalized Dashboard and Roadmap.",
+                    "🔒",
+                    "Access Restricted"
+                );
+            } else {
+                alert("You must complete the interview to unlock your personalized Dashboard and Roadmap.");
+            }
+            // Clean URL without reloading
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({ path: newUrl }, '', newUrl);
+        }, 500);
+    }
+
     // Auto-save logic
     autoSaveInterval = setInterval(() => {
         if (answers.length > 0) {

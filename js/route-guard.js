@@ -41,7 +41,8 @@ function getCookie(name) {
         }
         if (!state.roadmap) {
             // "Roadmap" flag is set after Interview + Roadmap Generation
-            window.location.href = 'interview.html';
+            // Redirect with restriction flag to show popup
+            window.location.href = 'interview.html?restriction=1';
             return;
         }
     } else if (CURRENT_PAGE === 'interview.html') {
