@@ -1050,18 +1050,20 @@
 
         // Re-upload resume function
         function reUploadResume() {
-            // Clear existing resume data
-            localStorage.removeItem('nextStep_resume');
+            if (confirm('Are you sure you want to upload a new resume? This will replace your current analysis.')) {
+                // Clear existing resume data
+                localStorage.removeItem('nextStep_resume');
 
-            // Hide results and show upload section
-            document.getElementById('results-section').classList.add('hidden');
-            document.getElementById('upload-section').classList.remove('hidden');
+                // Hide results and show upload section
+                document.getElementById('results-section').classList.add('hidden');
+                document.getElementById('upload-section').classList.remove('hidden');
 
-            // Reset file input
-            document.getElementById('file-input').value = '';
+                // Reset file input
+                document.getElementById('file-input').value = '';
 
-            // Show notification
-            alert('🔄 Ready to upload a new resume!');
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
         // Database Integration
         async function saveResumeToDatabase(data) {
@@ -1083,6 +1085,15 @@
                 }
 
                 console.log('[Database] Saving resume analysis to Firestore (UID: ' + user.uid + ')...');
+
+                // Save to root user document so auth-modern.js can find it on login
+                await setDoc(doc(db, "users", user.uid), {
+                    resumeStatus: 'completed',
+                    resumeData: data,
+                    updatedAt: serverTimestamp()
+                }, { merge: true });
+
+                // Also save to subcollection for backup/history (optional, but good for structure)
                 await setDoc(doc(db, "users", user.uid, "analysis", "resume"), {
                     ...data,
                     updatedAt: serverTimestamp()
