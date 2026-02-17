@@ -606,10 +606,55 @@ IMPORTANT:
         }
     },
 
+    async analyzeSkillGap(userSkills, role) {
+        console.log('[GeminiService] 📊 Starting full skill gap analysis...');
+
+        // 1. Get Market Analysis
+        const marketAnalysis = await this.analyzeMarketSkills(role, {}, userSkills);
+
+        if (!marketAnalysis) throw new Error('Market analysis failed');
+
+        // 2. Flatten all recommended skills
+        // 2. Flatten all recommended skills with explicit category mapping for UI
+        const allRecommended = [
+            ...(marketAnalysis.mustHave || []).map(s => ({ ...s, priority: 'must-have', originalPriority: s.priority })),
+            ...(marketAnalysis.goodToHave || []).map(s => ({ ...s, priority: 'good-to-have', originalPriority: s.priority })),
+            ...(marketAnalysis.futureProof || []).map(s => ({ ...s, priority: 'future-proof', originalPriority: s.priority }))
+        ];
+
+        // 3. Calculate Match Score
+        // Simple logic: (Matched Skills / Total Recommended Skills) * 100
+        // Weighted: MustHave = 3pts, GoodToHave = 2pts, Future = 1pt
+        let totalPoints = 0;
+        let earnedPoints = 0;
+
+        allRecommended.forEach(skill => {
+            // Simplified weighting based on our explicit categories
+            const weight = skill.priority === 'must-have' ? 3 :
+                skill.priority === 'good-to-have' ? 2 : 1;
+
+            totalPoints += weight;
+
+            if (skill.status === 'present') earnedPoints += weight;
+            else if (skill.status === 'partial') earnedPoints += (weight * 0.5);
+        });
+
+        const matchPercentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+
+        return {
+            matchPercentage,
+            missingSkills: allRecommended, // The UI expects a list of all relevant market skills
+            breakdown: marketAnalysis
+        };
+    },
+
     async analyzeMarketSkills(role, marketSearchData, userSkills) {
         console.log('[GeminiService] 🔍 Categorizing market skills');
 
-        const prompt = `You are a career expert.Analyze these market search results for the role "${role}" and compare them with the user's current skills.
+        // Prepare fallback data first
+        const fallbackData = this._getFallbackMarketSkills(role, userSkills);
+
+        const prompt = `You are a career expert. Analyze these market search results for the role "${role}" and compare them with the user's current skills.
 Market Trends context:
 ${JSON.stringify(marketSearchData)}
 
@@ -638,36 +683,103 @@ Respond with ONLY a JSON object:
         try {
             const response = await this._request(prompt);
             const parsed = this._parseJSON(response);
+
             if (parsed) {
                 console.log('[GeminiService] ✅ Market skills analyzed');
-                return parsed;
+
+                // Helper to re-verify status (AI status can be flaky)
+                const skillsArray = Array.isArray(userSkills) ? userSkills : [];
+                const userSkillSet = new Set(skillsArray.map(s => (typeof s === 'string' ? s : s.name).toLowerCase()));
+
+                const recheckStatus = (s) => {
+                    const lower = s.name.toLowerCase();
+                    if (userSkillSet.has(lower)) return 'present';
+                    for (const us of userSkillSet) {
+                        if (us.includes(lower) || lower.includes(us)) return 'partial';
+                    }
+                    return 'missing';
+                };
+
+                // Merge with fallback to ensure no empty categories
+                const result = {
+                    mustHave: (parsed.mustHave && parsed.mustHave.length > 0) ? parsed.mustHave : fallbackData.mustHave,
+                    goodToHave: (parsed.goodToHave && parsed.goodToHave.length > 0) ? parsed.goodToHave : fallbackData.goodToHave,
+                    futureProof: (parsed.futureProof && parsed.futureProof.length > 0) ? parsed.futureProof : fallbackData.futureProof
+                };
+
+                // Re-apply status check to ensure score accuracy
+                ['mustHave', 'goodToHave', 'futureProof'].forEach(key => {
+                    if (result[key]) {
+                        result[key].forEach(skill => {
+                            // Prefer "present" if either AI or local check says so
+                            const localStatus = recheckStatus(skill);
+                            if (localStatus === 'present') skill.status = 'present';
+                            else if (skill.status !== 'present' && localStatus === 'partial') skill.status = 'partial';
+                        });
+                    }
+                });
+
+                return result;
             }
             throw new Error('Failed to parse market analysis');
         } catch (error) {
             console.warn('[GeminiService] ⚠️ Market analysis failed, using fallback:', error.message);
-            return this._getFallbackMarketSkills(role, userSkills);
+            return fallbackData;
+        }
+    },
+
+    /**
+     * Helper to map timeline to weeks
+     */
+    _getWeeksFromTimeline(timeline) {
+        switch (timeline) {
+            case '1-3 months': return 8;
+            case '3-6 months': return 16;
+            case '6-12 months': return 32;
+            case '12+ months': return 48;
+            default: return 6; // Default fallback
         }
     },
 
     /**
      * Generate a personalized roadmap based on resume, interview gaps, and target role
      */
-    async generatePersonalizedRoadmap(resumeData, interviewGaps, marketGaps, targetRole) {
+    async generatePersonalizedRoadmap(resumeData, interviewGaps, marketGaps, targetRole, timeline = '3-6 months', commitment = '2 hours/day', refinementPrompt = null) {
         console.log('[GeminiService] 🗺️ Generating personalized roadmap...');
 
-        const prompt = `Create a detailed, personalized 6-week learning roadmap for a ${targetRole} role.
+        const totalWeeks = this._getWeeksFromTimeline(timeline);
+
+        let contextInstruction = '';
+        if (refinementPrompt) {
+            console.log('[GeminiService] 🔧 Applying refinement:', refinementPrompt);
+            contextInstruction = `
+CRITICAL UPDATE INSTRUCTION:
+The user wants to REFINE their existing roadmap. 
+User Request: "${refinementPrompt}"
+You must regenerate the roadmap to strictly adhere to this request.
+- If they say "Remove X", remove all weeks/topics related to X.
+- If they say "Add Y", replace less critical weeks with Y.
+- If they say "Focus on Z", make Z the primary theme for multiple weeks.
+`;
+        }
+
+        const prompt = `Create a detailed, personalized ${totalWeeks}-week learning roadmap for a ${targetRole} role.
+User Commitment: ${commitment} (Adjust daily task load accordingly)
 
 User Context:
 1.  **Resume Skills**: ${JSON.stringify(resumeData.skills || [])}
 2.  **Interview Weaknesses**: ${JSON.stringify(interviewGaps || [])}
 3.  **Role/Market Gaps**: ${JSON.stringify(marketGaps || [])}
 
+${contextInstruction}
+
 Instructions:
--   **Weeks 1-2 (Foundation & Fixes)**: Prioritize fixing "Interview Weaknesses" and critical "Role Gaps" (Must-Haves).
--   **Weeks 3-4 (Core Competency)**: Cover remaining "Must-Have" market skills that are missing from the Resume.
--   **Weeks 5-6 (Advanced & Future)**: Cover "Good-to-Have" skills and advanced/future-proof topics.
--   **Structure**: Each week should have a clear focus title and 2-3 detailed modules.
--   **Content**: For EACH topic, provide a specifically generated search query for finding efficient tutorials.
+-   **Total Duration**: Exactly ${totalWeeks} weeks.
+-   **Weeks 1-2**: Foundation & Critical Fixes (Interview Weaknesses).
+-   **Weeks 3-${Math.floor(totalWeeks / 2)}**: Core Competency & Market "Must-Haves".
+-   **Weeks ${Math.floor(totalWeeks / 2) + 1}-${totalWeeks}**: Advanced Projects & Specialization.
+-   **Structure**: Each week must have a 'title' and 'topics'.
+-   **Content**: For EACH topic, provide a specifically generated search query.
 
 Respond with ONLY a JSON array of objects (no markdown):
 [

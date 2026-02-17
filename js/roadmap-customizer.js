@@ -45,62 +45,31 @@ window.roadmapCustomizer = {
         btn.disabled = true;
         btn.innerHTML = `<span class="loading-spinner"></span> Generating...`;
 
-        // Real AI Processing via SerpAPI
+        // Real AI Processing
         try {
-            // 1. Search for the concept
-            const results = await SerpService.searchYouTube(prompt);
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const role = userData.targetRole || 'sde';
 
-            if (!results || results.length === 0) {
-                throw new Error('No results found');
+            // Trigger full roadmap regeneration with refinement prompt
+            if (window.initRoadmap) {
+                // (role, isSample, skillGaps, aiData, refinementPrompt)
+                // We pass null for skillGaps/aiData to let it re-fetch or use defaults, 
+                // but crucially we pass the PROMPT as the 5th argument.
+                await window.initRoadmap(role, false, null, null, prompt);
             }
 
-            // 2. Generate Subtopics from Video Titles
-            const subtopics = results.slice(0, 4).map(v => {
-                return v.title
-                    .replace(/\|.*/, '')
-                    .replace(/\(.*\)/, '')
-                    .replace(/Tutorial|Course|Full|Guide|in \d+.*|Beginners/gi, '')
-                    .trim();
-            }).filter(t => t.length > 3);
-
-            const uniqueSubtopics = [...new Set(subtopics)];
-
-            // 3. Add to Roadmap
-            if (uniqueSubtopics.length > 0) {
-                const weekTitle = 'Custom Focus: ' + prompt.substring(0, 15);
-                RoadmapEngine.addCustomTopic(weekTitle, {
-                    name: prompt,
-                    items: uniqueSubtopics
-                });
-
-                // Refresh UI
-                const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-                const role = userData.targetRole || 'sde';
-                if (window.initRoadmap) {
-                    window.initRoadmap(role, false);
-                }
-
-                this.showNotification(`Roadmap updated! Added "${prompt}" with ${uniqueSubtopics.length} generated subtopics.`);
-            } else {
-                this.showNotification(`Could not identify clear subtopics for "${prompt}". Try a broader term.`);
-            }
-
+            this.showNotification(`Roadmap updated based on your request: "${prompt}"`);
             this.closeModal();
             document.getElementById(this.inputId).value = '';
 
         } catch (error) {
             console.error(error);
-            this.showNotification('AI Agent offline or key missing. Using fallback.');
-            RoadmapEngine.addCustomTopic('Custom Focus', {
-                name: prompt,
-                items: ['Core Concepts', 'Best Practices', 'Advanced Patterns']
-            });
-            if (window.initRoadmap) window.initRoadmap('sde', false);
-            this.closeModal();
-            document.getElementById(this.inputId).value = '';
+            this.showNotification('Failed to refine roadmap. Please try again.');
         } finally {
-            btn.disabled = false;
-            btn.innerText = originalText;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
         }
     },
 
