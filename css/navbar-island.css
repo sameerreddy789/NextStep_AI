@@ -140,9 +140,8 @@
     opacity: 0;
 }
 
-.pill-logo:hover {
+/*.pill-logo:hover {
     /*transform: scale(1.05) rotate(3deg);*/
-}
 
 .pill-logo:hover::after {
     opacity: 1;
