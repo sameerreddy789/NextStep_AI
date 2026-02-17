@@ -162,26 +162,25 @@ window.openSubtopicPractice = function (sectionTitle, topicName) {
 };
 
 // Initializer
-window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = null) {
+window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = null, refinementPrompt = null) {
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
 
-
-
     let sectionsData = null;
 
-    // 1. Try to load persisted roadmap from AppState first
-    if (appState.roadmap && appState.roadmap.weeks) {
+    // 1. Try to load persisted roadmap from AppState first (ONLY if not refining)
+    if (!refinementPrompt && appState.roadmap && appState.roadmap.weeks) {
         console.log('[RoadmapUI] 📂 Loading persisted roadmap from AppState');
         sectionsData = appState.roadmap.weeks;
     }
-    // 2. If no persisted roadmap, generating one using AI
+    // 2. If no persisted roadmap OR refining, generating one using AI
     else if (window.GeminiService && appState.user && !isSample) {
+        const actionText = refinementPrompt ? 'Refining Your Roadmap...' : 'Building Your Personalized Roadmap...';
         container.innerHTML = `
             <div class="roadmap-loading">
                 <div class="loading-spinner"></div>
-                <h3>Building Your Personalized Roadmap...</h3>
-                <p>Analyzing your resume, interview results, and market trends for <strong>${role}</strong>.</p>
+                <h3>${actionText}</h3>
+                <p>Analyzing your profile and market trends for <strong>${role}</strong>.</p>
             </div>`;
 
         try {
@@ -189,6 +188,11 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
 
             // Fetch Resume Data (if not in appState)
             const resumeData = appState.resumeData || {};
+
+            // Get User Preferences
+            const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+            const timeline = userData.jobReadyTimeline || '3-6 months';
+            const commitment = userData.dailyCommitment || '2 hours/day';
 
             // analyzing market skills
             let marketGaps = [];
@@ -208,7 +212,10 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                 resumeData,
                 skillGaps,
                 marketGaps,
-                role
+                role,
+                timeline,
+                commitment,
+                refinementPrompt
             );
 
             if (generatedWeeks) {
@@ -221,6 +228,10 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                     generatedAt: serverTimestamp(),
                     role: role
                 });
+
+                // Save to LocalStorage for Persistence
+                localStorage.setItem('nextStep_roadmap', JSON.stringify({ weeks: sectionsData }));
+                console.log('[RoadmapUI] 💾 Saved roadmap to LocalStorage');
 
                 // Update AppState
                 appState.roadmap = { weeks: sectionsData };

@@ -1090,6 +1090,11 @@ async function saveInterviewToDatabase(data) {
                 ...data,
                 timestamp: new Date() // Approximate for local update
             });
+
+            // Save to LocalStorage for Persistence
+            localStorage.setItem('nextStep_interviews', JSON.stringify(appState.interviews));
+            console.log('[Database] 💾 Saved interview to local history');
+
             appState.calculateReadiness();
             if (appState.logActivity) appState.logActivity(); // Update Streak
             appState.notifyListeners();
