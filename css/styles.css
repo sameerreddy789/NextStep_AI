@@ -1,4 +1,4 @@
-/* ===== CSS Variables & Design System ===== */
+﻿/* ===== CSS Variables & Design System ===== */
 :root {
     /* Colors - Carbon Slate Theme */
     --bg-primary: #0F1419;
@@ -81,12 +81,41 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Helvetica Neue', Helvetica, Arial, 'Inter', sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-primary);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-sm);
+}
+
+h1 {
+    font-size: 2.5rem;
+    letter-spacing: -0.03em;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.5rem;
 }
 
 a {
@@ -242,19 +271,33 @@ pre {
 }
 
 .hero-title {
-    font-size: clamp(48px, 8vw, 84px);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.02em;
+    font-size: clamp(40px, 6vw, 76px);
+    font-weight: 700;
+    /* Helvetica bold */
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    /* Tighter for Helvetica */
     margin-bottom: var(--spacing-lg);
-    text-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
-}
 
-.hero-title span {
-    background: var(--gradient-primary);
+    /* Glassy / Metallic Text Effect */
+    background: linear-gradient(135deg, #FFFFFF 10%, #CBD5E1 50%, #94A3B8 90%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
+    /* Soft glow backing */
+    filter: drop-shadow(0 0 25px rgba(148, 163, 184, 0.15));
+}
+
+.hero-title span {
+    /* Vibrant Glassy Gradient for Typewriter */
+    background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3));
 }
 
 .hero-subtitle {
@@ -2835,4 +2878,3 @@ pre {
     box-shadow:
         0 10px 40px -10px rgba(0, 0, 0, 0.4),
         var(--glass-highlight);
-}
