@@ -30,7 +30,7 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://nextstep-ai.vercel.app/">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/pill-nav.css">
+    <link rel="stylesheet" href="css/navbar-island.css?v=3">
     <link rel="stylesheet" href="css/card-stack.css">
     <link rel="stylesheet" href="css/orbital-timeline.css">
     <link rel="stylesheet" href="css/magic-bento.css">
@@ -211,9 +211,9 @@
 
         .feat-card:hover {
             transform: translateY(-12px);
-            /* Background tint based on card type is handled below or via glow-color variable opacity if desired, 
-               but for now let's keep it subtle or use a specific tint if requested. 
-               The user asked to retain green glow but these are blue/purple/orange. 
+            /* Background tint based on card type is handled below or via glow-color variable opacity if desired,
+               but for now let's keep it subtle or use a specific tint if requested.
+               The user asked to retain green glow but these are blue/purple/orange.
                I will assume they meant the "glow" color variable logic. */
             background: rgba(20, 25, 30, 0.6);
             border-color: rgba(255, 255, 255, 0.15);
@@ -372,6 +372,69 @@
         .faq-item.open .faq-icon-wrapper:hover {
             transform: rotate(540deg) scale(1.1) !important;
         }
+
+        .btn-ref:hover {
+            transform: translateY(-1px);
+        }
+
+        /* Body Background - Global Image */
+        body {
+            background: url('assets/BG/download.jpg') no-repeat center center fixed !important;
+            background-size: cover !important;
+        }
+
+        /* Hero Section - Layout Only */
+        .hero {
+            background: transparent !important;
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 0 20px;
+        }
+
+        /* Glassmorphic Pane for Hero Content - Hugs Content */
+        .hero-content {
+            background: rgba(15, 18, 25, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 32px;
+            padding: 60px 60px;
+            width: 1100px;
+            max-width: 1300px;
+            margin: 0 auto;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        #hero-typewriter::after {
+            content: '|';
+            animation: blink 1s linear infinite;
+            color: var(--accent-primary);
+            margin-left: 2px;
+            font-weight: 100;
+            opacity: 0.8;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 
@@ -380,7 +443,8 @@
     <div id="pill-nav-container"></div>
 
     <!-- Shader Background (Fixed, behind everything) -->
-    <div id="infinite-plane-bg" style="position: fixed; inset: 0; z-index: -1; pointer-events: none;"></div>
+    <!-- Shader Background Removed -->
+    <!-- <div id="infinite-plane-bg" ...></div> -->
 
     <!-- Hero Section -->
     <section class="hero" style="background: transparent !important;">
@@ -388,7 +452,8 @@
             <div class="hero-content">
 
                 <h1 class="hero-title">
-                    Stop Guessing. <span>Start Getting Hired.</span>
+                    Stop Guessing. <br />
+                    <span id="hero-typewriter">Start Getting Hired.</span>
                 </h1>
                 <p class="hero-subtitle">
                     The all-in-one AI platform that turns your raw potential into a polished resume, masters your
@@ -742,6 +807,7 @@
     <script src="js/click-spark.js"></script>
     <script src="js/magic-bento.js"></script>
     <script src="js/ui-utils.js"></script>
+    <script src="js/typewriter.js"></script>
 </body>
 
 </html>

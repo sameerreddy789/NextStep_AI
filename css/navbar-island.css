@@ -15,47 +15,73 @@
     --nav-h: 72px;
     --logo-size: 40px;
 
+    /* Wider Island */
     width: auto;
-    max-width: 94%;
+    min-width: 1250px;
+    /* Force it wider on desktop */
+    max-width: 96%;
     height: var(--nav-h);
 
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 48px;
+    justify-content: space-between;
+    /* Spread content out */
 
-    padding: 8px 16px;
-    /* Compact padding */
-    padding-right: 8px;
-    /* Balance for CTA */
+    /* More breathing room */
+    padding: 12px 32px;
+    gap: 32px;
 
     box-sizing: border-box;
 
-    /* Premium Glass Island */
-    background: rgba(15, 18, 25, 0.6);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    /* Frosty Premium Glass */
+    background: linear-gradient(180deg,
+            rgba(50, 63, 87, 0.681) 0%,
+            rgba(22, 61, 75, 0.729) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
 
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Interactive Border Glow */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    /* Top highlight */
     border-radius: 100px;
 
+    /* Premium Shadow */
     box-shadow:
-        0 20px 40px -10px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.05);
+        0 24px 48px -12px rgba(0, 0, 0, 0.6),
+        /* Deep drop shadow */
+        0 0 0 1px rgba(255, 255, 255, 0.05),
+        /* Subtle ring */
+        inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    /* Inner top light */
 
     pointer-events: auto;
-    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Hover state for the whole island - interactive feel */
+.pill-nav:hover {
+    background: linear-gradient(180deg,
+            rgba(67, 87, 125, 0.681) 0%,
+            rgba(7, 57, 75, 0.729) 100%);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 13px 6px -30px rgba(3, 76, 81, 0.318),
+        0 3px 6px -10px rgba(204, 252, 255, 0.152),
+        0 0 0 1px rgba(55, 124, 139, 0.888),
+        inset 0 1px 1px rgba(122, 213, 225, 0.347);
+    transform: translateY(-2px);
 }
 
 @media (max-width: 1024px) {
     .pill-nav {
         padding: 0 20px;
-        --nav-h: 60px;
+        --nav-h: 64px;
         gap: 0;
-        /* Use space-between behavior or minimal gap for mobile */
         justify-content: space-between;
         width: 94%;
-        /* Ensure wide enough on mobile/tablet */
+        min-width: 0;
+        /* Reset desktop constraint */
     }
 }
 
@@ -64,7 +90,6 @@
         padding: 0 20px;
         --nav-h: 64px;
         background: rgba(10, 10, 15, 0.8);
-        /* Slightly darker on mobile */
     }
 }
 
@@ -90,7 +115,8 @@
     width: var(--logo-size);
     height: var(--logo-size);
     border-radius: 12px;
-    background: linear-gradient(135deg, #6366f1, #818cf8);
+    background: linear-gradient(135deg, #6365f1c9, #090f43);
+    backdrop-filter: blur(14px) saturate(180%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -101,7 +127,6 @@
     overflow: hidden;
 }
 
-/* Shine effect on logo */
 .pill-logo::after {
     content: '';
     position: absolute;
@@ -109,14 +134,14 @@
     left: -50%;
     width: 200%;
     height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transform: rotate(45deg);
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.336), transparent);
+    /*transform: rotate(45deg);*/
     transition: 0.5s;
     opacity: 0;
 }
 
 .pill-logo:hover {
-    transform: scale(1.05) rotate(3deg);
+    /*transform: scale(1.05) rotate(3deg);*/
 }
 
 .pill-logo:hover::after {
@@ -153,40 +178,28 @@
     align-items: center;
     margin: 0;
     padding: 6px;
-    background: rgba(255, 255, 255, 0.02);
-    /* Very subtle track */
+    background: rgba(107, 101, 101, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 100px;
     gap: 4px;
     backdrop-filter: blur(5px);
-    /* Double blur for depth */
 }
 
-/* Moving Background Pill */
 .nav-slider-pill {
     position: absolute;
     top: 6px;
-    /* Matches padding of list */
     left: 0;
     height: calc(100% - 12px);
     width: 0;
-    /* Glassy Slider */
-    background: rgba(255, 255, 255, 0.1);
-    box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-        0 2px 10px rgba(0, 0, 0, 0.1);
+    background: rgba(180, 239, 236, 0.274);
+    box-shadow: inset 0 0 0 1px rgba(159, 140, 140, 0.399), 0 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 100px;
-    /* Pill shape */
     z-index: 1;
     pointer-events: none;
     opacity: 0;
-    transition:
-        transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-        width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.2s ease;
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
 }
 
-/* Nav Links */
 .pill-link-item {
     position: relative;
     z-index: 2;
@@ -207,6 +220,8 @@
 .pill:hover {
     color: #fff;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.367);
+    border-color: rgba(255, 255, 255, 0.678);
+    border-radius: 1px;
 }
 
 .pill.is-active {
@@ -215,10 +230,7 @@
     text-shadow: 0 0 12px rgba(255, 255, 255, 0.4);
 }
 
-/* Add a glowing dot for active state if slider isn't enough, or keep clean */
-/* .pill.is-active::after { ... } */
-
-/* === CTA Button (Right) === */
+/* === CTA Button === */
 .nav-cta-container {
     margin-left: 0;
     display: flex;
@@ -237,14 +249,10 @@
     font-weight: 600;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     border: 1px solid rgba(255, 255, 255, 1);
-    box-shadow:
-        0 4px 16px rgba(255, 255, 255, 0.15),
-        inset 0 2px 0 rgba(255, 255, 255, 0.5);
-    /* Inner sheen */
+    box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15), inset 0 2px 0 rgba(255, 255, 255, 0.5);
     overflow: hidden;
 }
 
-/* Shine sweep */
 .cta-button::after {
     content: '';
     position: absolute;
@@ -291,7 +299,6 @@
         display: none;
     }
 
-    /* Hide CTA on tablet to save space? Or keep partial? */
     .mobile-menu-button {
         display: flex;
     }
@@ -304,9 +311,7 @@
     left: 0;
     width: 100%;
     height: 100vh;
-    /* Full screen menu for "wall to wall" feel */
     background: rgba(5, 5, 10, 0.85);
-    /* Deep translucent */
     backdrop-filter: blur(30px) saturate(180%);
     -webkit-backdrop-filter: blur(30px) saturate(180%);
 

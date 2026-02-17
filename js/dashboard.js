@@ -125,7 +125,7 @@ function drawPieChart(completedVal = 0, inProgressVal = 0, pendingVal = 0, readi
     const segments = [
         {
             val: pendingVal,
-            color: '#C8CCD4', colorLight: '#E8EBF0', colorMid: '#D1D5DB', colorDark: '#9CA3AF',
+            color: '#C8CCD4', colorLight: '#e8ebf08a', colorMid: '#D1D5DB', colorDark: '#9CA3AF',
             glowColor: 'rgba(200, 204, 212, 0.4)',
             label: 'Not Started', legendId: 'legend-pending'
         },

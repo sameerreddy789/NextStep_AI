@@ -903,21 +903,21 @@
         }
 
         .dash-col:last-child>.card:first-child:hover {
-            transform: translateY(-8px) scale(1.012);
-            border-radius: 24px;
+            /*transform: translateY(-8px) scale(1.012);
+            border-radius: 24px;*/
             border-color: rgba(180, 200, 255, 0.18);
             box-shadow:
                 /* Deep lift shadow */
-                0 24px 64px rgba(0, 0, 0, 0.40),
-                0 8px 24px rgba(0, 0, 0, 0.25),
+                0 24px 64px rgba(9, 9, 43, 0.584),
+                0 8px 24px rgba(13, 35, 61, 0.401),
                 /* Glass edge glow */
                 0 0 0 1.5px rgba(180, 200, 255, 0.12),
                 /* Inner glass rim highlights */
-                inset 0 1px 0 rgba(255, 255, 255, 0.10),
+                inset 0 1px 0 rgba(155, 212, 248, 0.434),
                 inset 0 -1px 0 rgba(255, 255, 255, 0.03),
                 /* Ambient glass glow */
                 0 0 80px -16px rgba(140, 170, 255, 0.12),
-                0 0 40px -8px rgba(180, 200, 255, 0.06);
+                0 0 40px -8px rgba(127, 137, 249, 0.363);
         }
 
         .dash-col:last-child>.card:first-child:hover::after {
@@ -961,6 +961,7 @@
             background: transparent;
             border: none;
             transition: filter 0.5s ease;
+            backdrop-filter: blur(12px);
         }
 
         /* ---- Dark Inset Center Disc ---- */
@@ -981,17 +982,17 @@
             border-radius: 50%;
             background:
                 radial-gradient(ellipse at 45% 35%,
-                    rgba(20, 25, 35, 0.85) 0%,
-                    rgba(10, 12, 18, 0.95) 70%);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+                    rgba(15, 30, 61, 0.85) 0%,
+                    rgba(28, 36, 61, 0.95) 70%);
+            border: 1px solid rgba(104, 135, 178, 0.29);
             box-shadow:
                 /* Inset depth */
-                inset 0 4px 16px rgba(0, 0, 0, 0.5),
-                inset 0 -2px 8px rgba(0, 0, 0, 0.3),
+                inset 0 4px 16px rgba(44, 73, 92, 0.478),
+                inset 0 -2px 8px rgba(35, 18, 60, 0.3),
                 inset 0 0 24px rgba(0, 0, 0, 0.4),
                 /* Subtle rim light */
-                0 0 0 1px rgba(255, 255, 255, 0.04),
-                0 2px 8px rgba(0, 0, 0, 0.3);
+                0 0 0 1px rgba(76, 5, 81, 0.473),
+                0 2px 8px rgba(53, 4, 79, 0.323);
         }
 
         .pie-value {
