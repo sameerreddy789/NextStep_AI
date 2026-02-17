@@ -232,9 +232,11 @@ pre {
     min-height: 100vh;
     display: flex;
     align-items: center;
+    margin-top: 4.5rem;
     padding-top: var(--nav-height);
     position: relative;
     overflow: hidden;
+    align-self: center;
 }
 
 .hero::before {
@@ -250,6 +252,7 @@ pre {
 }
 
 .hero-content {
+    align-items: center;
     text-align: center;
     max-width: 800px;
     margin: 0 auto;
@@ -2878,3 +2881,4 @@ pre {
     box-shadow:
         0 10px 40px -10px rgba(0, 0, 0, 0.4),
         var(--glass-highlight);
+}
