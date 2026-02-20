@@ -293,14 +293,38 @@ pre {
 }
 
 .hero-title span {
-    /* Vibrant Glassy Gradient for Typewriter */
-    background: linear-gradient(135deg, #60A5FA 0%, #A78BFA 50%, #F472B6 100%);
+    /* Static Frosted Glass Glare */
+    background: linear-gradient(105deg,
+            #ffffff 0%,
+            /* Highlight */
+            #e0e7ff 25%,
+            /* Soft Cool White */
+            #a78bfa 45%,
+            /* Purple Tone */
+            #c4b5fd 50%,
+            /* Intense Glare Point */
+            #f472b6 65%,
+            /* Pinkish Reflection */
+            #818cf8 85%,
+            /* Indigo Depth */
+            #ffffff 100%
+            /* Edge Light */
+        );
+    background-size: 100% auto;
+    /* Ensure it fits statically */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.3));
+    display: inline-block;
+
+    /* Crisp, Static Glass Glow */
+    filter:
+        drop-shadow(0 0 1px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 15px rgba(167, 139, 250, 0.5)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+
+    /* No animations - purely static */
 }
 
 .hero-subtitle {

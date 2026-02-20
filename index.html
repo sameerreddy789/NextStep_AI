@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="css/orbital-timeline.css">
     <link rel="stylesheet" href="css/magic-bento.css">
     <link rel="stylesheet" href="css/ui-utils.css">
+    <link rel="stylesheet" href="css/glass-fx.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <!-- GSAP for animations -->
@@ -442,6 +443,9 @@
 </head>
 
 <body>
+    <!-- Glassmorphic Effects -->
+    <div id="glass-overlay"></div>
+    <div class="cursor-glow"></div>
     <!-- Pill Navigation -->
     <div id="pill-nav-container"></div>
 
@@ -701,6 +705,40 @@
             el.style.transform = 'translateY(20px)';
             el.style.transition = 'all 0.6s ease';
             observer.observe(el);
+        });
+
+        // Glass Mode & Cursor Logic
+        const glassOverlay = document.getElementById('glass-overlay');
+        const cursorGlow = document.querySelector('.cursor-glow');
+        const featuresSection = document.getElementById('features-showcase');
+
+        const glassObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // If scrolling down into features section
+                if (entry.isIntersecting) {
+                    document.body.classList.add('glass-active');
+                } else if (entry.boundingClientRect.top > 0) {
+                    // If scrolling UP out of features section (back to hero)
+                    document.body.classList.remove('glass-active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "-10% 0px -10% 0px" });
+
+        if (featuresSection) {
+            glassObserver.observe(featuresSection);
+        }
+
+        // Cursor Follower
+        window.addEventListener('mousemove', (e) => {
+            // We use GSAP for smooth follow if available
+            if (window.gsap && cursorGlow) {
+                gsap.to(cursorGlow, {
+                    x: e.clientX,
+                    y: e.clientY,
+                    duration: 1.2,
+                    ease: "power3.out"
+                });
+            }
         });
 
         // FAQ Toggle Logic

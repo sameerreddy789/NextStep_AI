@@ -1,0 +1,57 @@
+/* Glassmorphic Background Overlay */
+#glass-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    /* Starts transparent to show body background */
+    background: rgba(15, 20, 30, 0.0);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+}
+
+body.glass-active #glass-overlay {
+    opacity: 1;
+    /* The glass effect */
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    background: rgba(11, 14, 23, 0.85);
+    /* Dark tint */
+}
+
+/* Custom Cursor Glow */
+.cursor-glow {
+    width: 450px;
+    height: 450px;
+    background: radial-gradient(circle, rgba(184, 92, 246, 0.21), transparent 60%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    /* On top of everything */
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+}
+
+body.glass-active .cursor-glow {
+    opacity: 1;
+}
+
+/* Ensure content floats above the glass background */
+section,
+.section,
+.hero,
+.footer,
+.container {
+    position: relative;
+    z-index: 1;
+}
