@@ -35,6 +35,16 @@ function renderDashboard(state) {
     renderCharts(state);    // Donut + Readiness
     renderTasks(state);     // Assigned + Personal
     renderActionItems(state);
+
+    // Badge system — check and render
+    if (window.BadgeSystem) {
+        const badgeData = window.BadgeSystem.gatherBadgeData(state);
+        const newBadges = window.BadgeSystem.checkAndAwardBadges(badgeData);
+        window.BadgeSystem.renderBadgesShowcase('badges-showcase');
+        if (newBadges.length > 0) {
+            window.BadgeSystem.celebrateNewBadges(newBadges);
+        }
+    }
 }
 
 function renderUserInfo(user) {
