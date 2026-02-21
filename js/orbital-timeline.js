@@ -1,6 +1,6 @@
 /**
  * Radial Orbital Timeline - Vanilla JS Version
- * Version: 3.0 — Fixed detail panel on left side
+ * Version: 3.1 — Card attached below each node, moves with it
  */
 
 class OrbitalTimeline {
@@ -23,7 +23,6 @@ class OrbitalTimeline {
         this.pulseEffects = {};
         this.nodeElements = {};
         this.container = null;
-        this.detailPanel = null;
         this.cycleTimer = null;
         this.currentCycleIndex = 0;
 
@@ -35,9 +34,7 @@ class OrbitalTimeline {
             this.render();
             this.setupEventListeners();
             this.startAnimation();
-            if (this.options.autoCycle) {
-                this.startAutoCycle();
-            }
+            if (this.options.autoCycle) this.startAutoCycle();
         } catch (e) {
             console.error("OrbitalTimeline: Initialization failed", e);
         }
@@ -52,23 +49,12 @@ class OrbitalTimeline {
 
         this.container.innerHTML = `
             <div class="orbital-scene">
-                <!-- Fixed Detail Panel — always on the left -->
-                <div class="orbital-detail-panel" id="orbital-detail-panel">
-                    <h3 class="detail-panel-title"></h3>
-                    <p class="detail-panel-desc"></p>
-                </div>
-
-                <!-- Center Core -->
                 <div class="orbital-core">
                     <div class="core-inner"></div>
                     <div class="core-pulse-1"></div>
                     <div class="core-pulse-2"></div>
                 </div>
-
-                <!-- Orbit Path -->
                 <div class="orbital-path"></div>
-
-                <!-- Nodes Container -->
                 <div class="nodes-container">
                     ${this.options.data.map((item) => `
                         <div class="orbital-node" data-id="${item.id}" id="node-${item.id}">
@@ -77,13 +63,16 @@ class OrbitalTimeline {
                                 ${this.getIcon(item.icon)}
                             </div>
                             <div class="node-label">${item.title}</div>
+                            <div class="node-card">
+                                <h3 class="card-title">${item.title}</h3>
+                                <p class="card-desc">${item.content}</p>
+                            </div>
                         </div>
                     `).join('')}
                 </div>
             </div>
         `;
 
-        this.detailPanel = this.container.querySelector('#orbital-detail-panel');
         this.options.data.forEach(item => {
             this.nodeElements[item.id] = this.container.querySelector(`#node-${item.id}`);
         });
@@ -108,83 +97,53 @@ class OrbitalTimeline {
             if (node) {
                 e.stopPropagation();
                 this.toggleNode(parseInt(node.dataset.id));
-            } else if (!e.target.closest('.orbital-detail-panel')) {
+            } else {
                 this.closeAll();
             }
-
             this._isUserClick = false;
         });
     }
 
     toggleNode(id) {
-        if (this.expandedId === id) {
-            this.closeAll();
-            return;
-        }
+        if (this.expandedId === id) { this.closeAll(); return; }
 
         if (this._isUserClick) {
             if (this.cycleTimer) this.stopAutoCycle();
-            if (this._resumeTimer) {
-                clearTimeout(this._resumeTimer);
-                this._resumeTimer = null;
-            }
+            if (this._resumeTimer) { clearTimeout(this._resumeTimer); this._resumeTimer = null; }
         }
 
         this.expandedId = id;
-
         this.pulseEffects = {};
         const currentItem = this.options.data.find(item => item.id === id);
-        currentItem.relatedIds.forEach(relId => {
-            this.pulseEffects[relId] = true;
-        });
-
-        // Update the fixed detail panel content
-        this.detailPanel.querySelector('.detail-panel-title').textContent = currentItem.title;
-        this.detailPanel.querySelector('.detail-panel-desc').textContent = currentItem.content;
-        this.detailPanel.classList.add('visible');
-
+        currentItem.relatedIds.forEach(relId => { this.pulseEffects[relId] = true; });
         this.updateNodeStates();
     }
 
     closeAll() {
         this.expandedId = null;
         this.pulseEffects = {};
-        this.detailPanel.classList.remove('visible');
         this.updateNodeStates();
-
         if (this.options.autoCycle && !this.cycleTimer) {
-            this._resumeTimer = setTimeout(() => {
-                this.startAutoCycle();
-            }, 6000);
+            this._resumeTimer = setTimeout(() => this.startAutoCycle(), 6000);
         }
     }
 
     updateRotationState() {
-        if (this.container) {
-            this.container.classList.toggle('is-rotating', this.isAutoRotating);
-        }
+        if (this.container) this.container.classList.toggle('is-rotating', this.isAutoRotating);
     }
 
-    startAutoCycle() {
-        this.cycleToNext();
-    }
+    startAutoCycle() { this.cycleToNext(); }
 
     cycleToNext() {
         if (this.cycleTimer) clearTimeout(this.cycleTimer);
-
         const currentItem = this.options.data[this.currentCycleIndex];
         if (currentItem) this.toggleNode(currentItem.id);
-
         this.currentCycleIndex = (this.currentCycleIndex + 1) % this.options.data.length;
-
         this.cycleTimer = setTimeout(() => this.cycleToNext(), this.options.cycleDuration);
     }
 
     stopAutoCycle() {
-        if (this.cycleTimer) {
-            clearTimeout(this.cycleTimer);
-            this.cycleTimer = null;
-        }
+        if (this.cycleTimer) { clearTimeout(this.cycleTimer); this.cycleTimer = null; }
     }
 
     updateNodeStates() {
@@ -192,20 +151,14 @@ class OrbitalTimeline {
             const el = this.nodeElements[id];
             const numericId = parseInt(id);
             el.classList.remove('expanded', 'related', 'pulse');
-
-            if (numericId === this.expandedId) {
-                el.classList.add('expanded');
-            } else if (this.expandedId && this.pulseEffects[numericId]) {
-                el.classList.add('related', 'pulse');
-            }
+            if (numericId === this.expandedId) el.classList.add('expanded');
+            else if (this.expandedId && this.pulseEffects[numericId]) el.classList.add('related', 'pulse');
         });
     }
 
     startAnimation() {
         const animate = () => {
-            if (this.isAutoRotating) {
-                this.rotationAngle = (this.rotationAngle + this.options.rotationSpeed) % 360;
-            }
+            if (this.isAutoRotating) this.rotationAngle = (this.rotationAngle + this.options.rotationSpeed) % 360;
             this.positionNodes();
             requestAnimationFrame(animate);
         };
@@ -240,46 +193,22 @@ class OrbitalTimeline {
     }
 }
 
-// NextStep AI Features Data
+// Data
 const timelineData = [
-    {
-        id: 1, title: "Resume", date: "Step 1",
-        content: "Upload your resume and get AI-powered skill extraction, ATS compatibility scoring, and personalized improvement suggestions.",
-        status: "completed", icon: "UserSquare", relatedIds: [2, 3], energy: 100
-    },
-    {
-        id: 2, title: "Interview", date: "Step 2",
-        content: "Practice with adaptive AI mock interviews. Choose technical, behavioral, or mixed modes tailored to your target role.",
-        status: "in-progress", icon: "Mic2", relatedIds: [1, 3, 4], energy: 75
-    },
-    {
-        id: 3, title: "Skill Gap", date: "Step 3",
-        content: "Identify missing critical skills for your dream job. Get prioritized recommendations based on market demand.",
-        status: "in-progress", icon: "Target", relatedIds: [1, 2, 4], energy: 60
-    },
-    {
-        id: 4, title: "Roadmap", date: "Step 4",
-        content: "Follow a personalized 6-week learning plan with curated YouTube tutorials and LeetCode problems.",
-        status: "pending", icon: "Milestone", relatedIds: [3, 5], energy: 40
-    },
-    {
-        id: 5, title: "Progress", date: "Ongoing",
-        content: "Track your daily activities, maintain streaks, and monitor your Job Readiness Score as you improve.",
-        status: "pending", icon: "TrendingUp", relatedIds: [4], energy: 20
-    }
+    { id: 1, title: "Resume", date: "Step 1", content: "Upload your resume and get AI-powered skill extraction, ATS compatibility scoring, and personalized improvement suggestions.", status: "completed", icon: "UserSquare", relatedIds: [2, 3], energy: 100 },
+    { id: 2, title: "Interview", date: "Step 2", content: "Practice with adaptive AI mock interviews. Choose technical, behavioral, or mixed modes tailored to your target role.", status: "in-progress", icon: "Mic2", relatedIds: [1, 3, 4], energy: 75 },
+    { id: 3, title: "Skill Gap", date: "Step 3", content: "Identify missing critical skills for your dream job. Get prioritized recommendations based on market demand.", status: "in-progress", icon: "Target", relatedIds: [1, 2, 4], energy: 60 },
+    { id: 4, title: "Roadmap", date: "Step 4", content: "Follow a personalized 6-week learning plan with curated YouTube tutorials and LeetCode problems.", status: "pending", icon: "Milestone", relatedIds: [3, 5], energy: 40 },
+    { id: 5, title: "Progress", date: "Ongoing", content: "Track your daily activities, maintain streaks, and monitor your Job Readiness Score as you improve.", status: "pending", icon: "TrendingUp", relatedIds: [4], energy: 20 }
 ];
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('orbital-timeline-container')) {
         new OrbitalTimeline({
             containerSelector: '#orbital-timeline-container',
-            data: timelineData,
-            accentColor: '#6366f1',
-            autoRotate: true,
-            rotationSpeed: 0.2,
-            autoCycle: true,
-            cycleDuration: 3000
+            data: timelineData, accentColor: '#6366f1',
+            autoRotate: true, rotationSpeed: 0.2,
+            autoCycle: true, cycleDuration: 3000
         });
     }
 });

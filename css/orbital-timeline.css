@@ -20,7 +20,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1000px;
 }
 
 /* Center Core */
@@ -58,10 +57,7 @@
 }
 
 @keyframes core-ping {
-    75%, 100% {
-        transform: scale(2.5);
-        opacity: 0;
-    }
+    75%, 100% { transform: scale(2.5); opacity: 0; }
 }
 
 /* Orbit Path */
@@ -90,7 +86,6 @@
 .orbital-node {
     position: absolute;
     cursor: pointer;
-    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -98,6 +93,7 @@
     height: 0;
     overflow: visible;
     pointer-events: none;
+    /* No transition so it doesn't fight with JS positioning */
 }
 
 .orbital-timeline-wrapper.is-rotating .orbital-node {
@@ -133,18 +129,17 @@
 }
 
 .node-label {
-    margin-top: 12px;
+    margin-top: 8px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
     color: rgba(255, 255, 255, 0.7);
     white-space: nowrap;
-    transition: all 0.3s ease;
     pointer-events: none;
 }
 
-/* Node States */
+/* ===== Node States ===== */
 .orbital-node.expanded {
     opacity: 1 !important;
     z-index: 1000 !important;
@@ -155,11 +150,6 @@
     color: #000;
     transform: scale(1.5);
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-}
-
-.orbital-node.expanded .node-label {
-    opacity: 0;
-    pointer-events: none;
 }
 
 .orbital-node.related .node-circle {
@@ -176,49 +166,46 @@
     to { transform: scale(1.1); opacity: 1; }
 }
 
-/* ===== Fixed Detail Panel — Left Side ===== */
-.orbital-detail-panel {
-    position: absolute;
-    left: 24px;
-    top: 50%;
-    transform: translateY(-50%) translateX(-20px);
-    width: 260px;
-    background: rgba(10, 10, 18, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 1.5rem;
+/* ===== Detail Card — sits directly below the label ===== */
+.node-card {
+    /* Positioned right after the label in the flex flow */
+    margin-top: 8px;
+    width: 240px;
+    background: rgba(10, 10, 18, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 1.25rem;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-        0 20px 50px -10px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    z-index: 500;
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(8px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
 }
 
-.orbital-detail-panel.visible {
+.orbital-node.expanded .node-card {
     opacity: 1;
     pointer-events: auto;
-    transform: translateY(-50%) translateX(0);
+    transform: translateY(0);
 }
 
-.detail-panel-title {
-    font-size: 1rem;
+.node-card .card-title {
+    font-size: 0.95rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
     color: #fff;
 }
 
-.detail-panel-desc {
-    font-size: 0.85rem;
+.node-card .card-desc {
+    font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.7);
     line-height: 1.5;
     margin: 0;
 }
 
-/* Mobile adjustments */
+/* ===== Mobile ===== */
 @media (max-width: 600px) {
     .orbital-timeline-wrapper {
         height: 500px;
@@ -229,16 +216,8 @@
         height: 300px;
     }
 
-    .orbital-detail-panel {
-        left: 50%;
-        top: auto;
-        bottom: 16px;
-        transform: translateX(-50%) translateY(20px);
-        width: calc(100% - 32px);
-        max-width: 300px;
-    }
-
-    .orbital-detail-panel.visible {
-        transform: translateX(-50%) translateY(0);
+    .node-card {
+        width: 200px;
+        padding: 1rem;
     }
 }
