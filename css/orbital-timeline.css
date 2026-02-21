@@ -58,9 +58,7 @@
 }
 
 @keyframes core-ping {
-
-    75%,
-    100% {
+    75%, 100% {
         transform: scale(2.5);
         opacity: 0;
     }
@@ -78,7 +76,7 @@
     transform: translate(-50%, -50%);
 }
 
-/* Nodes Container - centered in the scene */
+/* Nodes Container */
 .nodes-container {
     position: absolute;
     top: 50%;
@@ -102,7 +100,6 @@
     pointer-events: none;
 }
 
-/* Disable transition during auto-rotation */
 .orbital-timeline-wrapper.is-rotating .orbital-node {
     transition: none;
 }
@@ -119,7 +116,6 @@
     transition: all 0.3s ease;
     z-index: 2;
     margin-top: -20px;
-    /* Center circle vertically on origin */
     flex-shrink: 0;
     pointer-events: auto;
 }
@@ -176,23 +172,16 @@
 }
 
 @keyframes node-pulse {
-    from {
-        transform: scale(1);
-        opacity: 0.6;
-    }
-
-    to {
-        transform: scale(1.1);
-        opacity: 1;
-    }
+    from { transform: scale(1); opacity: 0.6; }
+    to { transform: scale(1.1); opacity: 1; }
 }
 
-/* Detail Card */
-.node-card {
+/* ===== Fixed Detail Panel — Left Side ===== */
+.orbital-detail-panel {
     position: absolute;
-    top: 70px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%) translateX(-20px);
     width: 260px;
     background: rgba(10, 10, 18, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -206,126 +195,27 @@
     box-shadow:
         0 20px 50px -10px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    z-index: 500;
 }
 
-.orbital-node.expanded .node-card {
+.orbital-detail-panel.visible {
     opacity: 1;
     pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(-50%) translateX(0);
 }
 
-/* Flip card above node when in bottom half of orbit */
-.orbital-node.card-above .node-card {
-    top: auto;
-    bottom: 50px;
-    transform: translateX(-50%) translateY(-20px);
-}
-
-.orbital-node.card-above.expanded .node-card {
-    transform: translateX(-50%) translateY(0);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-}
-
-.badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-}
-
-.badge.completed {
-    background: #fff;
-    color: #000;
-}
-
-.badge.in-progress {
-    background: rgba(255, 255, 255, 0.3);
-    color: #fff;
-    border: 1px solid #fff;
-}
-
-.badge.pending {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.date {
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
-    font-family: monospace;
-}
-
-.card-title {
+.detail-panel-title {
     font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
+    color: #fff;
 }
 
-.card-desc {
+.detail-panel-desc {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
-    line-height: 1.4;
-    margin-bottom: 1rem;
-}
-
-.energy-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    margin-bottom: 4px;
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.energy-bar {
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.energy-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-}
-
-.card-connections {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.card-connections h4 {
-    font-size: 9px;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 0.5rem;
-}
-
-.connection-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.rel-btn {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    font-size: 10px;
-    padding: 4px 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.rel-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #fff;
+    line-height: 1.5;
+    margin: 0;
 }
 
 /* Mobile adjustments */
@@ -339,8 +229,16 @@
         height: 300px;
     }
 
-    .node-card {
-        width: 200px;
-        padding: 1rem;
+    .orbital-detail-panel {
+        left: 50%;
+        top: auto;
+        bottom: 16px;
+        transform: translateX(-50%) translateY(20px);
+        width: calc(100% - 32px);
+        max-width: 300px;
+    }
+
+    .orbital-detail-panel.visible {
+        transform: translateX(-50%) translateY(0);
     }
 }
