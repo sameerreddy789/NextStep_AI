@@ -1,6 +1,18 @@
 // ===== Loading States & UI Utilities =====
 
 /**
+ * Escapes HTML special characters to prevent XSS
+ * @param {string} str - Untrusted string to escape
+ * @returns {string} Escaped safe string
+ */
+function escapeHTML(str) {
+    if (typeof str !== 'string') return str;
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+/**
  * Shows a full-screen loading overlay with spinner and optional message
  * @param {string} message - Loading message to display
  */
@@ -401,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Export functions for use in other modules
 if (typeof window !== 'undefined') {
     window.UIUtils = {
+        escapeHTML,
         showLoader,
         hideLoader,
         showToast,

@@ -698,7 +698,16 @@ function showQuestion() {
         const qTips = q.tips || [];
         const combinedTips = qTips.length > 0 ? qTips : defaultTips;
 
-        tipsList.innerHTML = combinedTips.map(tip => `<li>${tip.includes('<strong>') ? tip : `<strong>Tip:</strong> ${tip}`}</li>`).join('');
+        tipsList.innerHTML = combinedTips.map(tip => {
+            if (tip.includes('<strong>')) {
+                // Hardcoded default tips — safe HTML
+                return `<li>${tip}</li>`;
+            }
+            // AI-generated tips — escape to prevent XSS
+            const safeTip = document.createElement('span');
+            safeTip.textContent = tip;
+            return `<li><strong>Tip:</strong> ${safeTip.innerHTML}</li>`;
+        }).join('');
     }
 }
 
@@ -892,7 +901,11 @@ async function completeInterview() {
 
     } catch (err) {
         console.error('[Interview] ❌ Analysis Error:', err);
-        if (loadingEl) loadingEl.innerHTML = `<p style="color: #ef4444">Analysis failed: ${err.message}. You can still proceed to your dashboard.</p>`;
+        if (loadingEl) {
+            const safeMsg = document.createElement('span');
+            safeMsg.textContent = err.message;
+            loadingEl.innerHTML = `<p style="color: #ef4444">Analysis failed: ${safeMsg.innerHTML}. You can still proceed to your dashboard.</p>`;
+        }
     }
 }
 
@@ -1238,7 +1251,9 @@ async function runExecutionFlow(code, tests, isGlobal = false) {
 
         // Update Console Output
         if (consoleOutput) {
-            consoleOutput.innerHTML = `<pre style="color: #f3f4f6; font-family: 'Fira Code', monospace; margin: 0; white-space: pre-wrap;">${report.overallConsole || 'Execution finished.'}</pre>`;
+            const safeConsole = document.createElement('span');
+            safeConsole.textContent = report.overallConsole || 'Execution finished.';
+            consoleOutput.innerHTML = `<pre style="color: #f3f4f6; font-family: 'Fira Code', monospace; margin: 0; white-space: pre-wrap;">${safeConsole.innerHTML}</pre>`;
         }
 
         let passed = 0;
@@ -1249,21 +1264,24 @@ async function runExecutionFlow(code, tests, isGlobal = false) {
             const isPassed = res.status === 'passed';
             if (isPassed) passed++; else failed++;
 
+            // Escape AI-generated output to prevent XSS
+            const esc = (s) => { const d = document.createElement('span'); d.textContent = s || ''; return d.innerHTML; };
+
             return `
                 <div class="test-case-item">
                     <div class="test-case-header">
-                        <span class="test-case-label">${res.label}</span>
-                        <span class="test-case-status ${isPassed ? 'status-passed' : 'status-failed'}">${res.status.toUpperCase()}</span>
+                        <span class="test-case-label">${esc(res.label)}</span>
+                        <span class="test-case-status ${isPassed ? 'status-passed' : 'status-failed'}">${isPassed ? 'PASSED' : 'FAILED'}</span>
                     </div>
                     <div class="test-case-data">
                         <span class="data-label">Input:</span>
-                        <span class="data-value">${res.input}</span>
+                        <span class="data-value">${esc(res.input)}</span>
                         <span class="data-label">Expected:</span>
-                        <span class="data-value">${res.expected}</span>
+                        <span class="data-value">${esc(res.expected)}</span>
                         <span class="data-label">Actual:</span>
-                        <span class="data-value" style="color: ${isPassed ? '#10b981' : '#ef4444'}">${res.actual}</span>
+                        <span class="data-value" style="color: ${isPassed ? '#10b981' : '#ef4444'}">${esc(res.actual)}</span>
                     </div>
-                    ${res.output ? `<div style="margin-top:8px; font-size:11px; color:#64748b">Console: ${res.output}</div>` : ''}
+                    ${res.output ? `<div style="margin-top:8px; font-size:11px; color:#64748b">Console: ${esc(res.output)}</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -1282,7 +1300,9 @@ async function runExecutionFlow(code, tests, isGlobal = false) {
     } catch (error) {
         console.error('[Execution] Error:', error);
         statusEl.innerHTML = '<span style="color:var(--accent-red)">✗ Execution Error</span>';
-        resultsContainer.innerHTML = `<div class="error-box" style="color:#ef4444; padding:16px; background:rgba(239,68,68,0.1); border-radius:8px">${error.message}</div>`;
+        const safeErr = document.createElement('span');
+        safeErr.textContent = error.message;
+        resultsContainer.innerHTML = `<div class="error-box" style="color:#ef4444; padding:16px; background:rgba(239,68,68,0.1); border-radius:8px">${safeErr.innerHTML}</div>`;
     }
 }
 

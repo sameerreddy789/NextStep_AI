@@ -44,7 +44,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (showModal === 'true' && skillFocus) {
         localStorage.removeItem('nextStep_showNewRoadmapModal');
         const descEl = document.getElementById('new-roadmap-desc');
-        if (descEl) descEl.innerHTML = `Your progress has been reset and a new <strong>${skillFocus}</strong> learning roadmap has been created for you!`;
+        if (descEl) {
+            const safeFocus = document.createElement('span');
+            safeFocus.textContent = skillFocus;
+            descEl.innerHTML = `Your progress has been reset and a new <strong>${safeFocus.innerHTML}</strong> learning roadmap has been created for you!`;
+        }
         setTimeout(() => {
             const modal = document.getElementById('new-roadmap-modal');
             if (modal) modal.classList.remove('hidden');

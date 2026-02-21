@@ -180,7 +180,9 @@ async function runCode() {
     }
 
     if (outputContainer) {
-        outputContainer.innerHTML = `<pre style="color: #f3f4f6; font-family: 'Fira Code', monospace; margin: 0; white-space: pre-wrap;">${output}</pre>`;
+        const safeOutput = document.createElement('span');
+        safeOutput.textContent = output;
+        outputContainer.innerHTML = `<pre style="color: #f3f4f6; font-family: 'Fira Code', monospace; margin: 0; white-space: pre-wrap;">${safeOutput.innerHTML}</pre>`;
     }
 }
 

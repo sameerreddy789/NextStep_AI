@@ -32,8 +32,12 @@ export const appState = {
                 if (user) {
                     this.user = user;
                     console.log('[AppState] 🔄 User detected, fetching full state...');
-                    await this.fetchAllData(user.uid);
-                    console.log('[AppState] ✅ State initialized:', this);
+                    const success = await this.fetchAllData(user.uid);
+                    if (success) {
+                        console.log('[AppState] ✅ State initialized');
+                    } else {
+                        console.warn('[AppState] ⚠️ State initialized with partial data');
+                    }
                     this.notifyListeners();
                     resolve(true);
                 } else {
@@ -94,8 +98,10 @@ export const appState = {
             this.calculateReadiness();
             this.generateTasksList();
 
+            return true;
         } catch (error) {
             console.error('[AppState] ❌ Error fetching data:', error);
+            return false;
         }
     },
 
@@ -150,7 +156,7 @@ export const appState = {
                                 id: itemId,
                                 title: item,
                                 subtitle: topic.name, // Extra context
-                                deadline: topic.deadline || week.title.includes('Focus') ? 'This Week' : 'Next Week',
+                                deadline: topic.deadline || (week.title.includes('Focus') ? 'This Week' : 'Next Week'),
                                 completed: isCompleted,
                                 type: 'roadmap'
                             });

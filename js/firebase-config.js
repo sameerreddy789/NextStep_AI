@@ -31,17 +31,21 @@ function getEnvVar(key, defaultValue = '') {
 // 2. Authentication rules (domain restrictions, email verification)
 // 3. Storage rules (if using Firebase Storage)
 const firebaseConfig = {
-    apiKey: getEnvVar('VITE_FIREBASE_API_KEY', 'AIzaSyBx72z8rNYCfONq2A-Gat_kh8UUNWIQUZM'),
-    authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', 'nextstep-ai-c721a.firebaseapp.com'),
-    databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL', 'https://nextstep-ai-c721a-default-rtdb.asia-southeast1.firebasedatabase.app'),
-    projectId: getEnvVar('VITE_FIREBASE_PROJECT_ID', 'nextstep-ai-c721a'),
-    storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', 'nextstep-ai-c721a.firebasestorage.app'),
-    messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', '287110693541'),
-    appId: getEnvVar('VITE_FIREBASE_APP_ID', '1:287110693541:web:ffa0f18467b98eadb1c34c'),
-    measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID', 'G-6V2YXFPCD5')
+    apiKey: getEnvVar('VITE_FIREBASE_API_KEY'),
+    authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN'),
+    databaseURL: getEnvVar('VITE_FIREBASE_DATABASE_URL'),
+    projectId: getEnvVar('VITE_FIREBASE_PROJECT_ID'),
+    storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET'),
+    messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID'),
+    appId: getEnvVar('VITE_FIREBASE_APP_ID'),
+    measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID')
 };
 
-// Initialize Firebase
+// Validate that required config values are present
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+    console.error('[Firebase] ❌ Missing required Firebase configuration. Ensure env-config.js is loaded before this module.');
+}
+
 // Initialize Firebase
 import { getApps, getApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);

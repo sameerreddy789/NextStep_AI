@@ -735,8 +735,9 @@ function renderAssignedTasks(state) {
     }
 
     systemList.innerHTML = filteredTasks.map(t => {
+        const esc = typeof UIUtils !== 'undefined' ? UIUtils.escapeHTML : (s) => s;
         const completedDateHTML = t.completed && t.completedAt
-            ? `<div class="task-completed-date">Completed ${formatCompletedDate(t.completedAt)}</div>`
+            ? `<div class="task-completed-date">Completed ${esc(formatCompletedDate(t.completedAt))}</div>`
             : t.completed
                 ? `<div class="task-completed-date">Completed</div>`
                 : '';
@@ -745,11 +746,11 @@ function renderAssignedTasks(state) {
         <div class="task-item ${t.completed ? 'completed' : ''}">
             <div class="task-icon purple">🎯</div>
             <div class="task-content">
-                <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
-                <div class="task-due">${t.subtitle ? t.subtitle + ' • ' : ''}${t.deadline}</div>
+                <div class="task-title ${t.completed ? 'completed' : ''}">${esc(t.title)}</div>
+                <div class="task-due">${t.subtitle ? esc(t.subtitle) + ' • ' : ''}${esc(t.deadline)}</div>
                 ${completedDateHTML}
             </div>
-            <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'system')">
+            <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${esc(t.id)}', 'system')">
         </div>
     `}).join('');
 }
@@ -824,19 +825,21 @@ function renderUserTasks() {
         return;
     }
 
-    personalList.innerHTML = personalTasks.map(t => `
+    personalList.innerHTML = personalTasks.map(t => {
+        const esc = typeof UIUtils !== 'undefined' ? UIUtils.escapeHTML : (s) => s;
+        return `
         <div class="task-item ${t.completed ? 'completed' : ''}">
-            <div class="task-icon ${t.color || 'blue'}">${t.icon || '📝'}</div>
+            <div class="task-icon ${esc(t.color || 'blue')}">${esc(t.icon || '📝')}</div>
             <div class="task-content">
-                <div class="task-title ${t.completed ? 'completed' : ''}">${t.title}</div>
-                <div class="task-due">${t.due || 'Personal'}</div>
+                <div class="task-title ${t.completed ? 'completed' : ''}">${esc(t.title)}</div>
+                <div class="task-due">${esc(t.due || 'Personal')}</div>
             </div>
             <div style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${t.id}', 'personal')">
-                <div class="task-delete-btn" onclick="deleteTask('${t.id}')">✕</div>
+                <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} onclick="toggleTask('${esc(t.id)}', 'personal')">
+                <div class="task-delete-btn" onclick="deleteTask('${esc(t.id)}')">✕</div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Global wrapper for initial render

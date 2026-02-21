@@ -30,7 +30,8 @@ const GeminiService = {
         }
 
         this.apiKeys = [...new Set(keys)]; // Unique keys
-        this.currentKeyIndex = 1; // Skip key 1 (daily limit reached)
+        this.currentKeyIndex = 0;
+        this._triedKeysThisRequest = new Set(); // Track tried keys per request cycle
 
         if (this.apiKeys.length > 0) {
             console.log(`[GeminiService] ✅ Initialized with ${this.apiKeys.length} API key(s)`);
@@ -113,11 +114,19 @@ const GeminiService = {
                 // Handle rate limits (429) & Service Unavailable (503) with Key Rotation 🔄
                 if (response.status === 429 || response.status === 503) {
                     if (this.apiKeys.length > 1) {
+                        // Track tried keys to prevent infinite rotation
+                        if (!this._triedKeysThisRequest) this._triedKeysThisRequest = new Set();
+                        this._triedKeysThisRequest.add(this.currentKeyIndex);
                         this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
-                        console.warn(`[GeminiService] 🔄 ${response.status} Error on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
-                        // Retry immediately with new key
-                        return this._request(prompt, fileData, retries, delay, onProgress);
-                    } else if (retries > 0) {
+
+                        if (!this._triedKeysThisRequest.has(this.currentKeyIndex)) {
+                            console.warn(`[GeminiService] 🔄 ${response.status} Error on Key ${currentApiKey.substring(0, 8)}... Switching to index ${this.currentKeyIndex}`);
+                            return this._request(prompt, fileData, retries, delay, onProgress);
+                        }
+                        // All keys tried — clear tracker and fall through to retry with backoff
+                        this._triedKeysThisRequest.clear();
+                    }
+                    if (retries > 0) {
                         console.warn(`[GeminiService] ⏳ ${response.status} Error. Retrying in ${delay / 1000}s... (${retries} retries left)`);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return this._request(prompt, fileData, retries - 1, delay * 2, onProgress);
@@ -158,9 +167,16 @@ const GeminiService = {
                 error.message.includes('Overloaded')) {
 
                 if (this.apiKeys.length > 1) {
+                    if (!this._triedKeysThisRequest) this._triedKeysThisRequest = new Set();
+                    this._triedKeysThisRequest.add(this.currentKeyIndex);
                     this.currentKeyIndex = (this.currentKeyIndex + 1) % this.apiKeys.length;
-                    console.warn(`[GeminiService] 🔄 Retrying with next key after error...`);
-                    return this._request(prompt, fileData, retries, delay, onProgress);
+
+                    if (!this._triedKeysThisRequest.has(this.currentKeyIndex)) {
+                        console.warn(`[GeminiService] 🔄 Retrying with next key after error...`);
+                        return this._request(prompt, fileData, retries, delay, onProgress);
+                    }
+                    // All keys exhausted — clear tracker and fall through
+                    this._triedKeysThisRequest.clear();
                 }
             }
 
@@ -917,45 +933,6 @@ Respond with ONLY a JSON object:
         applyStatus(data.futureProof);
 
         return data;
-    },
-
-    /**
-     * Transcribe audio blob using Gemini Flash
-     */
-    async transcribeAudio(audioBlob) {
-        if (!this.apiKeys.length) throw new Error('Gemini API keys not configured');
-
-        console.log('[GeminiService] 🎙️ Transcribing audio...');
-
-        try {
-            const base64 = await this._fileToBase64(audioBlob);
-            const prompt = "Transcribe this audio exactly as spoken. Focus on accuracy. If there is no speech, return an empty string. Respond with ONLY the transcribed text.";
-
-            const result = await this._request(prompt, {
-                mimeType: audioBlob.type || 'audio/webm',
-                base64: base64
-            });
-
-            return result.trim();
-        } catch (error) {
-            console.error('[GeminiService] ❌ Transcription failed:', error);
-            throw error;
-        }
-    },
-
-    /**
-     * Convert Blob/File to Base64
-     */
-    _fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result.split(',')[1];
-                resolve(base64);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
     }
 };
 

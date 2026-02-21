@@ -136,30 +136,41 @@ const GROWTH_STAGES = [
 
 // ============ Storage Functions ============
 
+/**
+ * Safe localStorage wrapper — prevents crashes on quota exceeded or private browsing
+ */
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        console.warn('[Store] localStorage write failed:', e.message);
+    }
+}
+
 function getSkills() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SKILLS));
+        safeSetItem(STORAGE_KEY, JSON.stringify(DEFAULT_SKILLS));
         return DEFAULT_SKILLS;
     }
     return JSON.parse(stored);
 }
 
 function saveSkills(skills) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(skills));
+    safeSetItem(STORAGE_KEY, JSON.stringify(skills));
 }
 
 function getUser() {
     const stored = localStorage.getItem(USER_KEY);
     if (!stored) {
-        localStorage.setItem(USER_KEY, JSON.stringify(DEFAULT_USER));
+        safeSetItem(USER_KEY, JSON.stringify(DEFAULT_USER));
         return DEFAULT_USER;
     }
     return JSON.parse(stored);
 }
 
 function saveUser(user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    safeSetItem(USER_KEY, JSON.stringify(user));
 }
 
 function getTasks() {
@@ -168,7 +179,7 @@ function getTasks() {
 
     if (!stored) {
         tasks = DEFAULT_TASKS;
-        localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+        safeSetItem(TASKS_KEY, JSON.stringify(tasks));
     } else {
         tasks = JSON.parse(stored);
     }
@@ -195,20 +206,20 @@ function getTasks() {
 }
 
 function saveTasks(tasks) {
-    localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+    safeSetItem(TASKS_KEY, JSON.stringify(tasks));
 }
 
 function getPrioritySkills() {
     const stored = localStorage.getItem(PRIORITY_SKILLS_KEY);
     if (!stored) {
-        localStorage.setItem(PRIORITY_SKILLS_KEY, JSON.stringify(DEFAULT_PRIORITY_SKILLS));
+        safeSetItem(PRIORITY_SKILLS_KEY, JSON.stringify(DEFAULT_PRIORITY_SKILLS));
         return DEFAULT_PRIORITY_SKILLS;
     }
     return JSON.parse(stored);
 }
 
 function savePrioritySkills(skills) {
-    localStorage.setItem(PRIORITY_SKILLS_KEY, JSON.stringify(skills));
+    safeSetItem(PRIORITY_SKILLS_KEY, JSON.stringify(skills));
 }
 
 // ============ Skill CRUD ============
@@ -282,7 +293,6 @@ function logProgress(skillId, amount = 10) {
         progress: amount
     });
 
-    saveSkills(skills);
     saveSkills(skills);
     return skill;
 }

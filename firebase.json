@@ -9,11 +9,19 @@
       "vite.config.js",
       "package.json",
       "package-lock.json",
-      "functions/**"
+      "functions/**",
+      ".env",
+      ".env.*",
+      "js/env-config.js",
+      "requirements.md",
+      "design.md",
+      "BUG_REPORT.md",
+      "README.md",
+      "FIREBASE_SECURITY_RULES.md"
     ],
     "rewrites": [
       {
-        "source": "**",
+        "source": "!/api/**",
         "destination": "/index.html"
       }
     ]
