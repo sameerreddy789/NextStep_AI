@@ -119,9 +119,12 @@ class OrbitalTimeline {
             const node = e.target.closest('.orbital-node');
             const relBtn = e.target.closest('.rel-btn');
 
+            this._isUserClick = true;
+
             if (relBtn) {
                 e.stopPropagation();
                 this.toggleNode(parseInt(relBtn.dataset.rel));
+                this._isUserClick = false;
                 return;
             }
 
@@ -131,6 +134,8 @@ class OrbitalTimeline {
             } else {
                 this.closeAll();
             }
+
+            this._isUserClick = false;
         });
     }
 
@@ -140,13 +145,18 @@ class OrbitalTimeline {
             return;
         }
 
-        this.expandedId = id;
+        // Pause auto-cycle on user interaction (not on auto-cycle calls)
+        if (this._isUserClick) {
+            if (this.cycleTimer) {
+                this.stopAutoCycle();
+            }
+            if (this._resumeTimer) {
+                clearTimeout(this._resumeTimer);
+                this._resumeTimer = null;
+            }
+        }
 
-        // Center the view on this node (270deg is top)
-        const index = this.options.data.findIndex(item => item.id === id);
-        const total = this.options.data.length;
-        const targetAngle = (index / total) * 360;
-        this.rotationAngle = (270 - targetAngle) % 360;
+        this.expandedId = id;
 
         // Set pulse effects for related nodes
         this.pulseEffects = {};
@@ -163,6 +173,13 @@ class OrbitalTimeline {
         this.expandedId = null;
         this.pulseEffects = {};
         this.updateNodeStates();
+
+        // Resume auto-cycle after user closes all cards
+        if (this.options.autoCycle && !this.cycleTimer) {
+            this._resumeTimer = setTimeout(() => {
+                this.startAutoCycle();
+            }, 6000);
+        }
     }
 
 
@@ -242,6 +259,9 @@ class OrbitalTimeline {
         const total = this.options.data.length;
         const nodeWidth = 40; // Width of node-circle
 
+        // Responsive radius — match CSS media query breakpoint
+        const effectiveRadius = window.innerWidth <= 600 ? 150 : this.options.radius;
+
         this.options.data.forEach((item, index) => {
             const el = this.nodeElements[item.id];
             if (!el) return;
@@ -252,8 +272,8 @@ class OrbitalTimeline {
             const radian = (angle * Math.PI) / 180;
 
             // Calculate position on the circle perimeter
-            const x = this.options.radius * Math.cos(radian);
-            const y = this.options.radius * Math.sin(radian);
+            const x = effectiveRadius * Math.cos(radian);
+            const y = effectiveRadius * Math.sin(radian);
 
             // Apply transform - node center is already handled via CSS
             el.style.transform = `translate(${x}px, ${y}px)`;

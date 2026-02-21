@@ -128,6 +128,8 @@
     position: absolute;
     width: 60px;
     height: 60px;
+    top: -30px;
+    left: -30px;
     background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
     border-radius: 50%;
     transform: scale(calc(1 + var(--energy) / 200));

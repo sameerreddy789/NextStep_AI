@@ -15,11 +15,11 @@ class CardStack {
             overlap: options.overlap || 0.48,
             spreadDeg: options.spreadDeg || 48,
             perspectivePx: options.perspectivePx || 1100,
-            depthPx: options.depthPx || 140,
-            tiltXDeg: options.tiltXDeg || 12,
-            activeLiftPx: options.activeLiftPx || 22,
-            activeScale: options.activeScale || 1.03,
-            inactiveScale: options.inactiveScale || 0.94,
+            depthPx: options.depthPx || 100,
+            tiltXDeg: options.tiltXDeg || 8,
+            activeLiftPx: options.activeLiftPx || 30,
+            activeScale: options.activeScale || 1.08,
+            inactiveScale: options.inactiveScale || 0.88,
             ease: options.ease || 'power3.out',
             autoAdvance: options.autoAdvance !== undefined ? options.autoAdvance : true,
             intervalMs: options.intervalMs || 3000,
@@ -217,14 +217,6 @@ class CardStack {
         this.cardElements.forEach((el, i) => {
             const off = this.signedOffset(i, this.activeIndex);
             const abs = Math.abs(off);
-            const visible = abs <= maxOffset;
-
-            if (!visible) {
-                el.style.opacity = '0';
-                el.style.visibility = 'hidden';
-                gsap.set(el, { opacity: 0, scale: 0.8 });
-                return;
-            }
 
             const rotateZ = off * stepDeg;
             const x = off * cardSpacing;
@@ -234,13 +226,15 @@ class CardStack {
             const scale = isActive ? this.options.activeScale : this.options.inactiveScale;
             const lift = isActive ? -this.options.activeLiftPx : 0;
             const rotateX = isActive ? 0 : this.options.tiltXDeg;
-            const zIndex = 100 - abs;
+            // Active card gets highest z-index, others decrease with distance
+            const zIndex = isActive ? 200 : 100 - abs;
+            const cardOpacity = isActive ? 1 : Math.max(0.5, 1 - abs * 0.15);
 
             el.classList.toggle('is-active', isActive);
 
             const props = {
                 visibility: 'visible',
-                opacity: 1,
+                opacity: cardOpacity,
                 x: x,
                 xPercent: -50,
                 y: y + lift,
@@ -254,13 +248,10 @@ class CardStack {
             };
 
             if (immediate) {
-                // Manual fallback for instant reliablity
                 el.style.zIndex = zIndex;
-                el.style.opacity = '1';
+                el.style.opacity = String(cardOpacity);
                 el.style.visibility = 'visible';
                 el.style.transform = `translate3d(${x}px, ${y + lift}px, ${z}px) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) scale(${scale}) translateX(-50%)`;
-
-                // Sync GSAP so it knows where we are
                 gsap.set(el, props);
             } else {
                 gsap.to(el, {
