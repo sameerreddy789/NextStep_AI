@@ -4,6 +4,11 @@
  */
 
 function showCelebrationModal(options = {}) {
+    // Prevent stacking — only one celebration modal at a time
+    if (document.querySelector('.celebration-modal-overlay')) {
+        return;
+    }
+
     // Check if already shown today
     const lastShown = localStorage.getItem('celebration_last_shown');
     const today = new Date().toDateString();
@@ -53,8 +58,8 @@ function showCelebrationModal(options = {}) {
     document.body.appendChild(modal);
 
     // Launch confetti if enabled
-    if (config.showConfetti && typeof celebrateFirstInterview === 'function') {
-        setTimeout(() => celebrateFirstInterview(), 200);
+    if (config.showConfetti && typeof launchInterviewConfetti === 'function') {
+        setTimeout(() => launchInterviewConfetti(), 200);
     }
 
     // Animate in

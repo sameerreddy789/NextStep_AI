@@ -149,7 +149,7 @@ function celebrateRoadmapComplete() {
     setTimeout(() => launchConfetti({ particleCount: 60, spread: 140 }), 500);
 }
 
-function celebrateFirstInterview() {
+function launchInterviewConfetti() {
     launchConfetti({
         particleCount: 200,
         spread: 360,

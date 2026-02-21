@@ -259,7 +259,6 @@ function celebrateNewBadges(newBadges) {
             title: `${badge.icon} Badge Unlocked!`,
             message: `You earned "${badge.name}" — ${badge.description}`,
             showConfetti: true,
-            force: true,
             onClose: () => {
                 if (index + 1 < newBadges.length) {
                     setTimeout(() => showBadge(index + 1), 500);
