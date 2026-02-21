@@ -8,13 +8,13 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 // For static sites, you'll need to use a build tool like Vite or webpack to inject these
 // Or use a simple approach with a config file that's git-ignored
 function getEnvVar(key, defaultValue = '') {
-    // Check if running in a build environment with injected variables
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-        return import.meta.env[key] || defaultValue;
+    // First check window.ENV (set by env-config.js)
+    if (typeof window !== 'undefined' && window.ENV && window.ENV[key]) {
+        return window.ENV[key];
     }
-    // Fallback for static deployment - load from window object if set
-    if (typeof window !== 'undefined' && window.ENV) {
-        return window.ENV[key] || defaultValue;
+    // Fallback to Vite build environment
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) {
+        return import.meta.env[key];
     }
     return defaultValue;
 }
@@ -44,6 +44,8 @@ const firebaseConfig = {
 // Validate that required config values are present
 if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
     console.error('[Firebase] ❌ Missing required Firebase configuration. Ensure env-config.js is loaded before this module.');
+    console.error('[Firebase] Current config:', JSON.stringify(firebaseConfig));
+    console.error('[Firebase] window.ENV available:', !!window.ENV);
 }
 
 // Initialize Firebase
