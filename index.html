@@ -42,7 +42,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         .faq-section {
-            padding: 100px 0;
+            padding: 60px 0;
             background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.03), transparent 70%);
         }
 
@@ -68,17 +68,17 @@
         }
 
         .faq-container {
-            max-width: 720px;
+            max-width: 620px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 10px;
         }
 
         .faq-item {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
+            border-radius: 14px;
             overflow: hidden;
             transition: var(--transition-normal);
             backdrop-filter: var(--glass-blur);
@@ -103,7 +103,7 @@
 
         .faq-trigger {
             width: 100%;
-            padding: 24px 32px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -113,7 +113,7 @@
         }
 
         .faq-question {
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
             letter-spacing: -0.01em;
@@ -165,7 +165,7 @@
 
         .faq-inner {
             min-height: 0;
-            padding: 0 32px 32px;
+            padding: 0 24px 20px;
             opacity: 0;
             transform: translateY(-10px);
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -177,7 +177,7 @@
         }
 
         .faq-answer {
-            font-size: 15px;
+            font-size: 13px;
             line-height: 1.7;
             color: var(--text-secondary);
         }
