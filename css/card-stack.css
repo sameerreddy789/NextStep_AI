@@ -18,6 +18,7 @@
     perspective: 1100px;
     outline: none;
     overflow: visible;
+    transform-style: preserve-3d;
 }
 
 .cards-wrapper {

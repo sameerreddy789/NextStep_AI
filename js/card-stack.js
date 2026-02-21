@@ -16,7 +16,7 @@ class CardStack {
             spreadDeg: options.spreadDeg || 48,
             perspectivePx: options.perspectivePx || 1100,
             depthPx: options.depthPx || 100,
-            tiltXDeg: options.tiltXDeg || 8,
+            tiltXDeg: options.tiltXDeg || 3,
             activeLiftPx: options.activeLiftPx || 30,
             activeScale: options.activeScale || 1.08,
             inactiveScale: options.inactiveScale || 0.88,
@@ -221,7 +221,7 @@ class CardStack {
             const rotateZ = off * stepDeg;
             const x = off * cardSpacing;
             const y = abs * 10;
-            const z = -abs * this.options.depthPx;
+            const z = -abs * 20; // Shallow depth so cards stay visible in 3D
             const isActive = off === 0;
             const scale = isActive ? this.options.activeScale : this.options.inactiveScale;
             const lift = isActive ? -this.options.activeLiftPx : 0;
