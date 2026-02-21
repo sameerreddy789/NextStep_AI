@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: center;
     background: transparent;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
     color: #fff;
     font-family: 'Inter', sans-serif;
@@ -212,6 +212,17 @@
 .orbital-node.expanded .node-card {
     opacity: 1;
     pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Flip card above node when in bottom half of orbit */
+.orbital-node.card-above .node-card {
+    top: auto;
+    bottom: 50px;
+    transform: translateX(-50%) translateY(-20px);
+}
+
+.orbital-node.card-above.expanded .node-card {
     transform: translateX(-50%) translateY(0);
 }
 

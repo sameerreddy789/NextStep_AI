@@ -280,6 +280,13 @@ class OrbitalTimeline {
             el.style.left = '0';
             el.style.top = '0';
 
+            // Flip detail card above node when in bottom half of orbit
+            if (y > 30) {
+                el.classList.add('card-above');
+            } else {
+                el.classList.remove('card-above');
+            }
+
             // Keep all nodes at full opacity when static, dim others when one is expanded
             if (this.expandedId) {
                 el.style.zIndex = (item.id === this.expandedId) ? 1000 : 10;
