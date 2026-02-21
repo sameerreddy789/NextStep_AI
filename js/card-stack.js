@@ -15,8 +15,6 @@ class CardStack {
             overlap: options.overlap || 0.48,
             spreadDeg: options.spreadDeg || 48,
             perspectivePx: options.perspectivePx || 1100,
-            depthPx: options.depthPx || 100,
-            tiltXDeg: options.tiltXDeg || 3,
             activeLiftPx: options.activeLiftPx || 30,
             activeScale: options.activeScale || 1.08,
             inactiveScale: options.inactiveScale || 0.88,
@@ -64,8 +62,6 @@ class CardStack {
 
         // Allow browser to breathe then ensure GSAP takes over
         requestAnimationFrame(() => {
-            // We don't need to force immediate again if first one worked, 
-            // but let's schedule the first transition
             setTimeout(() => this.updateCards(false), 200);
         });
 
@@ -137,7 +133,6 @@ class CardStack {
 
         const handleDown = (e) => {
             if (this.isHovering) {
-                const activeCard = this.cardElements[this.activeIndex];
                 isDragging = true;
                 startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
                 currentTranslate = 0;
@@ -151,7 +146,6 @@ class CardStack {
             const diff = x - startX;
             currentTranslate = diff;
 
-            // Apply slight rotation/translate to active card while dragging
             const activeCard = this.cardElements[this.activeIndex];
             gsap.set(activeCard, {
                 x: diff,
@@ -176,23 +170,18 @@ class CardStack {
             if (this.options.autoAdvance) this.startAutoAdvance();
         };
 
-        // Touch events
         this.stage.addEventListener('touchstart', handleDown);
         window.addEventListener('touchmove', handleMove);
         window.addEventListener('touchend', handleUp);
-
-        // Mouse events (only if over active card handled via class)
         this.stage.addEventListener('mousedown', handleDown);
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('mouseup', handleUp);
 
-        // Keyboard
         this.stage.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowLeft') this.setActive(this.wrapIndex(this.activeIndex - 1));
             if (e.key === 'ArrowRight') this.setActive(this.wrapIndex(this.activeIndex + 1));
         });
 
-        // Hover pause
         this.stage.addEventListener('mouseenter', () => {
             this.isHovering = true;
             this.stopAutoAdvance();
@@ -221,43 +210,35 @@ class CardStack {
             const rotateZ = off * stepDeg;
             const x = off * cardSpacing;
             const y = abs * 10;
-            const z = -abs * 20; // Shallow depth so cards stay visible in 3D
             const isActive = off === 0;
             const scale = isActive ? this.options.activeScale : this.options.inactiveScale;
             const lift = isActive ? -this.options.activeLiftPx : 0;
-            const rotateX = isActive ? 0 : this.options.tiltXDeg;
             // Active card gets highest z-index, others decrease with distance
             const zIndex = isActive ? 200 : 100 - abs;
             const cardOpacity = isActive ? 1 : Math.max(0.5, 1 - abs * 0.15);
 
             el.classList.toggle('is-active', isActive);
 
-            const props = {
-                visibility: 'visible',
-                opacity: cardOpacity,
-                x: x,
-                xPercent: -50,
-                y: y + lift,
-                z: z,
-                rotateZ: rotateZ,
-                rotateX: rotateX,
-                scale: scale,
-                zIndex: zIndex,
-                force3D: true,
-                overwrite: true
-            };
+            // Use 2D transforms only — no z or rotateX to avoid 3D clipping
+            const transformStr = `translateX(calc(-50% + ${x}px)) translateY(${y + lift}px) rotate(${rotateZ}deg) scale(${scale})`;
 
             if (immediate) {
                 el.style.zIndex = zIndex;
                 el.style.opacity = String(cardOpacity);
                 el.style.visibility = 'visible';
-                el.style.transform = `translate3d(${x}px, ${y + lift}px, ${z}px) rotateX(${rotateX}deg) rotateZ(${rotateZ}deg) scale(${scale}) translateX(-50%)`;
-                gsap.set(el, props);
+                el.style.transform = transformStr;
             } else {
                 gsap.to(el, {
-                    ...props,
+                    opacity: cardOpacity,
+                    x: x,
+                    xPercent: -50,
+                    y: y + lift,
+                    rotation: rotateZ,
+                    scale: scale,
+                    zIndex: zIndex,
                     duration: 0.6,
-                    ease: this.options.ease
+                    ease: this.options.ease,
+                    overwrite: true
                 });
             }
         });
@@ -286,7 +267,6 @@ class CardStack {
 
 // Auto-initialize with career paths
 const initCardStack = () => {
-    // Check if GSAP is loaded
     if (typeof gsap === 'undefined') {
         console.warn('GSAP not loaded yet, retrying...');
         setTimeout(initCardStack, 100);
@@ -326,14 +306,13 @@ const initCardStack = () => {
         new CardStack({
             containerSelector: '#card-stack-container',
             items: stackItems,
-            initialIndex: 2, // Start in the middle for visual symmetry
-            autoAdvance: false, // User request: static start to see all cards
+            initialIndex: 2,
+            autoAdvance: false,
             intervalMs: 3500
         });
     }
 };
 
-// Start ASAP
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initCardStack);
 } else {
