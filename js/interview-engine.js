@@ -910,6 +910,7 @@ async function completeInterview() {
 }
 
 function renderInterviewResults(data) {
+    const esc = typeof UIUtils !== 'undefined' ? UIUtils.escapeHTML : (s) => { const d = document.createElement('span'); d.textContent = s; return d.innerHTML; };
     const scoreVal = document.getElementById('overall-score-value');
     const summaryEl = document.getElementById('overall-summary');
     const listEl = document.getElementById('results-list');
@@ -932,13 +933,13 @@ function renderInterviewResults(data) {
             return `
                     <div class="dimension-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">${dim.name}</span>
+                            <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">${esc(dim.name)}</span>
                             <span style="font-size: 13px; font-weight: 700; color: ${color}">${dim.score}%</span>
                         </div>
                         <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
                             <div style="width: ${dim.score}%; height: 100%; background: ${color}; border-radius: 3px;"></div>
                         </div>
-                        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin: 0;">${dim.feedback}</p>
+                        <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin: 0;">${esc(dim.feedback)}</p>
                     </div>
                     `;
         }).join('')}
@@ -948,13 +949,13 @@ function renderInterviewResults(data) {
                 <div class="analysis-box" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 16px; padding: 20px;">
                     <h4 style="color: #10b981; font-size: 14px; margin-bottom: 12px;">🏆 Strengths</h4>
                     <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                        ${data.detailedAnalysis.strengths.map(s => `<li>${s}</li>`).join('')}
+                        ${data.detailedAnalysis.strengths.map(s => `<li>${esc(s)}</li>`).join('')}
                     </ul>
                 </div>
                 <div class="analysis-box" style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 20px;">
                     <h4 style="color: var(--accent-primary); font-size: 14px; margin-bottom: 12px;">🚀 Areas for Growth</h4>
                     <ul style="margin: 0; padding-left: 18px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                        ${data.detailedAnalysis.improvements.map(i => `<li>${i}</li>`).join('')}
+                        ${data.detailedAnalysis.improvements.map(i => `<li>${esc(i)}</li>`).join('')}
                     </ul>
                 </div>
             </div>
@@ -982,28 +983,28 @@ function renderInterviewResults(data) {
                 <div class="result-card">
                     <div class="result-header">
                         <div style="flex: 1;">
-                            <div style="font-size: 12px; color: var(--accent-primary); font-weight: 600; margin-bottom: 4px;">QUESTION ${idx + 1} • ${ans.category}</div>
-                            <div style="font-weight: 600; font-size: 16px; color: white; line-height: 1.4;">${ans.question}</div>
+                            <div style="font-size: 12px; color: var(--accent-primary); font-weight: 600; margin-bottom: 4px;">QUESTION ${idx + 1} • ${esc(ans.category)}</div>
+                            <div style="font-weight: 600; font-size: 16px; color: white; line-height: 1.4;">${esc(ans.question)}</div>
                         </div>
                         <div class="result-score ${scoreClass}">${evalData.score}%</div>
                     </div>
                     
                     <div class="user-answer-box">
                         <strong>Your Answer:</strong><br>
-                        ${ans.skipped ? '<em>Skipped</em>' : (ans.answer && ans.answer.length > 200) ? ans.answer.substring(0, 200) + '...' : (ans.answer || '')}
+                        ${ans.skipped ? '<em>Skipped</em>' : esc((ans.answer && ans.answer.length > 200) ? ans.answer.substring(0, 200) + '...' : (ans.answer || ''))}
                     </div>
 
                     <div class="result-content" style="margin-top: 20px;">
                         <div class="result-block">
                             <h4>AI Feedback</h4>
-                            <p>${evalData.feedback || 'No feedback provided'}</p>
+                            <p>${esc(evalData.feedback || 'No feedback provided')}</p>
                         </div>
                         
                         ${evalData.strengths?.length > 0 ? `
                         <div class="result-block">
                             <h4>Key Strengths</h4>
                             <div class="pill-group">
-                                ${evalData.strengths.map(s => `<span class="strength-pill">${s}</span>`).join('')}
+                                ${evalData.strengths.map(s => `<span class="strength-pill">${esc(s)}</span>`).join('')}
                             </div>
                         </div>` : ''}
 
@@ -1011,7 +1012,7 @@ function renderInterviewResults(data) {
                         <div class="result-block">
                             <h4>Areas to Improve</h4>
                             <div class="pill-group">
-                                ${evalData.improvements.map(i => `<span class="improvement-pill">${i}</span>`).join('')}
+                                ${evalData.improvements.map(i => `<span class="improvement-pill">${esc(i)}</span>`).join('')}
                             </div>
                         </div>` : ''}
                     </div>

@@ -12,7 +12,6 @@
       "functions/**",
       ".env",
       ".env.*",
-      "js/env-config.js",
       "requirements.md",
       "design.md",
       "BUG_REPORT.md",
