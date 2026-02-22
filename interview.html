@@ -278,132 +278,118 @@
                 </div>
 
             </div>
+
+            <!-- Interview Complete -->
+            <div id="complete-section" class="hidden" style="max-width: 900px; margin: 0 auto; padding: 20px 20px 60px;">
+                <div id="completion-header" style="text-align: center; margin-bottom: 32px;">
+                    <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+                    <h2 style="font-size: 28px; margin-bottom: 8px;">Interview Complete!</h2>
+                    <p class="text-muted" style="margin-bottom: 20px;">Great job! Your responses are being analyzed by AI.</p>
+                </div>
+
+                <!-- Analysis Loading State -->
+                <div id="results-loading" class="hidden" style="text-align: center; margin: 24px 0;">
+                    <div class="loader-spinner"
+                        style="width: 44px; height: 44px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;">
+                    </div>
+                    <p style="font-weight: 600; color: var(--accent-primary);">Analyzing your performance with AI...</p>
+                    <p class="text-muted" style="font-size: 14px;">This usually takes 10-20 seconds.</p>
+                </div>
+
+                <!-- Detailed Results View -->
+                <div id="results-view" class="hidden">
+                    <div class="overall-score-card"
+                        style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; padding: 32px; text-align: center; margin-bottom: 32px;">
+                        <div
+                            style="font-size: 13px; font-weight: 600; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
+                            Overall Performance Score</div>
+                        <div id="overall-score-value" style="font-size: 60px; font-weight: 800; color: white;">0%</div>
+                        <p id="overall-summary" class="text-secondary" style="margin: 12px auto 0; max-width: 500px; font-size: 14px;"></p>
+                    </div>
+
+                    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: left;">Detailed Question Analysis</h3>
+                    <div id="results-list" style="display: grid; gap: 20px; margin-bottom: 40px; text-align: left;">
+                        <!-- Result cards will be injected here -->
+                    </div>
+
+                    <div style="display: flex; justify-content: center; gap: 16px; padding-bottom: 20px;">
+                        <a href="skill-gap.html" class="btn btn-primary btn-lg">
+                            See Full Skill Gap Analysis →
+                        </a>
+                        <a href="dashboard.html" class="btn btn-secondary btn-lg">
+                            Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+
         </main>
-    </div>
-
-    <!-- Interview Complete -->
-    <div id="complete-section" class="hidden" style="max-width: 900px; margin: 0 auto; padding: 20px 20px 60px;">
-        <div id="completion-header" style="text-align: center; margin-bottom: 48px;">
-            <div style="font-size: 80px; margin-bottom: 24px;">🎉</div>
-            <h2 style="font-size: 32px; margin-bottom: 12px;">Interview Complete!</h2>
-            <p class="text-muted" style="margin-bottom: 32px;">Great job! Your responses are being analyzed by AI.</p>
-        </div>
-
-        <!-- Analysis Loading State -->
-        <div id="results-loading" class="hidden" style="text-align: center; margin: 40px 0;">
-            <div class="loader-spinner"
-                style="width: 50px; height: 50px; border: 4px solid rgba(139, 92, 246, 0.1); border-top-color: var(--accent-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;">
-            </div>
-            <p style="font-weight: 600; color: var(--accent-primary);">Analyzing your performance with AI...</p>
-            <p class="text-muted" style="font-size: 14px;">This usually takes 10-20 seconds.</p>
-        </div>
-
-        <!-- Detailed Results View -->
-        <div id="results-view" class="hidden">
-            <div class="overall-score-card"
-                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; padding: 40px; text-align: center; margin-bottom: 40px;">
-                <div
-                    style="font-size: 14px; font-weight: 600; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
-                    Overall Performance Score</div>
-                <div id="overall-score-value" style="font-size: 72px; font-weight: 800; color: white;">0%</div>
-                <p id="overall-summary" class="text-secondary" style="margin: 16px auto 0; max-width: 500px;"></p>
-            </div>
-
-            <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: left;">Detailed Question
-                Analysis</h3>
-            <div id="results-list" style="display: grid; gap: 24px; margin-bottom: 48px; text-align: left;">
-                <!-- Result cards will be injected here -->
-            </div>
-
-            <div style="display: flex; justify-content: center; gap: 20px;">
-                <a href="skill-gap.html" class="btn btn-primary btn-lg">
-                    See Full Skill Gap Analysis →
-                </a>
-                <a href="dashboard.html" class="btn btn-secondary btn-lg">
-                    Go to Dashboard
-                </a>
-            </div>
-        </div>
     </div>
 
     <style>
         @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            to { transform: rotate(360deg); }
         }
-
         .result-card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 24px;
+            padding: 20px;
             transition: transform 0.2s ease;
         }
-
         .result-card:hover {
             transform: translateY(-2px);
             border-color: rgba(99, 102, 241, 0.4);
         }
-
         .result-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             gap: 16px;
         }
-
         .result-score {
             padding: 4px 12px;
             border-radius: 20px;
             font-weight: 700;
             font-size: 14px;
         }
-
         .score-high {
             background: rgba(16, 185, 129, 0.1);
             color: #10b981;
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
-
         .score-mid {
             background: rgba(245, 158, 11, 0.1);
             color: #f59e0b;
             border: 1px solid rgba(245, 158, 11, 0.3);
         }
-
         .score-low {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
-
         .result-content {
             display: grid;
-            gap: 20px;
+            gap: 16px;
         }
-
         .result-block h4 {
             font-size: 13px;
             text-transform: uppercase;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             letter-spacing: 0.5px;
         }
-
         .result-block p {
             font-size: 14px;
             line-height: 1.6;
             margin: 0;
         }
-
         .pill-group {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
         }
-
         .strength-pill {
             background: rgba(16, 185, 129, 0.08);
             color: #10b981;
@@ -412,7 +398,6 @@
             font-size: 12px;
             font-weight: 500;
         }
-
         .improvement-pill {
             background: rgba(99, 102, 241, 0.08);
             color: #818cf8;
@@ -421,7 +406,6 @@
             font-size: 12px;
             font-weight: 500;
         }
-
         .user-answer-box {
             background: rgba(255, 255, 255, 0.03);
             border-radius: 8px;
@@ -444,8 +428,6 @@
                 <button class="btn btn-primary" id="modal-confirm">OK</button>
             </div>
         </div>
-    </div>
-    </main>
     </div>
 
     <style>
