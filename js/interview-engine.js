@@ -801,16 +801,34 @@ async function completeInterview() {
     window.removeEventListener('beforeunload', handleBeforeUnload);
     document.removeEventListener('fullscreenchange', handleFullscreenChange);
 
-    // Hide interview UI
+    // Hide interview UI — hide ALL other sections
     document.getElementById('interview-section').classList.add('hidden');
-    document.getElementById('complete-section').classList.remove('hidden');
+    const modeSelection = document.getElementById('mode-selection');
+    if (modeSelection) modeSelection.classList.add('hidden');
+    const historySection = document.getElementById('interview-history-section');
+    if (historySection) historySection.classList.add('hidden');
     const videoSlot = document.getElementById('video-slot');
     if (videoSlot) videoSlot.classList.add('hidden');
 
-    // Scroll to top so the report is visible immediately
+    // Show complete section
+    document.getElementById('complete-section').classList.remove('hidden');
+
+    // Force scroll to top — try all possible scroll containers
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) mainEl.scrollTop = 0;
+
+    // Retry scroll after DOM settles
     setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
-    }, 100);
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        if (mainEl) mainEl.scrollTop = 0;
+        const completeEl = document.getElementById('complete-section');
+        if (completeEl) completeEl.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, 150);
 
     // Start AI Analysis
     const loadingEl = document.getElementById('results-loading');
