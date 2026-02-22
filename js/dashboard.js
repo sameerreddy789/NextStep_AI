@@ -66,24 +66,30 @@ function renderStats(state) {
         avgScore = Math.round(total / interviewsTaken);
     }
 
-    // Calculate Streak
-    const activityDates = Object.keys(state.learningActivity || {}).sort();
+    // Calculate Streak — count consecutive days ending today or yesterday
+    const activityLog = state.learningActivity || {};
     let dayStreak = 0;
-    if (activityDates.length > 0) {
-        // Simple streak calculation (consecutive days ending yesterday/today)
-        // For now, let's trust the length of recent activity keys or implement better logic
-        // This is a placeholder for the complex streak logic
-        const lastDate = new Date(activityDates[activityDates.length - 1]);
-        const today = new Date();
-        const diffTime = Math.abs(today - lastDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays <= 2) {
-            // Basic streak check
-            dayStreak = activityDates.length; // Simplified
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let checkDate = new Date(today);
+
+    // Check if today has activity, if not start from yesterday
+    const todayStr = checkDate.toISOString().split('T')[0];
+    if (!activityLog[todayStr]) {
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        if (activityLog[dateStr] && activityLog[dateStr] > 0) {
+            dayStreak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+            break;
         }
     }
 
-    // Update UI
+    // Update stat values
     const elSkills = document.getElementById('skills-covered');
     const elInterviews = document.getElementById('interviews-taken');
     const elAvg = document.getElementById('avg-score');
@@ -92,10 +98,64 @@ function renderStats(state) {
 
     if (elSkills) elSkills.textContent = skillsCovered;
     if (elInterviews) elInterviews.textContent = interviewsTaken;
-    if (elAvg) elAvg.textContent = `${avgScore}%`;
+    if (elAvg) elAvg.textContent = interviewsTaken > 0 ? `${avgScore}%` : '—';
     if (elStreak) elStreak.textContent = dayStreak;
     if (elReadiness) elReadiness.textContent = `${state.readinessScore || 0}%`;
 
+    // Update contextual change text
+    const elSkillsChange = document.getElementById('skills-change');
+    const elInterviewsChange = document.getElementById('interviews-change');
+    const elAvgChange = document.getElementById('avg-score-change');
+    const elStreakChange = document.getElementById('streak-change');
+
+    if (elSkillsChange) {
+        if (skillsCovered === 0) {
+            elSkillsChange.textContent = 'Upload resume to detect skills';
+            elSkillsChange.className = 'stat-card-change';
+        } else {
+            elSkillsChange.innerHTML = `<span>✓</span> ${skillsCovered} skills detected`;
+            elSkillsChange.className = 'stat-card-change positive';
+        }
+    }
+
+    if (elInterviewsChange) {
+        if (interviewsTaken === 0) {
+            elInterviewsChange.textContent = 'Take your first interview';
+            elInterviewsChange.className = 'stat-card-change';
+        } else {
+            elInterviewsChange.innerHTML = `<span>✓</span> ${interviewsTaken} session${interviewsTaken > 1 ? 's' : ''} completed`;
+            elInterviewsChange.className = 'stat-card-change positive';
+        }
+    }
+
+    if (elAvgChange) {
+        if (interviewsTaken === 0) {
+            elAvgChange.textContent = 'No interviews yet';
+            elAvgChange.className = 'stat-card-change';
+        } else if (avgScore >= 70) {
+            elAvgChange.innerHTML = '<span>↑</span> Strong performance';
+            elAvgChange.className = 'stat-card-change positive';
+        } else if (avgScore >= 40) {
+            elAvgChange.textContent = 'Room to improve';
+            elAvgChange.className = 'stat-card-change';
+        } else {
+            elAvgChange.textContent = 'Keep practicing';
+            elAvgChange.className = 'stat-card-change';
+        }
+    }
+
+    if (elStreakChange) {
+        if (dayStreak === 0) {
+            elStreakChange.textContent = 'Start learning today';
+            elStreakChange.className = 'stat-card-change';
+        } else if (dayStreak >= 7) {
+            elStreakChange.innerHTML = '<span>🔥</span> On fire! Keep going';
+            elStreakChange.className = 'stat-card-change positive';
+        } else {
+            elStreakChange.innerHTML = `<span>↑</span> ${dayStreak} day${dayStreak > 1 ? 's' : ''} in a row`;
+            elStreakChange.className = 'stat-card-change positive';
+        }
+    }
 }
 
 function renderCharts(state) {
