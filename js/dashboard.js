@@ -66,28 +66,8 @@ function renderStats(state) {
         avgScore = Math.round(total / interviewsTaken);
     }
 
-    // Calculate Streak — count consecutive days ending today or yesterday
-    const activityLog = state.learningActivity || {};
-    let dayStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    let checkDate = new Date(today);
-
-    // Check if today has activity, if not start from yesterday
-    const todayStr = checkDate.toISOString().split('T')[0];
-    if (!activityLog[todayStr]) {
-        checkDate.setDate(checkDate.getDate() - 1);
-    }
-
-    while (true) {
-        const dateStr = checkDate.toISOString().split('T')[0];
-        if (activityLog[dateStr] && activityLog[dateStr] > 0) {
-            dayStreak++;
-            checkDate.setDate(checkDate.getDate() - 1);
-        } else {
-            break;
-        }
-    }
+    // Calculate Streak — use shared calculateStreak function
+    const dayStreak = calculateStreak(state);
 
     // Update stat values
     const elSkills = document.getElementById('skills-covered');
@@ -159,7 +139,21 @@ function renderStats(state) {
 }
 
 function renderCharts(state) {
-    const totalTasks = state.roadmap?.totalTasks || 0;
+    let totalTasks = state.roadmap?.totalTasks || 0;
+
+    // Fallback: calculate totalTasks dynamically from weeks data (supports both formats)
+    if (totalTasks === 0 && state.roadmap?.weeks) {
+        state.roadmap.weeks.forEach(week => {
+            (week.topics || []).forEach(topic => {
+                if (topic.modules && Array.isArray(topic.modules)) {
+                    topic.modules.forEach(mod => { totalTasks += (mod.subtopics || []).length; });
+                } else if (topic.items && Array.isArray(topic.items)) {
+                    totalTasks += topic.items.length;
+                }
+            });
+        });
+    }
+
     const completedTasks = state.roadmapProgress?.completedTopics?.length || 0;
     const completedProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     const inProgressProgress = 0;

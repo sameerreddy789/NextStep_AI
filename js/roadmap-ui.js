@@ -12,6 +12,18 @@ let completedTopics = JSON.parse(localStorage.getItem('nextStep_roadmap_progress
 const openWeeks = new Set([0]);
 let totalTaskCount = 0;
 
+// Local escape helper (UIUtils.escapeHTML is a global script, not available in modules)
+function esc(str) {
+    if (typeof str !== 'string') return str;
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+// Escape for use inside onclick="...'value'..." attribute strings
+function escAttr(str) {
+    return esc(str).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+}
+
 // Initialize on DOM Load
 document.addEventListener('DOMContentLoaded', async () => {
     await appState.init();
@@ -264,15 +276,18 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                 const subtopicsHtml = mod.subtopics.map(sub => {
                     const itemId = `${moduleId}-${sub.replace(/\s+/g, '')}`;
                     const isItemDone = completedTopics.includes(itemId);
+                    const safeSub = esc(sub);
+                    const attrSub = escAttr(sub);
+                    const attrSectionTitle = escAttr(section.title);
                     return `
                     <div class="subtopic-item">
                         <div class="subtopic-left">
                             <div class="task-checkbox ${isItemDone ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask('${itemId}', '${moduleId}', this)"></div>
-                            <span class="subtopic-name ${isItemDone ? 'completed' : ''}">${sub}</span>
+                            <span class="subtopic-name ${isItemDone ? 'completed' : ''}">${safeSub}</span>
                         </div>
                         <div class="subtopic-actions">
-                            <button class="icon-btn youtube" onclick="window.openSubtopicLearn('${sub}')" title="Watch Tutorial">📺</button>
-                            <button class="icon-btn practice" onclick="window.openSubtopicPractice('${section.title}', '${sub}')" title="Practice">🎯</button>
+                            <button class="icon-btn youtube" onclick="window.openSubtopicLearn('${attrSub}')" title="Watch Tutorial">📺</button>
+                            <button class="icon-btn practice" onclick="window.openSubtopicPractice('${attrSectionTitle}', '${attrSub}')" title="Practice">🎯</button>
                         </div>
                     </div>`;
                 }).join('');
@@ -282,19 +297,19 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                     <div class="module-practice">
                         <div class="practice-header">🏋️ Practice Problems</div>
                         <div class="practice-list">
-                            ${mod.practiceProblems.map(p => `<span class="practice-tag">${p}</span>`).join('')}
+                            ${mod.practiceProblems.map(p => `<span class="practice-tag">${esc(p)}</span>`).join('')}
                         </div>
                     </div>` : '';
 
                 // Deadline badge
-                const deadlineHtml = mod.deadline ? `<span class="module-deadline">⏰ ${mod.deadline}</span>` : '';
+                const deadlineHtml = mod.deadline ? `<span class="module-deadline">⏰ ${esc(mod.deadline)}</span>` : '';
 
                 return `
                 <div class="module-card ${isModuleCompleted ? 'completed' : ''}" id="module-${moduleId}">
                     <div class="module-header">
                         <div class="module-checkbox ${isModuleCompleted ? 'checked' : ''}" onclick="toggleModule('${moduleId}', [${taskIds.map(id => `'${id}'`).join(',')}], this)"></div>
                         <div class="module-info">
-                            <div class="module-title">${mod.title}</div>
+                            <div class="module-title">${esc(mod.title)}</div>
                             <div class="module-meta">${mod.subtopics.length} Subtopics • ${completedInModule}/${taskIds.length} Done ${deadlineHtml}</div>
                         </div>
                     </div>
@@ -313,12 +328,12 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
             sectionCompletedTasks += topicCompletedTasks;
 
             const coreBadge = topic.isCore ? '<span class="core-badge">⭐ Core</span>' : '';
-            const diffBadge = topic.difficulty ? `<span class="diff-badge diff-${topic.difficulty}">${topic.difficulty}</span>` : '';
+            const diffBadge = topic.difficulty ? `<span class="diff-badge diff-${esc(topic.difficulty)}">${esc(topic.difficulty)}</span>` : '';
 
             return `
             <div class="topic-group" id="topic-group-${topicId}">
                 <div class="topic-group-header">
-                    <div class="topic-group-title">${topic.name} ${coreBadge} ${diffBadge}</div>
+                    <div class="topic-group-title">${esc(topic.name)} ${coreBadge} ${diffBadge}</div>
                     <div class="topic-group-meta">${(topic.modules || []).length} Modules • ${topicCompletedTasks}/${topicTotalTasks} Tasks</div>
                 </div>
                 <div class="module-list">${modulesHtml}</div>
@@ -331,7 +346,7 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                 <div class="topic-info">
                     <div class="topic-icon-wrapper">${sectionIcon}</div>
                     <div class="topic-title-group">
-                        <div class="topic-title">${section.title}</div>
+                        <div class="topic-title">${esc(section.title)}</div>
                         <div class="topic-subtitle">${section.topics.length} Topics • ${sectionCompletedTasks}/${sectionTotalTasks} Tasks</div>
                     </div>
                 </div>
