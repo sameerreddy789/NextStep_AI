@@ -1420,6 +1420,11 @@ function renderInterviewHistory() {
             card.onmouseenter = () => { card.style.background = 'rgba(255, 255, 255, 0.08)'; card.style.transform = 'translateY(-2px)'; };
             card.onmouseleave = () => { card.style.background = 'rgba(255, 255, 255, 0.05)'; card.style.transform = 'translateY(0)'; };
 
+            // Click to view detailed analysis
+            card.addEventListener('click', () => {
+                viewPastInterview(interview);
+            });
+
             historyList.appendChild(card);
         });
 
@@ -1428,3 +1433,83 @@ function renderInterviewHistory() {
     }
 }
 window.renderInterviewHistory = renderInterviewHistory;
+
+// View a past interview's detailed analysis
+function viewPastInterview(interview) {
+    // Hide mode selection and history
+    const modeSelection = document.getElementById('mode-selection');
+    const historySection = document.getElementById('interview-history-section');
+    if (modeSelection) modeSelection.classList.add('hidden');
+    if (historySection) historySection.classList.add('hidden');
+
+    // Show complete section
+    const completeSection = document.getElementById('complete-section');
+    completeSection.classList.remove('hidden');
+
+    // Update header for past interview view
+    const completionHeader = document.getElementById('completion-header');
+    if (completionHeader) {
+        const date = new Date(interview.timestamp || interview.completedAt);
+        const dateStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        completionHeader.innerHTML = `
+            <button class="btn btn-secondary btn-sm" onclick="backToInterviewHome()" style="margin-bottom: 20px;">
+                ← Back to Interviews
+            </button>
+            <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+            <h2 style="font-size: 26px; margin-bottom: 6px;">Interview Analysis</h2>
+            <p class="text-muted">${dateStr} • ${timeStr} • ${interview.answers ? interview.answers.length : 0} questions</p>
+        `;
+    }
+
+    // Hide loading, show results
+    const loadingEl = document.getElementById('results-loading');
+    const resultsViewEl = document.getElementById('results-view');
+    if (loadingEl) loadingEl.classList.add('hidden');
+    if (resultsViewEl) resultsViewEl.classList.remove('hidden');
+
+    // Render the results using existing function
+    renderInterviewResults(interview);
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) mainEl.scrollTop = 0;
+}
+
+// Back to interview home from past interview view
+window.backToInterviewHome = function () {
+    // Hide complete section
+    const completeSection = document.getElementById('complete-section');
+    if (completeSection) completeSection.classList.add('hidden');
+
+    // Clear any injected dimension breakdown
+    const dimContainer = document.getElementById('dimensions-container');
+    if (dimContainer) dimContainer.remove();
+
+    // Reset results view
+    const resultsViewEl = document.getElementById('results-view');
+    if (resultsViewEl) resultsViewEl.classList.add('hidden');
+
+    // Restore completion header to default
+    const completionHeader = document.getElementById('completion-header');
+    if (completionHeader) {
+        completionHeader.innerHTML = `
+            <div style="font-size: 64px; margin-bottom: 16px;">🎉</div>
+            <h2 style="font-size: 28px; margin-bottom: 8px;">Interview Complete!</h2>
+            <p class="text-muted" style="margin-bottom: 20px;">Great job! Your responses are being analyzed by AI.</p>
+        `;
+    }
+
+    // Show mode selection and re-render history
+    const modeSelection = document.getElementById('mode-selection');
+    if (modeSelection) modeSelection.classList.remove('hidden');
+    renderInterviewHistory();
+
+    // Scroll to top
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) mainEl.scrollTop = 0;
+};
