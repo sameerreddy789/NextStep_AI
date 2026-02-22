@@ -127,6 +127,22 @@ export const appState = {
         if (this.roadmap?.totalTasks && this.roadmapProgress?.completedTopics) {
             const completion = this.roadmapProgress.completedTopics.length / this.roadmap.totalTasks;
             score += Math.min(completion, 1) * 30;
+        } else if (this.roadmap?.weeks && this.roadmapProgress?.completedTopics) {
+            // Calculate totalTasks dynamically from weeks data (supports both formats)
+            let totalTasks = 0;
+            this.roadmap.weeks.forEach(week => {
+                (week.topics || []).forEach(topic => {
+                    if (topic.modules && Array.isArray(topic.modules)) {
+                        topic.modules.forEach(mod => { totalTasks += (mod.subtopics || []).length; });
+                    } else if (topic.items && Array.isArray(topic.items)) {
+                        totalTasks += topic.items.length;
+                    }
+                });
+            });
+            if (totalTasks > 0) {
+                const completion = this.roadmapProgress.completedTopics.length / totalTasks;
+                score += Math.min(completion, 1) * 30;
+            }
         }
 
         this.readinessScore = Math.round(score);
@@ -134,7 +150,8 @@ export const appState = {
 
     /**
      * Generate Tasks List
-     * Flattens roadmap structure and checks completion status
+     * Flattens roadmap structure and checks completion status.
+     * Supports both legacy (items) and new (modules → subtopics) formats.
      */
     generateTasksList() {
         this.tasks = [];
@@ -145,19 +162,37 @@ export const appState = {
         this.roadmap.weeks.forEach((week, wIdx) => {
             if (week.topics) {
                 week.topics.forEach((topic, tIdx) => {
-                    const moduleId = `${wIdx}-${tIdx}`;
+                    const topicId = `${wIdx}-${tIdx}`;
 
-                    if (topic.items && Array.isArray(topic.items)) {
+                    // New format: topic.modules[] → subtopics[]
+                    if (topic.modules && Array.isArray(topic.modules)) {
+                        topic.modules.forEach((mod, mIdx) => {
+                            const moduleId = `${topicId}-${mIdx}`;
+                            if (mod.subtopics && Array.isArray(mod.subtopics)) {
+                                mod.subtopics.forEach(sub => {
+                                    const itemId = `${moduleId}-${sub.replace(/\s+/g, '')}`;
+                                    this.tasks.push({
+                                        id: itemId,
+                                        title: sub,
+                                        subtitle: `${topic.name} → ${mod.title}`,
+                                        deadline: mod.deadline || (week.title.includes('Focus') ? 'This Week' : 'Next Week'),
+                                        completed: completedSet.has(itemId),
+                                        type: 'roadmap'
+                                    });
+                                });
+                            }
+                        });
+                    }
+                    // Legacy format: topic.items[]
+                    else if (topic.items && Array.isArray(topic.items)) {
                         topic.items.forEach(item => {
-                            const itemId = `${moduleId}-${item.replace(/\s+/g, '')}`;
-                            const isCompleted = completedSet.has(itemId);
-
+                            const itemId = `${topicId}-${item.replace(/\s+/g, '')}`;
                             this.tasks.push({
                                 id: itemId,
                                 title: item,
-                                subtitle: topic.name, // Extra context
+                                subtitle: topic.name,
                                 deadline: topic.deadline || (week.title.includes('Focus') ? 'This Week' : 'Next Week'),
-                                completed: isCompleted,
+                                completed: completedSet.has(itemId),
                                 type: 'roadmap'
                             });
                         });

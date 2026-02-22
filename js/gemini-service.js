@@ -758,10 +758,10 @@ Respond with ONLY a JSON object:
     },
 
     /**
-     * Generate a personalized roadmap based on resume, interview gaps, and target role
+     * Generate a personalized roadmap with dynamic modules based on topic depth/complexity
      */
     async generatePersonalizedRoadmap(resumeData, interviewGaps, marketGaps, targetRole, timeline = '3-6 months', commitment = '2 hours/day', refinementPrompt = null) {
-        console.log('[GeminiService] 🗺️ Generating personalized roadmap...');
+        console.log('[GeminiService] 🗺️ Generating personalized roadmap with dynamic modules...');
 
         const totalWeeks = this._getWeeksFromTimeline(timeline);
 
@@ -794,20 +794,57 @@ Instructions:
 -   **Weeks 1-2**: Foundation & Critical Fixes (Interview Weaknesses).
 -   **Weeks 3-${Math.floor(totalWeeks / 2)}**: Core Competency & Market "Must-Haves".
 -   **Weeks ${Math.floor(totalWeeks / 2) + 1}-${totalWeeks}**: Advanced Projects & Specialization.
--   **Structure**: Each week must have a 'title' and 'topics'.
--   **Content**: For EACH topic, provide a specifically generated search query.
 
-Respond with ONLY a JSON array of objects (no markdown):
+DYNAMIC MODULE SYSTEM:
+Each topic MUST contain multiple modules. The number of modules depends on topic complexity:
+- Simple topics (≤4 subtopics total): 2 modules
+- Medium topics (5-8 subtopics): 3 modules
+- Complex topics (9-12 subtopics): 4 modules
+- Very complex topics (13+): 5-6 modules
+- If the role is Advanced level: add 1 extra module per topic
+- Core skills for the role: minimum 3 modules
+
+Each module MUST contain:
+- "title": descriptive module name
+- "subtopics": array of 3-6 specific learning items
+- "practiceProblems": array of 5 practice problem titles (for technical topics) or empty array
+- "youtubeQueries": array of 2 YouTube search queries for learning
+- "deadline": estimated completion time (e.g. "3 days", "1 week")
+- "tasks": array of 2-4 daily actionable tasks
+
+For EACH topic, also provide:
+- "isCore": boolean, true if this is a core skill for the ${targetRole} role
+- "difficulty": "beginner", "intermediate", or "advanced"
+
+Respond with ONLY a JSON array (no markdown):
 [
     {
         "week": 1,
         "title": "Focus: Data Structures & Weaknesses",
         "topics": [
-            { 
-                "name": "Linked Lists Mastery", 
-                "query": "Linked Lists in depth tutorial for interviews", 
-                "desc": "Address identified gap in linear data structures.",
-                "items": ["Singly vs Doubly Linked List", "Cycle Detection", "Reversing a List"]
+            {
+                "name": "Linked Lists Mastery",
+                "query": "Linked Lists in depth tutorial for interviews",
+                "isCore": true,
+                "difficulty": "intermediate",
+                "modules": [
+                    {
+                        "title": "Fundamentals & Traversal",
+                        "subtopics": ["Singly Linked List", "Doubly Linked List", "Circular Linked List"],
+                        "practiceProblems": ["Reverse a Linked List", "Detect Cycle", "Merge Two Sorted Lists", "Remove Nth Node", "Find Middle Element"],
+                        "youtubeQueries": ["linked list fundamentals tutorial", "linked list implementation step by step"],
+                        "deadline": "3 days",
+                        "tasks": ["Implement singly linked list from scratch", "Solve 3 easy linked list problems", "Watch traversal tutorial"]
+                    },
+                    {
+                        "title": "Advanced Patterns",
+                        "subtopics": ["Two Pointer Technique", "Fast & Slow Pointers", "Merge Sort on Lists"],
+                        "practiceProblems": ["Palindrome Linked List", "Intersection of Two Lists", "Sort List", "Reorder List", "Copy List with Random Pointer"],
+                        "youtubeQueries": ["linked list interview patterns", "advanced linked list problems"],
+                        "deadline": "4 days",
+                        "tasks": ["Master two-pointer technique", "Solve 3 medium linked list problems", "Review and revise"]
+                    }
+                ]
             }
         ]
     }
@@ -817,7 +854,7 @@ Respond with ONLY a JSON array of objects (no markdown):
             const response = await this._request(prompt);
             const parsed = this._parseJSON(response);
             if (parsed && Array.isArray(parsed)) {
-                console.log(`[GeminiService] ✅ Generated ${parsed.length} week roadmap`);
+                console.log(`[GeminiService] ✅ Generated ${parsed.length} week roadmap with dynamic modules`);
                 return parsed;
             }
             throw new Error('Failed to parse roadmap');

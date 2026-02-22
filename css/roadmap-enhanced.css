@@ -484,3 +484,162 @@
     border-color: rgba(16, 185, 129, 0.4);
     color: #10B981;
 }
+
+
+/* ============================================================
+   DYNAMIC MODULE SYSTEM — Topic Groups & Enhanced Modules
+   ============================================================ */
+
+/* Topic Group (wraps modules within a topic) */
+.topic-group {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.topic-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.topic-group-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.topic-group-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Core & Difficulty Badges */
+.core-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255, 193, 7, 0.15);
+    color: #FFC107;
+    border: 1px solid rgba(255, 193, 7, 0.25);
+}
+
+.diff-badge {
+    display: inline-flex;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.diff-badge.diff-beginner {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.diff-badge.diff-intermediate {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3B82F6;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.diff-badge.diff-advanced {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+/* Module Deadline Badge */
+.module-deadline {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    background: rgba(139, 92, 246, 0.12);
+    color: #A78BFA;
+    margin-left: 4px;
+}
+
+/* Practice Problems Section */
+.module-practice {
+    margin-top: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 161, 22, 0.06);
+    border: 1px solid rgba(255, 161, 22, 0.12);
+    border-radius: 10px;
+}
+
+.practice-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: #FFA116;
+    margin-bottom: 10px;
+}
+
+.practice-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.practice-tag {
+    display: inline-flex;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    background: rgba(255, 161, 22, 0.1);
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 161, 22, 0.15);
+    transition: all 0.2s;
+}
+
+.practice-tag:hover {
+    background: rgba(255, 161, 22, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Responsive for topic groups */
+@media (max-width: 768px) {
+    .topic-group {
+        padding: 12px;
+    }
+
+    .topic-group-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .topic-group-title {
+        font-size: 15px;
+    }
+
+    .practice-list {
+        gap: 6px;
+    }
+
+    .practice-tag {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+}

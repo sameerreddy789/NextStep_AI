@@ -1,5 +1,6 @@
 /**
  * Roadmap UI Manager - Handles interactive elements of the roadmap page
+ * Supports dynamic module system: Section → Topic → Modules → Subtopics
  */
 
 import { auth, db } from './firebase-config.js';
@@ -13,34 +14,27 @@ let totalTaskCount = 0;
 
 // Initialize on DOM Load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize Global State
     await appState.init();
 
-    // Sync local variables from AppState
     if (appState.roadmapProgress) {
         completedTopics = appState.roadmapProgress.completedTopics || [];
         localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
     }
 
     const userRole = localStorage.getItem('userType') || 'student';
-    // If we have state.user, we might want to use that role, but for now specific logic is fine.
     const isSample = !appState.user;
 
     if (window.initRoadmap) initRoadmap(userRole, isSample, appState.skillGap);
 
-    // Subscribe to updates
     appState.subscribe(state => {
         if (state.roadmapProgress && state.roadmapProgress.completedTopics) {
             completedTopics = state.roadmapProgress.completedTopics;
-            // Update UI if needed, calling updateProgress() which recalculates valid completions
             if (window.updateProgress) window.updateProgress();
         }
     });
 
-    // Check for new roadmap success
     const showModal = localStorage.getItem('nextStep_showNewRoadmapModal');
     const skillFocus = localStorage.getItem('nextStep_newSkillFocus');
-
     if (showModal === 'true' && skillFocus) {
         localStorage.removeItem('nextStep_showNewRoadmapModal');
         const descEl = document.getElementById('new-roadmap-desc');
@@ -56,16 +50,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// Platform Link Helpers
+
 // Platform Link Helpers
 window.getLearningLink = function (sectionTitle, module) {
     if (module.searchQuery) return `https://www.youtube.com/results?search_query=${encodeURIComponent(module.searchQuery)}`;
-
-    // Fallback logic
     const moduleName = module.name || module;
     const sTitle = sectionTitle.toLowerCase();
     const mName = moduleName.toLowerCase();
-
     if (sTitle.includes('aptitude')) return 'https://www.geeksforgeeks.org/aptitude/aptitude-questions-and-answers/';
     if (sTitle.includes('cs fundamentals') || sTitle.includes('computer science')) {
         if (mName.includes('operating system')) return 'https://www.geeksforgeeks.org/operating-systems/';
@@ -78,11 +69,9 @@ window.getLearningLink = function (sectionTitle, module) {
 
 window.getPracticeLink = function (sectionTitle, module) {
     if (module.searchQuery) return `https://leetcode.com/problemset/all/?search=${encodeURIComponent(module.name)}`;
-
     const moduleName = module.name || module;
     const sTitle = sectionTitle.toLowerCase();
     const mName = moduleName.toLowerCase();
-
     if (sTitle.includes('aptitude')) return 'https://www.geeksforgeeks.org/aptitude/aptitude-questions-and-answers/';
     if (sTitle.includes('data structures') || sTitle.includes('dsa')) return `https://leetcode.com/problemset/all/?search=${encodeURIComponent(moduleName)}`;
     if (sTitle.includes('cs fundamentals') || sTitle.includes('computer science')) {
@@ -90,24 +79,17 @@ window.getPracticeLink = function (sectionTitle, module) {
         if (mName.includes('dbms') || mName.includes('database')) return 'https://www.geeksforgeeks.org/quizzes/50-dbms-mcqs-with-answers/';
         if (mName.includes('network')) return 'https://www.geeksforgeeks.org/quizzes/50-computer-networks-mcqs-with-answers/';
     }
-    // Generic fallback to Google
     return `https://www.google.com/search?q=${encodeURIComponent(mName + ' practice problems')}`;
 };
 
 window.renderHeatmap = function (containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-
-    // Generate last 365 days
     const today = new Date();
     const oneYearAgo = new Date();
     oneYearAgo.setDate(today.getDate() - 364);
-
-    // Mock data - in real app, fetch from user profile
     const completedDates = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
-
     let html = `<div class="heatmap-grid" style="display: grid; grid-template-rows: repeat(7, 10px); grid-auto-flow: column; gap: 3px;">`;
-
     for (let d = new Date(oneYearAgo); d <= today; d.setDate(d.getDate() + 1)) {
         const dateStr = d.toISOString().split('T')[0];
         const count = completedDates[dateStr] || 0;
@@ -116,35 +98,30 @@ window.renderHeatmap = function (containerId) {
         if (count > 2) intensity = 'level-2';
         if (count > 4) intensity = 'level-3';
         if (count > 6) intensity = 'level-4';
-
         html += `<div class="heatmap-cell ${intensity}" title="${dateStr}: ${count} tasks" style="width: 10px; height: 10px; border-radius: 2px;"></div>`;
     }
     html += `</div>`;
-
-    // Add legend and stats
     const totalTasks = Object.values(completedDates).reduce((a, b) => a + b, 0);
     html += `
     <div class="heatmap-meta" style="margin-top: 10px; display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
-        <span>${totalTasks} contributions in the last year</span >
-    <div style="display: flex; gap: 4px; align-items: center;">
-        <span>Less</span>
-        <div class="heatmap-cell level-0" style="width: 10px; height: 10px; border-radius: 2px;"></div>
-        <div class="heatmap-cell level-1" style="width: 10px; height: 10px; border-radius: 2px;"></div>
-        <div class="heatmap-cell level-2" style="width: 10px; height: 10px; border-radius: 2px;"></div>
-        <div class="heatmap-cell level-3" style="width: 10px; height: 10px; border-radius: 2px;"></div>
-        <div class="heatmap-cell level-4" style="width: 10px; height: 10px; border-radius: 2px;"></div>
-        <span>More</span>
+        <span>${totalTasks} contributions in the last year</span>
+        <div style="display: flex; gap: 4px; align-items: center;">
+            <span>Less</span>
+            <div class="heatmap-cell level-0" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+            <div class="heatmap-cell level-1" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+            <div class="heatmap-cell level-2" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+            <div class="heatmap-cell level-3" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+            <div class="heatmap-cell level-4" style="width: 10px; height: 10px; border-radius: 2px;"></div>
+            <span>More</span>
+        </div>
     </div>
-    </div >
     <style>
-        .heatmap-cell.level-0 {background - color: rgba(255,255,255,0.05); }
-        .heatmap-cell.level-1 {background - color: rgba(16, 185, 129, 0.2); }
-        .heatmap-cell.level-2 {background - color: rgba(16, 185, 129, 0.4); }
-        .heatmap-cell.level-3 {background - color: rgba(16, 185, 129, 0.7); }
-        .heatmap-cell.level-4 {background - color: #10B981; }
-    </style>
-`;
-
+        .heatmap-cell.level-0 { background-color: rgba(255,255,255,0.05); }
+        .heatmap-cell.level-1 { background-color: rgba(16, 185, 129, 0.2); }
+        .heatmap-cell.level-2 { background-color: rgba(16, 185, 129, 0.4); }
+        .heatmap-cell.level-3 { background-color: rgba(16, 185, 129, 0.7); }
+        .heatmap-cell.level-4 { background-color: #10B981; }
+    </style>`;
     container.innerHTML = html;
 };
 
@@ -165,7 +142,11 @@ window.openSubtopicPractice = function (sectionTitle, topicName) {
     }
 };
 
-// Initializer
+
+// ============================================================
+// MAIN INITIALIZER — Dynamic Module Rendering
+// Structure: Section (week) → Topic → Modules → Subtopics
+// ============================================================
 window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = null, refinementPrompt = null) {
     const container = document.getElementById('roadmap-container');
     if (!container || !window.RoadmapEngine) return;
@@ -176,8 +157,16 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
     if (!refinementPrompt && appState.roadmap && appState.roadmap.weeks) {
         console.log('[RoadmapUI] 📂 Loading persisted roadmap from AppState');
         sectionsData = appState.roadmap.weeks;
+
+        // Migrate legacy format if needed
+        if (window.RoadmapEngine.isLegacyFormat(appState.roadmap)) {
+            console.log('[RoadmapUI] 🔄 Detected legacy format, migrating...');
+            const migrated = window.RoadmapEngine.migrateLegacyRoadmap(appState.roadmap, role);
+            sectionsData = migrated.weeks;
+            appState.roadmap = migrated;
+        }
     }
-    // 2. If no persisted roadmap OR refining, generating one using AI
+    // 2. If no persisted roadmap OR refining, generate using AI
     else if (window.GeminiService && appState.user && !isSample) {
         const actionText = refinementPrompt ? 'Refining Your Roadmap...' : 'Building Your Personalized Roadmap...';
         container.innerHTML = `
@@ -188,20 +177,14 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
             </div>`;
 
         try {
-            console.log('[RoadmapUI] 🚀 Starting fresh roadmap generation...');
-
-            // Fetch Resume Data (if not in appState)
+            console.log('[RoadmapUI] 🚀 Starting roadmap generation with dynamic modules...');
             const resumeData = appState.resumeData || {};
-
-            // Get User Preferences
             const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
             const timeline = userData.jobReadyTimeline || '3-6 months';
             const commitment = userData.dailyCommitment || '2 hours/day';
 
-            // analyzing market skills
             let marketGaps = [];
             try {
-                // Mock market search data for now (in real app could be SERP results)
                 const mockMarketData = { source: 'LinkedIn/Indeed', date: new Date().toISOString() };
                 const marketAnalysis = await window.GeminiService.analyzeMarketSkills(role, mockMarketData, resumeData.skills || []);
                 if (marketAnalysis && marketAnalysis.mustHave) {
@@ -211,38 +194,33 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                 console.warn('[RoadmapUI] Market analysis failed, proceeding without it:', err);
             }
 
-            // Generate Roadmap
             const generatedWeeks = await window.GeminiService.generatePersonalizedRoadmap(
-                resumeData,
-                skillGaps,
-                marketGaps,
-                role,
-                timeline,
-                commitment,
-                refinementPrompt
+                resumeData, skillGaps, marketGaps, role, timeline, commitment, refinementPrompt
             );
 
             if (generatedWeeks) {
                 sectionsData = window.RoadmapEngine.generateFullRoadmap(role, skillGaps, generatedWeeks);
 
+                // Calculate total tasks from new module structure
+                const totalTasks = sectionsData.reduce((acc, w) =>
+                    acc + w.topics.reduce((tAcc, topic) =>
+                        tAcc + topic.modules.reduce((mAcc, mod) => mAcc + mod.subtopics.length, 0), 0), 0);
+
                 // Save to Firestore
                 await setDoc(doc(db, "users", appState.user.uid, "roadmap", "structure"), {
                     weeks: sectionsData,
-                    totalTasks: sectionsData.reduce((acc, w) => acc + w.topics.reduce((t, m) => t + m.items.length, 0), 0),
+                    totalTasks: totalTasks,
                     generatedAt: serverTimestamp(),
-                    role: role
+                    role: role,
+                    version: 2 // Mark as new module format
                 });
 
-                // Save to LocalStorage for Persistence
                 localStorage.setItem('nextStep_roadmap', JSON.stringify({ weeks: sectionsData }));
-                console.log('[RoadmapUI] 💾 Saved roadmap to LocalStorage');
-
-                // Update AppState
-                appState.roadmap = { weeks: sectionsData };
+                console.log('[RoadmapUI] 💾 Saved roadmap with dynamic modules');
+                appState.roadmap = { weeks: sectionsData, totalTasks: totalTasks };
             }
         } catch (e) {
             console.error('[RoadmapUI] ❌ Generation failed:', e);
-            // Fallback to static
             sectionsData = window.RoadmapEngine.generateFullRoadmap(role, skillGaps, null);
         }
     }
@@ -253,70 +231,108 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
             : RoadmapEngine.generateFullRoadmap(role, skillGaps, aiData);
     }
 
-    // Render logic (using sectionsData) ...
-    // Verify sectionsData is valid
     if (!sectionsData || !Array.isArray(sectionsData)) {
         sectionsData = RoadmapEngine.generateSampleRoadmap(role);
     }
 
-    container.innerHTML = sectionsData.map((section, idx) => {
-        const isDSA = section.title.includes('Data Structures') || idx === 1;
-        const sectionIcon = section.icon || (idx === 0 ? '🧠' : (idx === 1 ? '⚡' : '💻'));
+    // ============================================================
+    // RENDER: Section → Topic → Modules → Subtopics
+    // ============================================================
+    container.innerHTML = sectionsData.map((section, sIdx) => {
+        const isDSA = section.title.includes('Data Structures') || sIdx === 1;
+        const sectionIcon = section.icon || (sIdx === 0 ? '🧠' : (sIdx === 1 ? '⚡' : '💻'));
         let sectionTotalTasks = 0, sectionCompletedTasks = 0;
 
-        const modulesHtml = section.topics.map((module, mIdx) => {
-            const moduleId = `${idx}-${mIdx}`;
-            const taskIds = module.items.map(item => `${moduleId}-${item.replace(/\s+/g, '')}`);
-            sectionTotalTasks += taskIds.length;
-            const completedInModule = taskIds.filter(id => completedTopics.includes(id)).length;
-            sectionCompletedTasks += completedInModule;
-            const isModuleCompleted = completedInModule === taskIds.length && taskIds.length > 0;
-            const learnLink = getLearningLink(section.title, module);
-            const practiceLink = getPracticeLink(section.title, module);
+        const topicsHtml = section.topics.map((topic, tIdx) => {
+            const topicId = `${sIdx}-${tIdx}`;
+            let topicTotalTasks = 0, topicCompletedTasks = 0;
 
-            const subtopicsHtml = module.items.map(item => {
-                const itemId = `${moduleId}-${item.replace(/\s+/g, '')}`;
-                const isItemDone = completedTopics.includes(itemId);
+            // Render each module inside this topic
+            const modulesHtml = (topic.modules || []).map((mod, mIdx) => {
+                const moduleId = `${topicId}-${mIdx}`;
+                const taskIds = mod.subtopics.map(sub => `${moduleId}-${sub.replace(/\s+/g, '')}`);
+                topicTotalTasks += taskIds.length;
+                const completedInModule = taskIds.filter(id => completedTopics.includes(id)).length;
+                topicCompletedTasks += completedInModule;
+                const isModuleCompleted = completedInModule === taskIds.length && taskIds.length > 0;
+
+                // YouTube links from module metadata
+                const ytQuery = mod.youtubeQueries?.[0] || `${topic.name} ${mod.title} tutorial`;
+                const learnLink = `https://www.youtube.com/results?search_query=${encodeURIComponent(ytQuery)}`;
+                const practiceLink = getPracticeLink(section.title, { name: topic.name, searchQuery: topic.searchQuery });
+
+                const subtopicsHtml = mod.subtopics.map(sub => {
+                    const itemId = `${moduleId}-${sub.replace(/\s+/g, '')}`;
+                    const isItemDone = completedTopics.includes(itemId);
+                    return `
+                    <div class="subtopic-item">
+                        <div class="subtopic-left">
+                            <div class="task-checkbox ${isItemDone ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask('${itemId}', '${moduleId}', this)"></div>
+                            <span class="subtopic-name ${isItemDone ? 'completed' : ''}">${sub}</span>
+                        </div>
+                        <div class="subtopic-actions">
+                            <button class="icon-btn youtube" onclick="window.openSubtopicLearn('${sub}')" title="Watch Tutorial">📺</button>
+                            <button class="icon-btn practice" onclick="window.openSubtopicPractice('${section.title}', '${sub}')" title="Practice">🎯</button>
+                        </div>
+                    </div>`;
+                }).join('');
+
+                // Practice problems section
+                const practiceHtml = (mod.practiceProblems && mod.practiceProblems.length > 0) ? `
+                    <div class="module-practice">
+                        <div class="practice-header">🏋️ Practice Problems</div>
+                        <div class="practice-list">
+                            ${mod.practiceProblems.map(p => `<span class="practice-tag">${p}</span>`).join('')}
+                        </div>
+                    </div>` : '';
+
+                // Deadline badge
+                const deadlineHtml = mod.deadline ? `<span class="module-deadline">⏰ ${mod.deadline}</span>` : '';
+
                 return `
-                <div class="subtopic-item">
-                    <div class="subtopic-left">
-                        <div class="task-checkbox ${isItemDone ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask('${itemId}', '${moduleId}', this)"></div>
-                        <span class="subtopic-name ${isItemDone ? 'completed' : ''}">${item}</span>
+                <div class="module-card ${isModuleCompleted ? 'completed' : ''}" id="module-${moduleId}">
+                    <div class="module-header">
+                        <div class="module-checkbox ${isModuleCompleted ? 'checked' : ''}" onclick="toggleModule('${moduleId}', [${taskIds.map(id => `'${id}'`).join(',')}], this)"></div>
+                        <div class="module-info">
+                            <div class="module-title">${mod.title}</div>
+                            <div class="module-meta">${mod.subtopics.length} Subtopics • ${completedInModule}/${taskIds.length} Done ${deadlineHtml}</div>
+                        </div>
                     </div>
-                    <div class="subtopic-actions">
-                        <button class="icon-btn youtube" onclick="window.openSubtopicLearn('${item}')" title="Watch Tutorial">📺</button>
-                        <button class="icon-btn practice" onclick="window.openSubtopicPractice('${section.title}', '${item}')" title="Practice">🎯</button>
+                    <div class="module-actions">
+                        <button class="action-btn learn" onclick="window.open('${learnLink}', '_blank')">📚 Learn</button>
+                        <button class="action-btn practice ${isDSA ? 'leetcode' : 'geeksforgeeks'}" onclick="window.open('${practiceLink}', '_blank')">
+                            ${isDSA ? '⚡ Practice' : '🧠 Practice'}
+                        </button>
                     </div>
+                    <div class="module-subtopics">${subtopicsHtml}</div>
+                    ${practiceHtml}
                 </div>`;
             }).join('');
 
+            sectionTotalTasks += topicTotalTasks;
+            sectionCompletedTasks += topicCompletedTasks;
+
+            const coreBadge = topic.isCore ? '<span class="core-badge">⭐ Core</span>' : '';
+            const diffBadge = topic.difficulty ? `<span class="diff-badge diff-${topic.difficulty}">${topic.difficulty}</span>` : '';
+
             return `
-            <div class="module-card ${isModuleCompleted ? 'completed' : ''}" id="module-${moduleId}">
-                <div class="module-header">
-                    <div class="module-checkbox ${isModuleCompleted ? 'checked' : ''}" onclick="toggleModule('${moduleId}', [${taskIds.map(id => `'${id}'`).join(',')}], this)"></div>
-                    <div class="module-info">
-                        <div class="module-title">${module.name}</div>
-                        <div class="module-meta">${module.items.length} Topics • ${completedInModule}/${taskIds.length} Done</div>
-                    </div>
+            <div class="topic-group" id="topic-group-${topicId}">
+                <div class="topic-group-header">
+                    <div class="topic-group-title">${topic.name} ${coreBadge} ${diffBadge}</div>
+                    <div class="topic-group-meta">${(topic.modules || []).length} Modules • ${topicCompletedTasks}/${topicTotalTasks} Tasks</div>
                 </div>
-                <div class="module-actions">
-                    <button class="action-btn learn" onclick="window.open('${learnLink}', '_blank')">📚 Learn Module</button>
-                    <button class="action-btn practice ${isDSA ? 'leetcode' : 'geeksforgeeks'}" onclick="window.open('${practiceLink}', '_blank')">
-                        ${isDSA ? '⚡ Practice Module' : '🧠 Practice Module'}
-                    </button>
-                </div>
-                <div class="module-subtopics">${subtopicsHtml}</div>
+                <div class="module-list">${modulesHtml}</div>
             </div>`;
         }).join('');
 
         return `
-        <div class="topic-card ${openWeeks.has(idx) ? 'active' : ''}" id="topic-${idx}">
-            <div class="topic-header" onclick="toggleTopic(${idx})">
+        <div class="topic-card ${openWeeks.has(sIdx) ? 'active' : ''}" id="topic-${sIdx}">
+            <div class="topic-header" onclick="toggleTopic(${sIdx})">
                 <div class="topic-info">
                     <div class="topic-icon-wrapper">${sectionIcon}</div>
                     <div class="topic-title-group">
                         <div class="topic-title">${section.title}</div>
-                        <div class="topic-subtitle">${section.topics.length} Modules • ${sectionCompletedTasks}/${sectionTotalTasks} Tasks</div>
+                        <div class="topic-subtitle">${section.topics.length} Topics • ${sectionCompletedTasks}/${sectionTotalTasks} Tasks</div>
                     </div>
                 </div>
                 <div class="topic-toggle-icon">▼</div>
@@ -332,16 +348,21 @@ window.initRoadmap = async function (role, isSample, skillGaps = [], aiData = nu
                         </div>
                     </div>
                 </div>
-                <div class="module-list">${modulesHtml}</div>
+                ${topicsHtml}
             </div>
         </div>`;
     }).join('');
 
-    totalTaskCount = sectionsData.reduce((acc, sec) => acc + sec.topics.reduce((tAcc, topic) => tAcc + topic.items.length, 0), 0);
+    totalTaskCount = sectionsData.reduce((acc, sec) =>
+        acc + sec.topics.reduce((tAcc, topic) =>
+            tAcc + (topic.modules || []).reduce((mAcc, mod) => mAcc + mod.subtopics.length, 0), 0), 0);
     updateProgress();
 };
 
-// Task Toggles
+
+// ============================================================
+// TASK TOGGLES
+// ============================================================
 window.toggleTask = function (taskId, moduleId, checkbox) {
     const taskItem = checkbox.closest('.subtopic-item');
     const topicCard = checkbox.closest('.topic-card');
@@ -357,17 +378,14 @@ window.toggleTask = function (taskId, moduleId, checkbox) {
         checkbox.classList.add('checked');
         taskItem.querySelector('.subtopic-name').classList.add('completed');
 
-        // Log activity for heatmap
         const today = new Date().toISOString().split('T')[0];
         const log = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
         log[today] = (log[today] || 0) + 1;
         localStorage.setItem('nextStep_activity_log', JSON.stringify(log));
     }
 
-    // Save to Firestore
     saveRoadmapToDatabase();
 
-    // Sync with Dashboard Tasks
     if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
         SkillStore.syncTaskByTitle(topicName, isNowCompleted);
     }
@@ -395,11 +413,8 @@ window.toggleModule = function (moduleId, taskIds, checkbox) {
         moduleCard.classList.remove('completed');
         taskIds.forEach(id => { const idx = completedTopics.indexOf(id); if (idx > -1) completedTopics.splice(idx, 1); });
         subtopicElements.forEach(el => {
-            const ck = el.querySelector('.task-checkbox');
-            ck.classList.remove('checked');
+            el.querySelector('.task-checkbox').classList.remove('checked');
             el.querySelector('.subtopic-name').classList.remove('completed');
-
-            // Sync with Dashboard
             if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
                 SkillStore.syncTaskByTitle(el.querySelector('.subtopic-name').textContent, false);
             }
@@ -409,22 +424,28 @@ window.toggleModule = function (moduleId, taskIds, checkbox) {
         moduleCard.classList.add('completed');
         taskIds.forEach(id => { if (!completedTopics.includes(id)) completedTopics.push(id); });
         subtopicElements.forEach(el => {
-            const ck = el.querySelector('.task-checkbox');
-            ck.classList.add('checked');
+            el.querySelector('.task-checkbox').classList.add('checked');
             el.querySelector('.subtopic-name').classList.add('completed');
-
-            // Sync with Dashboard
             if (window.SkillStore && window.SkillStore.syncTaskByTitle) {
                 SkillStore.syncTaskByTitle(el.querySelector('.subtopic-name').textContent, true);
             }
         });
     }
+
+    saveRoadmapToDatabase();
+    localStorage.setItem('nextStep_roadmap_progress', JSON.stringify(completedTopics));
+    updateModuleMeta(moduleCard, subtopicElements.length);
+    updateTaskCountsInPlace(topicCard);
+    updateProgress();
 };
 
 function updateModuleMeta(moduleCard, total) {
     const completed = moduleCard.querySelectorAll('.subtopic-item .task-checkbox.checked').length;
     const meta = moduleCard.querySelector('.module-meta');
-    if (meta) meta.innerText = `${meta.innerText.split('•')[0].trim()} • ${completed}/${total} Done`;
+    if (meta) {
+        const parts = meta.innerText.split('•');
+        meta.innerText = `${parts[0].trim()} • ${completed}/${total} Done${parts.length > 2 ? ' • ' + parts.slice(2).join('•').trim() : ''}`;
+    }
 }
 
 function updateTaskCountsInPlace(topicCard) {
@@ -435,11 +456,25 @@ function updateTaskCountsInPlace(topicCard) {
         if (match) { secDone += parseInt(match[1]); secTotal += parseInt(match[2]); }
     });
     const subtitle = topicCard.querySelector('.topic-subtitle');
-    if (subtitle) subtitle.textContent = `${subtitle.textContent.split('•')[0]} • ${secDone}/${secTotal} Tasks`;
+    if (subtitle) {
+        const parts = subtitle.textContent.split('•');
+        subtitle.textContent = `${parts[0].trim()} • ${secDone}/${secTotal} Tasks`;
+    }
+    // Also update topic-group-meta
+    topicCard.querySelectorAll('.topic-group-meta').forEach(meta => {
+        const modules = meta.closest('.topic-group').querySelectorAll('.module-meta');
+        let gTotal = 0, gDone = 0;
+        modules.forEach(m => {
+            const match = m.innerText.match(/(\d+)\/(\d+) Done/);
+            if (match) { gDone += parseInt(match[1]); gTotal += parseInt(match[2]); }
+        });
+        const parts = meta.textContent.split('•');
+        meta.textContent = `${parts[0].trim()} • ${gDone}/${gTotal} Tasks`;
+    });
 }
 
 window.toggleTopic = function (idx) {
-    document.querySelectorAll('.topic-card').forEach((card, i) => {
+    document.querySelectorAll('.topic-card').forEach((card) => {
         const cardIdx = parseInt(card.id.split('-')[1]);
         if (cardIdx !== idx) { card.classList.remove('active'); openWeeks.delete(cardIdx); }
     });
@@ -492,8 +527,9 @@ window.closeCelebrationModal = () => { ['celebration-modal', 'job-panel', 'skill
 window.startNewRoadmap = skill => { localStorage.removeItem('nextStep_roadmap_progress'); localStorage.setItem('nextStep_newSkillFocus', skill); localStorage.setItem('nextStep_showNewRoadmapModal', 'true'); closeCelebrationModal(); window.location.reload(); };
 window.closeNewRoadmapModal = () => document.getElementById('new-roadmap-modal').classList.add('hidden');
 
-// Database Integration
-// Database Integration
+// ============================================================
+// DATABASE INTEGRATION
+// ============================================================
 async function saveRoadmapToDatabase() {
     try {
         const user = appState.user;
@@ -501,39 +537,22 @@ async function saveRoadmapToDatabase() {
             console.log('[Roadmap] ⚠️ User not logged in, skipping cloud save');
             return;
         }
-
-        const activityLog = appState.learningActivity || {}; // Use AppState log, or merge/local?
-        // Actually, log in appState needs to be updated too.
-        // For now, let's sync local log to valid object if appState is empty
-        // But appState.init() should have populated it.
-
-        // Wait, the roadmap-ui modifies 'nextStep_activity_log' in localStorage in toggleTask.
-        // We should probably rely on appState.logActivity() instead?
-        // But toggleTask is here in this file.
-
-        // Let's use the local activity log for now to ensure we capture the click today
         const localLog = JSON.parse(localStorage.getItem('nextStep_activity_log') || '{}');
-
         const progressData = {
             completedTopics: completedTopics,
             activityLog: localLog,
             lastUpdated: serverTimestamp()
         };
-
         console.log('[Roadmap] Saving progress to Firestore...');
         await setDoc(doc(db, "users", user.uid, "roadmap", "progress"), progressData, { merge: true });
-
-        // Update AppState
         appState.roadmapProgress = {
             completedTopics: completedTopics,
             activityLog: localLog,
             lastUpdated: new Date()
         };
-        // Also update learningActivity in appState so dashboard reflects it immediately
         appState.learningActivity = localLog;
         appState.calculateReadiness();
-        appState.notifyListeners(); // This will trigger dashboard update if open
-
+        appState.notifyListeners();
         console.log('[Roadmap] ✅ Progress saved');
     } catch (error) {
         console.error('[Roadmap] ❌ Error saving progress:', error);
