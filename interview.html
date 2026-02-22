@@ -8,7 +8,6 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="description" content="Take adaptive AI-powered mock interviews">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/stats-bar.css">
     <link rel="stylesheet" href="css/animated-background.css">
     <link rel="stylesheet" href="css/page-transitions.css">
     <link rel="stylesheet" href="css/celebration-modal.css">
@@ -33,7 +32,6 @@
             <div id="mode-selection">
                 <div class="page-header">
                     <h1 class="page-title">🎤 AI Interview</h1>
-                    <p class="page-subtitle">Choose your interview mode and test your skills</p>
                 </div>
 
                 <div class="interview-modes" style="display: block; text-align: center;">
@@ -1820,10 +1818,6 @@
     <script type="module" src="js/interview-engine.js"></script>
     <script src="js/interview-media.js"></script>
     <script src="js/sidebar.js" type="module"></script>
-    <script type="module">
-        import { initStatsBar } from './js/services/stats-bar.js';
-        document.addEventListener('DOMContentLoaded', () => setTimeout(initStatsBar, 100));
-    </script>
     <script src="js/click-spark.js"></script>
 </body>
 
