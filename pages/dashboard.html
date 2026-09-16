@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -9,6 +9,7 @@
     <link rel="manifest" href="../manifest.json">
     <meta name="description" content="Track your career progress, interview scores, and learning roadmap on your NextStep AI dashboard.">
     <link rel="stylesheet" href="../css/styles.css?v=3">
+    <link rel="stylesheet" href="../css/clay-morphism.css">
     <link rel="stylesheet" href="../css/empty-states.css?v=2">
     <link rel="stylesheet" href="../css/streak.css?v=2">
     <link rel="stylesheet" href="../css/stats-bar.css?v=2">
@@ -18,9 +19,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <script src="../js/env-config.js?v=2"></script>
-    <script defer src="../js/ui-utils.js?v=3"></script>
-    <script defer src="../js/gemini-service.js?v=2"></script>
-    <script defer src="../js/dashboard-engine.js?v=2"></script>
+    <script type="module" src="../js/ui-utils.js?v=3"></script>
+    <script type="module" src="../js/gemini-service.js?v=2"></script>
+    <script type="module" src="../js/dashboard-engine.js?v=2"></script>
     <script defer src="../js/route-guard.js?v=3"></script>
     <link rel="stylesheet" href="../css/dashboard-page.css?v=2">
 
@@ -29,56 +30,56 @@
 <body>
     <div class="app-container">
         <!-- Sidebar (populated by sidebar.js) -->
-        <aside class="sidebar"></aside>
+        <aside class="sidebar" role="navigation" aria-label="Main Navigation"></aside>
 
         <!-- Main Content -->
-        <main class="main-content" id="main-content">
+        <main class="main-content" id="main-content" role="main">
             <!-- Header -->
-            <div class="dashboard-header">
+            <div class="dashboard-header" role="banner">
                 <div>
                     <h1 class="page-title">Welcome back, <span id="user-greeting-name">User</span>! 👋</h1>
                     <p class="page-subtitle">Track your progress and stay on course</p>
                 </div>
                 <div class="header-actions">
-                    <a href="interview.html" class="btn btn-primary">
+                    <a href="interview.html" class="btn btn-primary" aria-label="Take a new mock interview">
                         + Take Interview
                     </a>
                 </div>
             </div>
 
             <!-- Stats Cards -->
-            <div class="stats-row" id="global-stats-row">
-                <div class="stat-card-new">
+            <div class="stats-row" id="global-stats-row" role="region" aria-label="Key Performance Indicators">
+                <div class="stat-card-new" tabindex="0">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Skills Covered</span>
-                        <span class="stat-card-icon">📊</span>
+                        <span class="stat-card-icon" aria-hidden="true">📊</span>
                     </div>
                     <div class="stat-card-value" id="skills-covered">—</div>
                     <div class="stat-card-change" id="skills-change"></div>
                 </div>
 
-                <div class="stat-card-new">
+                <div class="stat-card-new" tabindex="0">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Interviews Taken</span>
-                        <span class="stat-card-icon">🎤</span>
+                        <span class="stat-card-icon" aria-hidden="true">🎙️</span>
                     </div>
                     <div class="stat-card-value" id="interviews-taken">—</div>
                     <div class="stat-card-change" id="interviews-change"></div>
                 </div>
 
-                <div class="stat-card-new">
+                <div class="stat-card-new" tabindex="0">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Avg. Score</span>
-                        <span class="stat-card-icon">📈</span>
+                        <span class="stat-card-icon" aria-hidden="true">📈</span>
                     </div>
                     <div class="stat-card-value" id="avg-score">—</div>
                     <div class="stat-card-change" id="avg-score-change"></div>
                 </div>
 
-                <div class="stat-card-new">
+                <div class="stat-card-new" tabindex="0">
                     <div class="stat-card-header">
                         <span class="stat-card-title">Day Streak</span>
-                        <span class="stat-card-icon">🔥</span>
+                        <span class="stat-card-icon" aria-hidden="true">🔥</span>
                     </div>
                     <div class="stat-card-value" id="day-streak">—</div>
                     <div class="stat-card-change" id="streak-change"></div>
@@ -199,7 +200,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title" id="modal-title">Add Task</div>
-                <div class="modal-close" onclick="closeModal()">✕</div>
+                <div class="modal-close" onclick="closeModal()">✖</div>
             </div>
             <div class="form-group">
                 <label class="form-label" id="modal-label">Task Title</label>
@@ -217,7 +218,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="modal-title">Delete Task?</div>
-                <div class="modal-close" onclick="closeDeleteModal()">✕</div>
+                <div class="modal-close" onclick="closeDeleteModal()">✖</div>
             </div>
             <div style="padding: 10px 0 20px 0; color: var(--text-secondary); font-size: 14px;">
                 Are you sure you want to remove this task? This action cannot be undone.
@@ -231,9 +232,9 @@
     </div>
 
     <script src="../js/firebase-config.js?v=2" type="module"></script>
-    <script src="../js/roadmap-engine.js?v=2"></script>
+    <script type="module" src="../js/roadmap-engine.js?v=2"></script>
     <script src="../js/sidebar.js?v=4" type="module"></script>
-    <script src="../js/store.js?v=2"></script>
+    <script type="module" src="../js/store.js?v=2"></script>
     <script src="../js/confetti.js?v=2"></script>
     <script src="../js/celebration-modal.js?v=2"></script>
     <script src="../js/dashboard.js?v=2" type="module"></script>

@@ -1,14 +1,17 @@
+// @ts-check
 /**
  * Skills Data Store
- * Manages skill data in localStorage with CRUD operations
+ * Manages skill data with Hybrid Persistence (LocalStorage + Firestore)
  */
+import { StorageService } from './services/storage.js';
+import { appState } from './app-state.js';
 
 const STORAGE_KEY = 'nextStep_skills';
 const USER_KEY = 'nextStep_user';
 const TASKS_KEY = 'nextStep_tasks';
 const PRIORITY_SKILLS_KEY = 'nextStep_priority_skills';
 
-// Default skills for demo
+// Default data
 const DEFAULT_SKILLS = [
     {
         id: 'js-fundamentals',
@@ -27,69 +30,6 @@ const DEFAULT_SKILLS = [
             { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), progress: 10 },
             { date: new Date().toISOString(), progress: 10 }
         ]
-    },
-    {
-        id: 'react-basics',
-        name: 'React Basics',
-        category: 'programming',
-        icon: '⚛️',
-        description: 'Component-based UI development with React',
-        progress: 25,
-        streak: 3,
-        lastPracticed: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        history: [
-            { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), progress: 10 },
-            { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), progress: 15 }
-        ]
-    },
-    {
-        id: 'python-basics',
-        name: 'Python',
-        category: 'programming',
-        icon: '🐍',
-        description: 'Python programming fundamentals and best practices',
-        progress: 45,
-        streak: 7,
-        lastPracticed: new Date().toISOString(),
-        createdAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-        history: []
-    },
-    {
-        id: 'ui-design',
-        name: 'UI Design',
-        category: 'design',
-        icon: '🎨',
-        description: 'User interface design principles and practices',
-        progress: 70,
-        streak: 15,
-        lastPracticed: new Date().toISOString(),
-        createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        history: []
-    },
-    {
-        id: 'data-analysis',
-        name: 'Data Analysis',
-        category: 'data',
-        icon: '📊',
-        description: 'Statistical analysis and data visualization',
-        progress: 60,
-        streak: 8,
-        lastPracticed: new Date().toISOString(),
-        createdAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-        history: []
-    },
-    {
-        id: 'machine-learning',
-        name: 'Machine Learning',
-        category: 'data',
-        icon: '🤖',
-        description: 'ML algorithms and model training',
-        progress: 20,
-        streak: 2,
-        lastPracticed: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        history: []
     }
 ];
 
@@ -100,22 +40,19 @@ const DEFAULT_USER = {
     joinDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
 };
 
-// Default tasks
 const DEFAULT_TASKS = [
     { id: 't1', title: 'Learn System Design basics', due: 'Today', status: 'progress', icon: '📚', color: 'blue', completed: false, type: 'system' },
     { id: 't2', title: 'Practice DSA - Arrays', due: 'Tomorrow', status: 'pending', icon: '💻', color: 'purple', completed: false, type: 'system' },
-    { id: 't3', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', icon: '🎤', color: 'green', completed: false, type: 'system' },
-    { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true, type: 'personal' }
+    { id: 't3', title: 'Mock Interview #4', due: 'In 2 days', status: 'pending', icon: '🎙️', color: 'green', completed: false, type: 'system' },  
+    { id: 't4', title: 'Review React concepts', due: 'Completed', status: 'done', icon: '📖', color: 'gold', completed: true, type: 'personal' }  
 ];
 
-// Default Priority Skills
 const DEFAULT_PRIORITY_SKILLS = [
     { id: 'ps1', name: 'System Design', priority: 'High', icon: '🏗️' },
     { id: 'ps2', name: 'Kubernetes', priority: 'High', icon: '☸️' },
     { id: 'ps3', name: 'CI/CD', priority: 'Medium', icon: '🚀' }
 ];
 
-// Categories definition
 const CATEGORIES = {
     programming: { name: 'Programming', icon: '💻', color: '#60a5fa' },
     design: { name: 'Design', icon: '🎨', color: '#a78bfa' },
@@ -125,7 +62,6 @@ const CATEGORIES = {
     other: { name: 'Other', icon: '📚', color: '#6b7280' }
 };
 
-// Growth stages
 const GROWTH_STAGES = [
     { name: 'Seed', min: 0, max: 10, color: '#6b7280' },
     { name: 'Sprout', min: 10, max: 30, color: '#84cc16' },
@@ -136,97 +72,69 @@ const GROWTH_STAGES = [
 
 // ============ Storage Functions ============
 
-/**
- * Safe localStorage wrapper — prevents crashes on quota exceeded or private browsing
- */
-function safeSetItem(key, value) {
-    try {
-        localStorage.setItem(key, value);
-    } catch (e) {
-        console.warn('[Store] localStorage write failed:', e.message);
-    }
-}
-
 function getSkills() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) {
-        safeSetItem(STORAGE_KEY, JSON.stringify(DEFAULT_SKILLS));
-        return DEFAULT_SKILLS;
-    }
-    return JSON.parse(stored);
+    if (appState.skills && appState.skills.length > 0) return appState.skills;
+    const skills = StorageService.localGet(STORAGE_KEY, DEFAULT_SKILLS);
+    appState.skills = skills;
+    return skills;
 }
 
-function saveSkills(skills) {
-    safeSetItem(STORAGE_KEY, JSON.stringify(skills));
+async function saveSkills(skills) {
+    StorageService.localSet(STORAGE_KEY, skills);
+    appState.skills = skills;
+    if (appState.user?.uid) {
+        await StorageService.firestoreSet(`users/${appState.user.uid}/data/skills`, { items: skills });
+    }
 }
 
 function getUser() {
-    const stored = localStorage.getItem(USER_KEY);
-    if (!stored) {
-        safeSetItem(USER_KEY, JSON.stringify(DEFAULT_USER));
-        return DEFAULT_USER;
+    if (appState.user) {
+        return {
+            name: appState.user.displayName || 'Learner',
+            uid: appState.user.uid,
+        };
     }
-    return JSON.parse(stored);
+    return StorageService.localGet(USER_KEY, DEFAULT_USER);
 }
 
 function saveUser(user) {
-    safeSetItem(USER_KEY, JSON.stringify(user));
+    StorageService.localSet(USER_KEY, user);
 }
 
 function getTasks() {
-    const stored = localStorage.getItem(TASKS_KEY);
-    let tasks = [];
-
-    if (!stored) {
-        tasks = DEFAULT_TASKS;
-        safeSetItem(TASKS_KEY, JSON.stringify(tasks));
-    } else {
-        tasks = JSON.parse(stored);
-    }
-
-    // Migrate old tasks that don't have a 'type'
-    let migrated = false;
-    tasks = tasks.map(t => {
-        if (!t.type) {
-            migrated = true;
-            // Best guess: t1, t2, t3 from DEFAULT_TASKS are 'system'
-            return {
-                ...t,
-                type: t.id && t.id.startsWith('t') ? 'system' : 'personal'
-            };
-        }
-        return t;
-    });
-
-    if (migrated) {
-        saveTasks(tasks);
-    }
-
+    if (appState.personalTasks && appState.personalTasks.length > 0) return appState.personalTasks;
+    const tasks = StorageService.localGet(TASKS_KEY, DEFAULT_TASKS);
+    appState.personalTasks = tasks;
     return tasks;
 }
 
-function saveTasks(tasks) {
-    safeSetItem(TASKS_KEY, JSON.stringify(tasks));
+async function saveTasks(tasks) {
+    StorageService.localSet(TASKS_KEY, tasks);
+    appState.personalTasks = tasks;
+    if (appState.user?.uid) {
+        await StorageService.firestoreSet(`users/${appState.user.uid}/data/tasks`, { items: tasks });
+    }
 }
 
 function getPrioritySkills() {
-    const stored = localStorage.getItem(PRIORITY_SKILLS_KEY);
-    if (!stored) {
-        safeSetItem(PRIORITY_SKILLS_KEY, JSON.stringify(DEFAULT_PRIORITY_SKILLS));
-        return DEFAULT_PRIORITY_SKILLS;
-    }
-    return JSON.parse(stored);
+    if (appState.prioritySkills && appState.prioritySkills.length > 0) return appState.prioritySkills;
+    const skills = StorageService.localGet(PRIORITY_SKILLS_KEY, DEFAULT_PRIORITY_SKILLS);
+    appState.prioritySkills = skills;
+    return skills;
 }
 
-function savePrioritySkills(skills) {
-    safeSetItem(PRIORITY_SKILLS_KEY, JSON.stringify(skills));
+async function savePrioritySkills(skills) {
+    StorageService.localSet(PRIORITY_SKILLS_KEY, skills);
+    appState.prioritySkills = skills;
+    if (appState.user?.uid) {
+        await StorageService.firestoreSet(`users/${appState.user.uid}/data/priority_skills`, { items: skills });
+    }
 }
 
 // ============ Skill CRUD ============
 
 function getSkillById(id) {
-    const skills = getSkills();
-    return skills.find(s => s.id === id);
+    return getSkills().find(s => s.id === id);
 }
 
 function addSkill(skill) {
@@ -257,8 +165,7 @@ function updateSkill(id, updates) {
 }
 
 function deleteSkill(id) {
-    const skills = getSkills();
-    const filtered = skills.filter(s => s.id !== id);
+    const filtered = getSkills().filter(s => s.id !== id);
     saveSkills(filtered);
 }
 
@@ -269,39 +176,22 @@ function logProgress(skillId, amount = 10) {
 
     const now = new Date();
     const lastPracticed = skill.lastPracticed ? new Date(skill.lastPracticed) : null;
-    const isToday = lastPracticed &&
-        lastPracticed.toDateString() === now.toDateString();
-    const isYesterday = lastPracticed &&
-        new Date(lastPracticed.getTime() + 24 * 60 * 60 * 1000).toDateString() === now.toDateString();
+    const isToday = lastPracticed && lastPracticed.toDateString() === now.toDateString();
+    const isYesterday = lastPracticed && new Date(lastPracticed.getTime() + 24 * 60 * 60 * 1000).toDateString() === now.toDateString();
 
-    // Update progress
     skill.progress = Math.min(100, skill.progress + amount);
     skill.lastPracticed = now.toISOString();
 
-    // Update streak
     if (!isToday) {
-        if (isYesterday || !lastPracticed) {
-            skill.streak += 1;
-        } else {
-            skill.streak = 1;
-        }
+        skill.streak = (isYesterday || !lastPracticed) ? skill.streak + 1 : 1;
     }
 
-    // Add to history
-    skill.history.push({
-        date: now.toISOString(),
-        progress: amount
-    });
-
+    skill.history.push({ date: now.toISOString(), progress: amount });
     saveSkills(skills);
     return skill;
 }
 
 // ============ Task CRUD ============
-
-function getTodayTasks() {
-    return getTasks();
-}
 
 function toggleTask(id) {
     const tasks = getTasks();
@@ -321,7 +211,7 @@ function addTask(task) {
         id: `task-${Date.now()}`,
         status: 'pending',
         completed: false,
-        type: 'personal', // Default to personal
+        type: 'personal',
         ...task
     };
     tasks.push(newTask);
@@ -329,42 +219,30 @@ function addTask(task) {
     return newTask;
 }
 
-/**
- * Syncs a task's completion status based on its title.
- * Used to integrate Roadmap progress with Dashboard tasks.
- */
 function syncTaskByTitle(title, completed) {
     const tasks = getTasks();
     const normalizedTitle = title.toLowerCase().trim();
-    // Extract keywords (longer than 3 chars) to avoid matching common small words like "and", "the"
     const roadmapWords = normalizedTitle.split(/[\s&/]+/).filter(w => w.length > 3);
 
     let updated = false;
     const updatedTasks = tasks.map(t => {
         const taskTitle = t.title.toLowerCase();
-
-        // Match if titles share meaningful keywords OR have a containment relationship
         const isMatch = taskTitle.includes(normalizedTitle) ||
             normalizedTitle.includes(taskTitle) ||
             (roadmapWords.length > 0 && roadmapWords.some(word => taskTitle.includes(word)));
 
-        if (isMatch) {
-            if (t.completed !== completed) {
-                updated = true;
-                return { ...t, completed: completed, status: completed ? 'done' : 'pending' };
-            }
+        if (isMatch && t.completed !== completed) {
+            updated = true;
+            return { ...t, completed: completed, status: completed ? 'done' : 'pending' };
         }
         return t;
     });
 
-    if (updated) {
-        saveTasks(updatedTasks);
-    }
+    if (updated) saveTasks(updatedTasks);
 }
 
 function deleteTask(id) {
-    const tasks = getTasks();
-    const filtered = tasks.filter(t => t.id !== id);
+    const filtered = getTasks().filter(t => t.id !== id);
     saveTasks(filtered);
 }
 
@@ -372,18 +250,14 @@ function deleteTask(id) {
 
 function addPrioritySkill(skill) {
     const skills = getPrioritySkills();
-    const newSkill = {
-        id: `ps-${Date.now()}`,
-        ...skill
-    };
+    const newSkill = { id: `ps-${Date.now()}`, ...skill };
     skills.push(newSkill);
     savePrioritySkills(skills);
     return newSkill;
 }
 
 function deletePrioritySkill(id) {
-    const skills = getPrioritySkills();
-    const filtered = skills.filter(s => s.id !== id);
+    const filtered = getPrioritySkills().filter(s => s.id !== id);
     savePrioritySkills(filtered);
 }
 
@@ -396,18 +270,14 @@ function getStats() {
     const maxStreak = Math.max(...skills.map(s => s.streak), 0);
     const masteredCount = skills.filter(s => s.progress >= 90).length;
 
-    // Calculate weekly progress
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const weeklyProgress = skills.reduce((sum, skill) => {
-        const weeklyHistory = skill.history.filter(h => new Date(h.date) > weekAgo);
+        const weeklyHistory = (skill.history || []).filter(h => new Date(h.date) > weekAgo);
         return sum + weeklyHistory.reduce((s, h) => s + h.progress, 0);
     }, 0);
 
-    // Skills practiced today
     const today = new Date().toDateString();
-    const practicedToday = skills.filter(s =>
-        s.lastPracticed && new Date(s.lastPracticed).toDateString() === today
-    ).length;
+    const practicedToday = skills.filter(s => s.lastPracticed && new Date(s.lastPracticed).toDateString() === today).length;
 
     return {
         totalSkills,
@@ -419,54 +289,10 @@ function getStats() {
     };
 }
 
-function getReadiness() {
-    const stats = getStats();
-    return stats.avgProgress;
-}
-
-
-function getGrowthStage(progress) {
-    return GROWTH_STAGES.find(s => progress >= s.min && progress < s.max) || GROWTH_STAGES[4];
-}
-
-function getRecentActivity(limit = 5) {
-    const skills = getSkills();
-    const activities = [];
-
-    skills.forEach(skill => {
-        skill.history.forEach(h => {
-            activities.push({
-                skillId: skill.id,
-                skillName: skill.name,
-                skillIcon: skill.icon,
-                progress: h.progress,
-                date: new Date(h.date)
-            });
-        });
-    });
-
-    return activities
-        .sort((a, b) => b.date - a.date)
-        .slice(0, limit);
-}
-
-function getTopSkills(limit = 3) {
-    const skills = getSkills();
-    return skills
-        .filter(s => s.progress < 100)
-        .sort((a, b) => {
-            // Prioritize by streak and recency
-            const streakDiff = b.streak - a.streak;
-            if (streakDiff !== 0) return streakDiff;
-            return new Date(b.lastPracticed || 0) - new Date(a.lastPracticed || 0);
-        })
-        .slice(0, limit);
-}
-
 // ============ Export ============
 
-window.SkillStore = {
-    init: () => { }, // Prevent crashes if called
+export const SkillStore = {
+    init: () => { },
     getSkills,
     saveSkills,
     getSkillById,
@@ -475,10 +301,26 @@ window.SkillStore = {
     deleteSkill,
     logProgress,
     getStats,
-    getGrowthStage,
-    getReadiness,
-    getRecentActivity,
-    getTopSkills,
+    getGrowthStage: (progress) => GROWTH_STAGES.find(s => progress >= s.min && progress < s.max) || GROWTH_STAGES[4],
+    getReadiness: () => Math.round(getSkills().reduce((sum, s) => sum + s.progress, 0) / (getSkills().length || 1)),
+    getRecentActivity: (limit = 5) => {
+        const activities = [];
+        getSkills().forEach(skill => {
+            (skill.history || []).forEach(h => {
+                activities.push({
+                    skillId: skill.id, skillName: skill.name, skillIcon: skill.icon,
+                    progress: h.progress, date: new Date(h.date)
+                });
+            });
+        });
+        return activities.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, limit);
+    },
+    getTopSkills: (limit = 3) => {
+        return getSkills()
+            .filter(s => s.progress < 100)
+            .sort((a, b) => (b.streak - a.streak) || (new Date(b.lastPracticed || 0).getTime() - new Date(a.lastPracticed || 0).getTime()))
+            .slice(0, limit);
+    },
     getUser,
     saveUser,
     CATEGORIES,
@@ -492,3 +334,6 @@ window.SkillStore = {
     addPrioritySkill,
     deletePrioritySkill
 };
+
+// @ts-ignore
+window.SkillStore = SkillStore;

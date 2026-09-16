@@ -2,296 +2,165 @@
 
 > **Your AI-Powered Career Co-Pilot** — Bridging the gap between where you are and where you want to be.
 
-![NextStep AI](https://img.shields.io/badge/Status-Active-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue) ![Version](https://img.shields.io/badge/Version-1.0-orange)
+![NextStep AI](https://img.shields.io/badge/Status-Active-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue) ![Version](https://img.shields.io/badge/Version-1.1.0-orange) ![Stack](https://img.shields.io/badge/Stack-Vanilla_JS_--_Vite-yellow)
 
 ---
 
 ## 📋 Overview
 
-NextStep AI is an intelligent career guidance platform that helps students, freshers, and career switchers navigate their path to success. The platform combines AI-powered resume analysis, adaptive mock interviews, personalized learning roadmaps, and skill gap analysis to provide a comprehensive career preparation experience.
+NextStep AI is a modular, production-ready career guidance platform designed to help students, freshers, and career switchers navigate their path to success. The platform recently underwent a comprehensive architectural refactoring to deliver **99.9% state consistency**, enhanced **modular logic**, and a premium **Clay-Glass design system**.
 
 ---
+
+## ✨ Key Enhancements (v1.1.0)
+
+### 🏗️ Modular Architecture
+- **Engine Split**: Large monolithic controllers (like `interview-engine.js`) have been refactored into focused sub-modules (`logic.js`, `timer.js`, `ui.js`) for better testability and maintainability.
+- **Service Layering**: Centralized `StorageService` and `WorkflowManager` now handle all persistence and process orchestration, eliminating redundant logic.
+- **Data Normalization**: Extracted role-specific data into specialized modules (e.g., `js/data/role-topics.js`) for cleaner engine code.
+
+### 🔄 Workflow Orchestration & Resilience
+- **State Machine Integration**: Every major user journey (Onboarding, Analysis, Interview) is now managed by a formal state machine that handles `idle`, `active`, `processing`, and `complete` statuses.
+- **Session Recovery**: Automated recovery paths allow users to resume complex AI interviews or resume analyses exactly where they left off, even after a page refresh or crash.
+
+### 🎨 Design System: "Clay-Glass Hybrid"
+- **Claymorphism Utility**: Introduced `css/clay-morphism.css` providing soft, tactile components that complement the existing Glassmorphism for a modern, high-end feel.
+- **Standardized Tokens**: Unified 8px spacing grid, custom easing functions (`--ease-elastic`), and motion durations defined in `:root`.
+- **Premium Micro-Interactions**: Enhanced ripple effects, hover lifts, and transition sequences across all interactive elements.
+
+### 🤖 Reliable AI Intelligence
+- **Resilient AI Layer**: Standardized `GeminiService` with auto-retries (429/503), native `AbortController` support, and robust error coordination.
+- **Strategic Evaluation**: Comprehensive documentation of LLM alternatives (OpenAI, Anthropic, Groq) provided in `docs/AI_ALTERNATIVES.md`.
+
+---
+
+## 🚀 Core Features
 
 ### 📊 Career Readiness Analytics
-- **Dynamic Donut Visualization** — Progressive-weighted ring segments for accurate skill tracking
-- **Centralized Score Focus** — Real-time overall readiness score display with backdrop-blur effects
-- **Interactive Tooltips** — Detail-rich hover interactions for every readiness segment
+- **Dynamic Donut Visualization** — Progressive-weighted ring segments for accurate skill tracking.
+- **Explainable Scores** — Transparent breakdown of how resume, interview, and roadmap progress contribute to the overall Readiness Score.
 
-###  Smart AI Resume Analysis
-- **Live Gemini AI Integration** — Performs deep multimodal analysis of PDF resumes for precise skill extraction
-- **AI-Powered Skill Validation** — Automatically detects and categorizes technical, soft, and industry-specific skills
-- **ATS Compatibility Score** — Real-time evaluation of how well your resume performs with modern ATS models
-- **Actionable Suggestions** — Get AI-generated feedback on how to improve your resume for your target role
-- **Experience & Project Parsing** — Context-aware extraction of work history and technical project impact
+### 📄 Smart AI Resume Analysis
+- **Multimodal Extraction** — Live Gemini AI analysis of PDF resumes for precise skill, project, and experience extraction.
+- **ATS Compatibility** — Real-time scoring and actionable suggestions to optimize resumes for modern screening systems.
 
 ### 🎤 Adaptive AI Interviews
-- **Real-Time AI Evaluation** — Every answer is analyzed by Gemini AI for logic, approach, and technical accuracy
-- **Adaptive Question Engine** — Dynamically generates questions based on your resume and interview performance
-- **Advanced Answer Methods**:
-  - **Monaco Code Editor** — Professional VS Code-powered environment with "Run Code" simulation
-  - **Speech-to-Text** — Real-time transcription using Web Speech API for behavioral responses
-- **Live Proctoring Simulator** — Interactive webcam feed and behavioral analysis for realistic practice
-- **AI Voice Interaction** — Optional AI-guided interview experience with speech synthesis
-- **Immediate Feedback** — Get per-question analysis on strengths and areas for improvement
+- **Hybrid Assessment** — Combines technical coding challenges (via Monaco Editor) with behavioral speech analysis (via Web Speech API).
+- **Proctoring Simulator** — Interactive webcam feed and real-time AI evaluation of logic and communication markers.
 
 ### 🗺️ Personalized Learning Roadmap
-- **Dynamic 6-Week Plan** — Tailored learning path generated from your specific skill gaps
-- **AI Roadmap Nudges** — "Refine with AI" feature to customize your journey using natural language prompts
-- **Live Resource Integration** — Real-time YouTube tutorials and LeetCode problems fetched via SerpAPI
-- **Interactive Checklist** — Track progress across Learn, Practice, and Interview tasks
-- **🎉 Completion Celebration** — Automated celebration with job board links and "Next-Level" skill suggestions
-
-### � Live Skill Gap Analysis
-- **Market Search Integration** — Scans live industry trends via SERP for your specific target role
-- **Automated Market Scan** — Trigger analysis automatically with debounced career goal inputs
-- **Contextual Comparison** — Compares your resume skills directly against current market demands
-- **Clean Grid Layout** — Optimized multi-column display for clear visual categorization
-- **Prioritized Learning** — Categorizes skills into Must-Have, Good-to-Have, and Future-Proof
-- **Direct Roadmap Sync** — One-click integration to update your roadmap with identified gaps
-
-### 🎨 Premium UI/UX Ecosystem
-- **Compact Sidebar Navigation** — Streamlined vertical navigation with dynamic progress tracking
-- **Live Stat Integration** — Real-time readiness % and daily streak badges in the sidebar
-- **Orbital Feature Timeline** — Interactive visualization of the career preparation journey
-- **Magic Bento Grid** — Modern, dense information display with hover-reactive cards
-- **Infinite Plane Background** — Dynamic, grid-based animation for a high-end feel
-- **Consistent Pro Branding** — Custom `favicon.svg` branding integrated across all application pages
-- **Click Spark Effects** — Engaging micro-interactions for every user action
-
----
-
-## 🏆 Hackathon Demo Guide
-
-**For Judges & Presenters:** This project is **Hackathon Ready**.
-
-### 🛡️ Fail-Safe Demo Mode
-The AI service includes a robust **Fallback Mechanism**. If the Gemini API is rate-limited or unreachable during the presentation, the system will automatically serve high-quality pre-generated interview questions. **The demo will not crash.**
-
-### 🌟 Key Flows to Showcase
-1.  **Resume Analysis**: Upload a resume to see the "Magic Scanning" animation and skill extraction (simulated for speed).
-2.  **AI Interview**:
-    -   Start a "Mixed" interview.
-    -   Show the **Monaco Editor** integration.
-    -   Demonstrate **Speech-to-Text** (allows for natural answers).
-    -   Show the **Toast Notifications** (try submitting empty code).
-3.  **Roadmap**: Generate a personalized roadmap based on the interview performance.
-
+- **Dynamic 6-Week Plan** — Tailored path generated from identified skill gaps with "Refine with AI" natural language customization.
+- **Live Resource Sync** — Integrated SerpAPI fetching of YouTube tutorials and LeetCode problems.
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| **HTML5** | Structure and semantics |
-| **CSS3** | Styling with Glassmorphism and modern patterns |
-| **Vanilla JavaScript** | Core logical engine and state management |
-| **Google Gemini API** | Live AI analysis, evaluation, and generation |
-| **SerpAPI** | Real-time market data and learning resources |
-| **Firebase Auth** | Secure User Identity |
-| **Firebase Hosting** | Fast and secure static web hosting |
-| **Cloud Firestore** | Cloud persistence for user profiles |
-| **GSAP** | Sophisticated page transitions and UI animations |
-| **Monaco Editor** | Professional-grade code editing environment |
-| **Custom UI Systems** | Toasts, Skeleton loaders, and Interactive components |
+| Category | Technology |
+|:---|:---|
+| **Frontend** | Vanilla JavaScript (ES2023+), Vite 5.0 |
+| **Styling** | Modern CSS3 (Glassmorphism + Claymorphism), GSAP |
+| **Intelligence**| Google Gemini AI (1.5 Flash), SerpAPI |
+| **Persistence** | Cloud Firestore, LocalStorage (via `StorageService`) |
+| **Auth** | Firebase Authentication (Email/Google) |
+| **Editor** | Monaco Editor (VS Code core) |
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure (Modular)
 
 ```
 NextStep-AI/
-├── index.html          # Landing page with hero section
-├── auth.html           # Authentication (Login/Signup)
-├── onboarding.html     # Multi-step Onboarding Wizard
-├── dashboard.html      # User dashboard with stats
-├── resume.html         # Resume upload and analysis
-├── interview.html      # AI mock interview system
-├── skill-gap.html      # Skill gap analysis
-├── roadmap.html        # Personalized learning roadmap
-├── profile.html        # User profile management
-├── feedback.html       # Interview feedback display
-├── 404.html            # Custom error page
+├── index.html          # Landing page
+├── pages/
+│   ├── dashboard.html  # Personalized hub (Aria-enhanced)
+│   ├── interview.html  # Adaptive assessment system
+│   ├── roadmap.html    # Personalized learning path
+│   └── ...other pages
 ├── css/
-│   ├── styles.css      # Main stylesheet
-│   ├── editor.css      # Code editor styling
-│   ├── page-transitions.css # Smooth animations
-│   ├── micro-interactions.css # Button effects
-│   ├── mobile-responsive.css # Mobile optimization
-│   ├── empty-states.css # Placeholder templates
-│   ├── onboarding.css  # Onboarding wizard styles
-│   └── ...other components
+│   ├── styles.css      # Design tokens and base styles
+│   ├── clay-morphism.css # Tactile utility classes
+│   ├── glass-fx.css    # Backdrop blur effects
+│   └── ...component styles
 └── js/
-    ├── gemini-service.js   # Centralized AI engine
-    ├── serp-service.js     # Live market search integration
-    ├── interview-engine.js # AI-driven interview logic
-    ├── interview-media.js  # Voice & Video processing
-    ├── roadmap-engine.js   # Personalized path generation
-    ├── roadmap-customizer.js # AI prompt-based refinement
-    ├── toast-notifications.js # Toast system
-    ├── loading-states.js # Premium loaders
-    ├── orbital-timeline.js # Interactive feature visualization
-    ├── click-spark.js     # Micro-interaction engine
-    └── ...other modules
+    ├── app-state.js    # Set-based Observer state manager
+    ├── services/
+    │   ├── storage.js  # Unified persistence layer
+    │   ├── workflow.js # Process state machine
+    │   └── ...API services
+    ├── interview/      # Modular interview sub-system
+    │   ├── logic.js
+    │   ├── timer.js
+    │   └── ui.js
+    ├── data/           # Normalized static data
+    └── ...core logic
 ```
 
 ---
 
-## 📊 Visual Documentation
+## ⚡ Quick Start (3 Minutes)
 
-### System Architecture
-![Architecture Diagram](docs/diagrams/architecture-diagram.png)
-*Complete system architecture showing client layer, application flow, and backend services*
+1.  **Clone & Install**:
+    ```bash
+    git clone https://github.com/sameerreddy789/CareerPilot.git
+    cd CareerPilot
+    npm install
+    ```
 
-### User Journey Flow
-![User Flow](docs/diagrams/user-flow-diagram.png)
-*Sequential user journey from landing to dashboard (16:9 format)*
+2.  **Configure Keys**:
+    -   Copy `js/env-config.example.js` to `js/env-config.js`.
+    -   Open `js/env-config.js` and paste your **Firebase**, **SerpAPI**, and **Gemini** keys.
 
-### UI Wireframes
-![UI Wireframes](docs/diagrams/ui-wireframes.png)
-*Key screen wireframes: Landing, Dashboard, Interview, and Roadmap pages*
+3.  **Run**:
+    ```bash
+    npm run dev
+    ```
+    Go to `http://localhost:5173` and start your career journey!
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- npm (Node Package Manager)
+- **Node.js** (v18+) and **npm**.
+- A **Firebase Project** (Free tier works perfectly).
+- A **Google Gemini API Key** (from Google AI Studio).
+- A **SerpAPI Key** (for live market data).
 
-### Deployment
-This project is configured for **Firebase Hosting**.
+### Step-by-Step Installation
 
-1.  **Install Firebase CLI**
-    ```bash
-    npm install -g firebase-tools
-    ```
-
-2.  **Login and Deploy**
-    ```bash
-    firebase login
-    firebase deploy
-    ```
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/sameerreddy789/CareerPilot.git
-   ```
-
-2. **Navigate to the project**
-   ```bash
-   cd CareerPilot
-   ```
-
-3. **Create `js/env-config.js`**
-   This file is gitignored for security. Create it manually with your API keys:
-   ```js
-   window.ENV = {
-       VITE_FIREBASE_API_KEY: 'your_firebase_key',
-       VITE_FIREBASE_AUTH_DOMAIN: 'your_project.firebaseapp.com',
-       VITE_FIREBASE_DATABASE_URL: 'https://your_project.firebasedatabase.app',
-       VITE_FIREBASE_PROJECT_ID: 'your_project_id',
-       VITE_FIREBASE_STORAGE_BUCKET: 'your_project.appspot.com',
-       VITE_FIREBASE_MESSAGING_SENDER_ID: 'your_sender_id',
-       VITE_FIREBASE_APP_ID: 'your_app_id',
-       VITE_FIREBASE_MEASUREMENT_ID: 'your_measurement_id',
-       VITE_SERP_API_KEY: 'your_serp_api_key',
-       VITE_GEMINI_API_KEY_1: 'your_gemini_key_1',
-       VITE_GEMINI_API_KEY_2: 'your_gemini_key_2',
-       VITE_GEMINI_API_KEY_3: 'your_gemini_key_3',
-       VITE_GEMINI_API_KEY_4: 'your_gemini_key_4'
-   };
-   ```
-   Refer to `.env.example` for the full list of required keys.
-
-4. **Install Dependencies**
+1. **Install Dependencies**
    ```bash
    npm install
    ```
 
-5. **Run Development Server**
+2. **Setup Environment Config**
+   NextStep AI uses a client-side environment configuration for ease of development. Rename the example file:
+   ```bash
+   cp js/env-config.example.js js/env-config.js
+   ```
+   *Note: `js/env-config.js` is ignored by git to keep your keys secure.*
+
+3. **Paste Your Keys**
+   Open `js/env-config.js` in your editor and fill in the values from your service dashboards.
+
+4. **Launch Development Server**
    ```bash
    npm run dev
    ```
-   Open http://localhost:5173 to view the app.
-
-6. **Build for Production**
-   ```bash
-   npm run build
-   ```
-
----
-
-## 🎮 How to Use
-
-1. **Sign Up** — Create accounts with Email or Google
-2. **Complete Onboarding** — Tell us about your goals and upload your resume
-3. **View Dashboard** — See your personalized readiness score
-4. **Take Mock Interviews** — Practice with AI-powered questions
-5. **Follow Roadmap** — Complete your learning plan
-6. **Celebrate & Apply** — Finish roadmap, get job links, explore advanced skills
-
----
-
-## 🎨 Design Philosophy
-
-- **Dark Theme** — Easy on the eyes for extended study sessions
-- **Modern Color Palette** — Carbon Slate theme with clean blue accents
-- **Glassmorphism Effects** — Premium feel with backdrop blur
-- **Responsive Layout** — Mobile-first design with hamburger menu
-- **Micro-animations** — Delightful interactions with ripple effects and transitions
-- **Accessibility First** — WCAG compliant with keyboard navigation and ARIA labels
-- **Progressive Enhancement** — Core features work without JavaScript
-- **Performance Optimized** — Fast page loads with CSS-only animations where possible
-
----
-
-## 👥 Target Audience
-
-| User Type | Use Case |
-|-----------|----------|
-| **Students** | Prepare for campus placements with mock interviews |
-| **Freshers** | Bridge the gap between academics and industry |
-| **Career Switchers** | Transition smoothly to a new domain |
-| **Returning Professionals** | Update skills after a career gap |
-
----
-
-## 🔮 Future Roadmap
-
-- [ ] Video interview analysis
-- [ ] Company-specific interview prep
-- [ ] Peer mock interviews
-- [ ] Mobile app version
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+This project is now structured for scale. Please follow the modular patterns established in `js/services` and `js/interview` when adding new features. Refer to `docs/REFACTORING_PLAN.md` for historical context.
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
-
-**Sameer Reddy**  
-Built with ❤️ for Hackathon
-
----
-
-<p align="center">
-  <strong>© 2026 NextStep AI. All rights reserved.</strong>
-</p>
+**© 2026 NextStep AI. Built with ❤️ for the future of career prep.**

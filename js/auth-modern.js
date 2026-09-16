@@ -1,4 +1,4 @@
-
+// @ts-check
 import { auth, db } from './firebase-config.js';
 import {
     createUserWithEmailAndPassword,
@@ -8,224 +8,159 @@ import {
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { UIUtils } from './ui-utils.js';
+import { appState } from './app-state.js';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // State
+    // DOM Elements
     const loginForm = document.getElementById('login-view');
     const signupForm = document.getElementById('signup-view');
     const authTitle = document.getElementById('auth-title');
     const authSubtitle = document.getElementById('auth-subtitle');
 
-    // Toggle View (Login vs Signup)
+    /**
+     * Toggle between Login and Signup views
+     * @param {'login'|'signup'} view 
+     */
+    // @ts-ignore
     window.toggleView = (view) => {
-        if (view === 'login') {
-            loginForm.classList.remove('hidden');
-            signupForm.classList.add('hidden');
-            authTitle.textContent = 'Welcome back';
-            authSubtitle.textContent = 'Sign in to your account to continue';
-        } else {
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
-            authTitle.textContent = 'Create Account';
-            authSubtitle.textContent = 'Join NextStep AI to start your journey';
-        }
+        const isLogin = view === 'login';
+        loginForm?.classList.toggle('hidden', !isLogin);
+        signupForm?.classList.toggle('hidden', isLogin);
+        if (authTitle) authTitle.textContent = isLogin ? 'Welcome back' : 'Create Account';
+        if (authSubtitle) authSubtitle.textContent = isLogin ? 'Sign in to your account to continue' : 'Join NextStep AI to start your journey';
     };
 
-    // Password Toggle
+    /**
+     * Toggle password visibility
+     */
+    // @ts-ignore
     window.togglePassword = (inputId, btn) => {
-        const input = document.getElementById(inputId);
+        const input = /** @type {HTMLInputElement} */ (document.getElementById(inputId));
         if (input.type === 'password') {
             input.type = 'text';
-            btn.style.color = '#7c3aed';
+            btn.style.color = 'var(--accent-primary)';
         } else {
             input.type = 'password';
-            btn.style.color = 'var(--muted-foreground)';
+            btn.style.color = 'var(--text-muted)';
         }
     };
 
-    // Helper: Check Onboarding Status & Redirect
+    /**
+     * Post-authentication logic: sync state and redirect
+     */
     async function handlePostAuth(user) {
-        // Clear demo mode if it was active
         localStorage.removeItem('demoMode');
+        UIUtils.showLoader('Syncing your profile...');
 
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        let userData = {
-            uid: user.uid,
-            email: user.email,
-            name: user.displayName || user.email.split('@')[0],
-            photoURL: user.photoURL
-        };
+        try {
+            await appState.init(true); // Force refresh from Firestore
 
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            // Sync Firestore state to LocalStorage for route-guard.js compatibility
-            const fullUserData = { ...userData, ...data };
-            localStorage.setItem('nextStep_user', JSON.stringify(fullUserData));
+            const userData = appState.user;
+            if (!userData) throw new Error('Failed to load user profile');
 
-            // Sync Onboarding Flags
-            if (data.onboardingCompleted) {
-                localStorage.setItem('nextStep_onboardingCompleted', 'true');
-            }
-            if (data.resumeStatus) {
-                localStorage.setItem('nextStep_resume', JSON.stringify({
-                    status: data.resumeStatus,
-                    data: data.resumeData
-                }));
-            }
-            if (data.interviewCompleted) {
-                localStorage.setItem('nextStep_interview', 'true');
-            }
-            if (data.roadmapGenerated) {
-                localStorage.setItem('nextStep_roadmapCompleted', 'true');
-            }
-
-            // Redirect based on progress
-            if (data.roadmapGenerated) {
-                window.location.href = "/pages/dashboard.html";
-            } else if (data.interviewCompleted) {
-                window.location.href = "/pages/roadmap.html";
-            } else if (data.onboardingCompleted) {
-                window.location.href = "/pages/resume.html";
-            } else {
+            // If new user (no target role set yet)
+            if (!userData.targetRole) {
                 window.location.href = "/pages/onboarding.html";
+                return;
             }
-        } else {
-            // First time user (likely Google)
-            userData.onboardingCompleted = false;
-            userData.roadmapGenerated = false;
-            userData.createdAt = new Date().toISOString();
 
-            await setDoc(docRef, userData);
-            localStorage.setItem('nextStep_user', JSON.stringify(userData));
-            window.location.href = "/pages/onboarding.html";
+            // Progress-based redirection
+            if (appState.roadmap) {
+                window.location.href = "/pages/dashboard.html";
+            } else if (appState.interviews.length > 0) {
+                window.location.href = "/pages/roadmap.html";
+            } else if (appState.resumeData) {
+                window.location.href = "/pages/interview.html";
+            } else {
+                window.location.href = "/pages/resume.html";
+            }
+        } catch (error) {
+            console.error('[Auth] Post-auth error:', error);
+            UIUtils.showToast('Login successful, but profile sync failed.', 'warning');
+            window.location.href = "/pages/dashboard.html"; // Fallback
+        } finally {
+            UIUtils.hideLoader();
         }
     }
 
-    // ==========================================
-    // FIREBASE AUTH LOGIC
-    // ==========================================
-
-    // LOGIN
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
+    // Login Handler
+    document.getElementById('form-login')?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-        const btn = e.target.querySelector('button[type="submit"]');
+        const email = /** @type {HTMLInputElement} */ (document.getElementById('login-email')).value;
+        const password = /** @type {HTMLInputElement} */ (document.getElementById('login-password')).value;
+        const btn = /** @type {HTMLButtonElement} */ (e.target).querySelector('button[type="submit"]');
 
+        if (btn) btn.disabled = true;
+        
         try {
-            btn.disabled = true;
-            btn.innerHTML = `<span class="loading-spinner"></span> Signing in...`;
-
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             await handlePostAuth(userCredential.user);
-
         } catch (error) {
-            console.error(error);
-            const friendlyMessage = window.FirebaseErrorHandler
-                ? window.FirebaseErrorHandler.getFriendlyFirebaseError(error)
-                : (error.message || 'Something went wrong. Please try again.');
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast(friendlyMessage, 'error', 4000);
-            } else if (window.Toast) {
-                window.Toast.show(friendlyMessage, 'error');
-            } else {
-                alert(friendlyMessage);
-            }
-            btn.disabled = false;
-            btn.textContent = "Sign In";
+            console.error('[Auth] Login failed:', error);
+            UIUtils.showToast(error.message || 'Sign in failed', 'error');
+            if (btn) btn.disabled = false;
         }
     });
 
-    // SIGN UP
-    document.getElementById('form-signup').addEventListener('submit', async (e) => {
+    // Signup Handler
+    document.getElementById('form-signup')?.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const email = /** @type {HTMLInputElement} */ (document.getElementById('signup-email')).value;
+        const password = /** @type {HTMLInputElement} */ (document.getElementById('signup-password')).value;
+        const btn = /** @type {HTMLButtonElement} */ (e.target).querySelector('button[type="submit"]');
 
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const btn = e.target.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
 
         try {
-            btn.disabled = true;
-            btn.innerHTML = `<span class="loading-spinner"></span> Creating Account...`;
-
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
             const userData = {
+                uid: user.uid,
                 email: email,
                 name: email.split('@')[0],
                 createdAt: new Date().toISOString(),
-                onboardingCompleted: false,
-                roadmapGenerated: false
+                onboardingCompleted: false
             };
 
             await setDoc(doc(db, "users", user.uid), userData);
-            localStorage.setItem('nextStep_user', JSON.stringify(userData));
-
-            window.location.href = "/pages/onboarding.html";
-
+            await handlePostAuth(user);
         } catch (error) {
-            console.error(error);
-            const friendlyMessage = window.FirebaseErrorHandler
-                ? window.FirebaseErrorHandler.getFriendlyFirebaseError(error)
-                : (error.message || 'Something went wrong. Please try again.');
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast(friendlyMessage, 'error', 4000);
-            } else if (window.Toast) {
-                window.Toast.show(friendlyMessage, 'error');
-            } else {
-                alert(friendlyMessage);
-            }
-            btn.disabled = false;
-            btn.textContent = "Create Account";
+            console.error('[Auth] Signup failed:', error);
+            UIUtils.showToast(error.message || 'Account creation failed', 'error');
+            if (btn) btn.disabled = false;
         }
     });
 
-    // FORGOT PASSWORD
+    // Google Sign In
+    // @ts-ignore
+    window.handleGoogleSignIn = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await handlePostAuth(result.user);
+        } catch (error) {
+            console.error('[Auth] Google Sign-in failed:', error);
+            UIUtils.showToast('Google sign-in failed', 'error');
+        }
+    };
+    // @ts-ignore
+    window.handleGoogleAuth = window.handleGoogleSignIn;
+
+    // Forgot Password
+    // @ts-ignore
     window.handleForgotPassword = async () => {
-        const email = document.getElementById('login-email').value.trim();
+        const email = /** @type {HTMLInputElement} */ (document.getElementById('login-email')).value.trim();
         if (!email) {
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast('Enter your email address first, then click Forgot', 'warning', 4000);
-            } else { alert('Please enter your email address first.'); }
+            UIUtils.showToast('Please enter your email first', 'warning');
             return;
         }
         try {
             await sendPasswordResetEmail(auth, email);
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast('Password reset email sent! Check your inbox.', 'success', 5000);
-            } else { alert('Password reset email sent! Check your inbox.'); }
+            UIUtils.showToast('Reset email sent! Check your inbox.', 'success');
         } catch (error) {
-            console.error(error);
-            const friendlyMessage = window.FirebaseErrorHandler
-                ? window.FirebaseErrorHandler.getFriendlyFirebaseError(error)
-                : (error.message || 'Failed to send reset email.');
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast(friendlyMessage, 'error', 4000);
-            } else { alert(friendlyMessage); }
-        }
-    };
-
-    // GOOGLE AUTH
-    window.handleGoogleAuth = async () => {
-        try {
-            const provider = new GoogleAuthProvider();
-            const result = await signInWithPopup(auth, provider);
-            await handlePostAuth(result.user);
-
-        } catch (error) {
-            console.error(error);
-            const friendlyMessage = window.FirebaseErrorHandler
-                ? window.FirebaseErrorHandler.getFriendlyFirebaseError(error)
-                : (error.message || 'Something went wrong. Please try again.');
-            if (typeof UIUtils !== 'undefined' && UIUtils.showToast) {
-                UIUtils.showToast(friendlyMessage, 'error', 4000);
-            } else if (window.Toast) {
-                window.Toast.show(friendlyMessage, 'error');
-            } else {
-                alert(friendlyMessage);
-            }
+            UIUtils.showToast('Failed to send reset email', 'error');
         }
     };
 });

@@ -181,7 +181,7 @@ These features exist in the platform but are specified separately.
 **User Story:** As a system component, I want a centralized AI service to handle complex analysis and evaluation, so that the platform can provide intelligent insights.
 
 #### Acceptance Criteria
-1. THE System SHALL implement GeminiService to interact with Google's Gemini-1.5-Flash model.
+1. THE System SHALL implement GeminiService to interact with Google's Gemini-3.1-Flash-Lite model.
 2. THE Service SHALL support multimodal input (PDF resumes) for direct AI analysis without manual text extraction.
 3. THE Service SHALL implement exponential backoff retry logic for rate-limited (429) requests.
 4. THE Service SHALL provide structured JSON outputs for: Resume Analysis, Interview Questions, Answer Evaluation, and Market Skill Categorization.

@@ -1,7 +1,4 @@
-/**
- * SerpApi Service
- * Handles resource discovery via SerpApi with local caching.
- */
+import { StorageService } from './services/storage.js';
 
 const CACHE_PREFIX = 'serp_cache_v3_';
 const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
@@ -23,7 +20,7 @@ const SerpService = {
         const query = params.search_query || params.q;
 
         if (!this.apiKey) {
-            console.warn('SerpApi Key missing. Using intelligent fallback.');
+            console.warn('[SerpService] ⚠️ API Key missing. Using intelligent fallback.');
             return this._getMockData(params.engine, query);
         }
 
@@ -49,7 +46,7 @@ const SerpService = {
 
             return await response.json();
         } catch (error) {
-            console.error('SerpApi Fetch Error:', error);
+            console.error('[SerpService] ❌ Fetch Error:', error);
             // Fallback to mock on any network/CORS error
             return this._getMockData(params.engine, query);
         }
@@ -118,21 +115,20 @@ const SerpService = {
     },
 
     _getCache(key) {
-        const data = localStorage.getItem(key);
-        if (!data) return null;
-        const parsed = JSON.parse(data);
-        if (Date.now() - parsed.timestamp > CACHE_EXPIRY) {
-            localStorage.removeItem(key);
+        const cached = StorageService.localGet(key);
+        if (!cached) return null;
+        if (Date.now() - cached.timestamp > CACHE_EXPIRY) {
+            StorageService.localRemove(key);
             return null;
         }
-        return parsed.value;
+        return cached.value;
     },
 
     _setCache(key, value) {
-        localStorage.setItem(key, JSON.stringify({
+        StorageService.localSet(key, {
             value,
             timestamp: Date.now()
-        }));
+        });
     },
 
     _getMockData(engine, query) {

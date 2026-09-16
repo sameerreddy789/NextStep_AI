@@ -1,6 +1,6 @@
 /**
  * Click Spark Effect - Vanilla JS
- * Creates spark animation on click anywhere on the page
+ * Optimized for performance: passive listeners and idle-loop stopping
  */
 
 class ClickSpark {
@@ -27,7 +27,6 @@ class ClickSpark {
     init() {
         this.createCanvas();
         this.setupEventListeners();
-        this.startAnimation();
     }
 
     createCanvas() {
@@ -53,20 +52,16 @@ class ClickSpark {
     }
 
     setupEventListeners() {
-        window.addEventListener('resize', () => this.resizeCanvas());
-        document.addEventListener('click', (e) => this.handleClick(e));
+        window.addEventListener('resize', () => this.resizeCanvas(), { passive: true });
+        document.addEventListener('click', (e) => this.handleClick(e), { passive: true });
     }
 
     easeFunc(t) {
         switch (this.options.easing) {
-            case 'linear':
-                return t;
-            case 'ease-in':
-                return t * t;
-            case 'ease-in-out':
-                return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-            default: // ease-out
-                return t * (2 - t);
+            case 'linear': return t;
+            case 'ease-in': return t * t;
+            case 'ease-in-out': return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            default: return t * (2 - t);
         }
     }
 
@@ -75,7 +70,6 @@ class ClickSpark {
         const y = e.clientY;
         const now = performance.now();
 
-        // Create sparks in all directions
         for (let i = 0; i < this.options.sparkCount; i++) {
             this.sparks.push({
                 x,
@@ -84,17 +78,25 @@ class ClickSpark {
                 startTime: now
             });
         }
+
+        if (!this.animationId) {
+            this.startAnimation();
+        }
     }
 
     startAnimation() {
         const draw = (timestamp) => {
+            if (this.sparks.length === 0) {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.animationId = null;
+                return;
+            }
+
             this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
             this.sparks = this.sparks.filter(spark => {
                 const elapsed = timestamp - spark.startTime;
-                if (elapsed >= this.options.duration) {
-                    return false;
-                }
+                if (elapsed >= this.options.duration) return false;
 
                 const progress = elapsed / this.options.duration;
                 const eased = this.easeFunc(progress);
@@ -125,19 +127,14 @@ class ClickSpark {
     }
 
     destroy() {
-        if (this.animationId) {
-            cancelAnimationFrame(this.animationId);
-        }
-        if (this.canvas && this.canvas.parentNode) {
-            this.canvas.parentNode.removeChild(this.canvas);
-        }
+        if (this.animationId) cancelAnimationFrame(this.animationId);
+        if (this.canvas && this.canvas.parentNode) this.canvas.parentNode.removeChild(this.canvas);
     }
 }
 
-// Auto-initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     new ClickSpark({
-        sparkColor: '#a78bfa',  // Purple color matching the theme
+        sparkColor: '#a78bfa',
         sparkSize: 12,
         sparkRadius: 25,
         sparkCount: 8,

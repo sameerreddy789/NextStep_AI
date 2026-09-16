@@ -10,6 +10,7 @@
     <meta name="theme-color" content="#6366f1">
     <link rel="manifest" href="../manifest.json">
     <link rel="stylesheet" href="../css/styles.css?v=3">
+    <link rel="stylesheet" href="../css/clay-morphism.css">
     <link rel="stylesheet" href="../css/animated-background.css?v=2">
     <link rel="stylesheet" href="../css/page-transitions.css?v=2">
     <link rel="stylesheet" href="../css/celebration-modal.css?v=2">
@@ -18,20 +19,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <!-- Scripts -->
-    <!-- Load Environment Variables FIRST -->
     <script src="../js/env-config.js?v=2"></script>
     <script src="../js/route-guard.js?v=3"></script>
-    <script src="../js/ui-utils.js?v=3"></script>
-    <script src="../js/gemini-service.js?v=2"></script>
-    <script src="../js/serp-service.js?v=2"></script>
-    <script src="../js/roadmap-engine.js?v=2"></script>
+    <script type="module" src="../js/ui-utils.js?v=3"></script>
+    <script type="module" src="../js/gemini-service.js?v=2"></script>
+    <script type="module" src="../js/serp-service.js?v=2"></script>
+    <script type="module" src="../js/roadmap-engine.js?v=2"></script>
     <script src="../js/roadmap-customizer.js?v=2"></script>
     <script>
-        // Initialize Services after environment is loaded
         window.addEventListener('load', () => {
-            if (window.ENV && window.ENV.GEMINI_API_KEY && window.GeminiService) {
-                window.GeminiService.init(window.ENV.GEMINI_API_KEY);
-            }
             if (window.SerpService) {
                 window.SerpService.init();
             }
@@ -63,7 +59,7 @@
                 <div class="modal-content" style="max-width: 600px; position: relative;">
                     <!-- Close Button -->
                     <button onclick="closeCelebrationModal()" class="modal-close-btn"
-                        style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 8px; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: all 0.2s;">✕</button>
+                        style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 8px; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: all 0.2s;">✖</button>
 
                     <div class="modal-icon">🎉</div>
                     <h2 class="modal-title">Roadmap Complete!</h2>
@@ -76,7 +72,7 @@
                         <button onclick="showRelatedSkills()" class="btn btn-secondary">Explore Related Skills</button>
                     </div>
 
-                    <!-- Job Links Panel (Hidden initially) -->
+                    <!-- Job Links Panel -->
                     <div id="job-panel" class="hidden" style="margin-top: 24px; text-align: left;">
                         <h4 style="color: var(--accent-green); margin-bottom: 12px;">🚀 Apply Now</h4>
                         <div class="resource-list">
@@ -92,22 +88,17 @@
                         </div>
                     </div>
 
-                    <!-- Related Skills Panel (Hidden initially) -->
+                    <!-- Related Skills Panel -->
                     <div id="skills-panel" class="hidden" style="margin-top: 24px; text-align: left;">
                         <h4 style="color: var(--accent-purple); margin-bottom: 12px;">🔮 Level Up Further</h4>
-                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Click a skill to
-                            start a new learning roadmap:</p>
+                        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">Click a skill to start a new learning roadmap:</p>
                         <div class="skill-courses-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
                             <button onclick="startNewRoadmap('GraphDB')" class="skill-course-btn">📊 GraphDB</button>
-                            <button onclick="startNewRoadmap('WebAssembly')" class="skill-course-btn">⚡
-                                WebAssembly</button>
+                            <button onclick="startNewRoadmap('WebAssembly')" class="skill-course-btn">⚡ WebAssembly</button>
                             <button onclick="startNewRoadmap('Rust')" class="skill-course-btn">🦀 Rust</button>
-                            <button onclick="startNewRoadmap('Cybersecurity')" class="skill-course-btn">🔒
-                                Cybersecurity</button>
-                            <button onclick="startNewRoadmap('Machine Learning')" class="skill-course-btn">🤖 Machine
-                                Learning</button>
-                            <button onclick="startNewRoadmap('Cloud Architecture')" class="skill-course-btn">☁️ Cloud
-                                Architecture</button>
+                            <button onclick="startNewRoadmap('Cybersecurity')" class="skill-course-btn">🔒 Cybersecurity</button>
+                            <button onclick="startNewRoadmap('Machine Learning')" class="skill-course-btn">🤖 Machine Learning</button>
+                            <button onclick="startNewRoadmap('Cloud Architecture')" class="skill-course-btn">☁️ Cloud Architecture</button>
                         </div>
                     </div>
                 </div>
@@ -127,7 +118,7 @@
                 </div>
             </div>
 
-            <!-- Gated Access Modal (Hidden by default) -->
+            <!-- Gated Access Modal -->
             <div id="gated-modal" class="modal-overlay hidden">
                 <div class="modal-content">
                     <div class="modal-icon">🔒</div>
@@ -147,11 +138,9 @@
             <!-- AI Customization Modal -->
             <div id="ai-customization-modal" class="modal-overlay hidden">
                 <div class="modal-content" style="max-width: 500px; text-align: left;">
-                    <div class="modal-header"
-                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                         <h2 class="modal-title" style="margin: 0; font-size: 20px;">✨ Refine Roadmap</h2>
-                        <button onclick="window.roadmapCustomizer.closeModal()"
-                            style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
+                        <button onclick="window.roadmapCustomizer.closeModal()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✖</button>        
                     </div>
 
                     <p class="modal-desc" style="margin-bottom: 20px;">
@@ -165,10 +154,8 @@
                     </div>
 
                     <div class="modal-actions" style="justify-content: flex-end;">
-                        <button onclick="window.roadmapCustomizer.closeModal()"
-                            class="btn btn-secondary">Cancel</button>
-                        <button onclick="window.roadmapCustomizer.submitPrompt()" class="btn btn-primary"
-                            id="btn-generate-ai">
+                        <button onclick="window.roadmapCustomizer.closeModal()" class="btn btn-secondary">Cancel</button>
+                        <button onclick="window.roadmapCustomizer.submitPrompt()" class="btn btn-primary" id="btn-generate-ai">
                             Update Roadmap
                         </button>
                     </div>
@@ -191,8 +178,6 @@
                     <span class="overview-label">Overall Progress</span>
                 </div>
             </div>
-
-
 
             <!-- Roadmap Container -->
             <div class="roadmap-weeks" id="roadmap-container">

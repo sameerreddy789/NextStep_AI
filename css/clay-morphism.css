@@ -1,0 +1,75 @@
+/* ===== Claymorphism Design System Utility ===== */
+
+.clay-card {
+    background-color: var(--clay-bg);
+    border-radius: var(--clay-border-radius);
+    box-shadow: var(--clay-shadow-outer), var(--clay-shadow-inner);
+    padding: var(--spacing-xl);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.clay-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--clay-shadow-hover), var(--clay-shadow-inner);
+}
+
+.clay-btn {
+    background-color: var(--accent-primary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.2),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.2),
+        inset 0 4px 6px rgba(255, 255, 255, 0.2);
+    padding: var(--spacing-md) var(--spacing-xl);
+    color: white;
+    font-weight: 700;
+    transition: all var(--transition-fast);
+    border: none;
+    cursor: pointer;
+}
+
+.clay-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 
+        0 12px 24px rgba(0, 0, 0, 0.25),
+        inset 0 -4px 6px rgba(0, 0, 0, 0.2),
+        inset 0 4px 6px rgba(255, 255, 255, 0.3);
+}
+
+.clay-btn:active {
+    transform: translateY(1px);
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1);
+}
+
+.clay-input {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--border-radius-md);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: var(--spacing-md);
+    color: var(--text-primary);
+    transition: all var(--transition-fast);
+}
+
+.clay-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Color Variants */
+.clay-card.primary { background-color: var(--accent-primary-dark); }
+.clay-card.green { background-color: var(--accent-green-dark); }
+.clay-card.purple { background-color: #5B21B6; }
+
+.clay-btn.secondary { background-color: var(--bg-card); color: var(--text-secondary); }
+.clay-btn.success { background-color: var(--accent-green); }
+.clay-btn.danger { background-color: var(--accent-red); }

@@ -1,52 +1,58 @@
+// @ts-check
 import { auth, db } from './firebase-config.js';
-import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { appState } from './app-state.js';
+import { WorkflowManager } from './services/workflow.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Wait for appState to initialize
+    // 1. Initialize State
     const isLoggedIn = await appState.init();
+    if (!isLoggedIn) {
+        window.location.href = '/pages/auth.html';
+        return;
+    }
 
-    const hasInterview = isLoggedIn && (appState.interviews.length > 0 || localStorage.getItem('nextStep_interview'));
-    const hasResume = isLoggedIn && (appState.resumeData || localStorage.getItem('nextStep_resume'));
+    // 2. Check Workflow Status (Gated Access)
+    const analysis = WorkflowManager.getState('analysis');
+    const interview = WorkflowManager.getState('interview');
+    
+    const hasData = appState.resumeData || appState.interviews.length > 0;
+    const isWorkflowComplete = analysis.status === 'complete' || interview.status === 'complete';
 
-    const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
+    if (!hasData && !isWorkflowComplete) {
+        document.getElementById('gated-modal')?.classList.remove('hidden');
+        return;
+    }
+
+    // 3. Initialize Roadmap
+    const userData = appState.user || {};
     const userRole = userData.targetRole || 'sde';
+    const skillGaps = appState.skillGap || [];
 
-    const roadmapData = JSON.parse(localStorage.getItem('nextStep_roadmap') || '{"skills":[]}');
-    const planSkills = JSON.parse(localStorage.getItem('nextStep_roadmapPlan') || '[]');
-    const skillGaps = planSkills.length > 0
-        ? planSkills.map(name => ({ name, priority: 'must-have' }))
-        : (appState.skillGap || roadmapData.skills || []);
+    // initRoadmap is defined in roadmap-ui.js
+    // @ts-ignore
+    if (window.initRoadmap) {
+        // @ts-ignore
+        await window.initRoadmap(userRole, false, skillGaps);
+        
+        // 4. Update Workflow State
+        WorkflowManager.updateState('roadmap', {
+            status: 'complete',
+            data: { generatedAt: Date.now() }
+        });
 
-    // Gated Access Logic
-    const skillGapDone = localStorage.getItem('nextStep_skillGapCompleted') === 'true';
-    if (!skillGapDone) {
-        document.getElementById('gated-modal').classList.remove('hidden');
-        const gatedTitle = document.querySelector('#gated-modal h2, #gated-modal .gated-title');
-        if (gatedTitle) gatedTitle.textContent = 'Complete Skill Gap Analysis First';
-        const gatedDesc = document.querySelector('#gated-modal p, #gated-modal .gated-desc');
-        if (gatedDesc) gatedDesc.textContent = 'Visit the Skill Gap page and add skills to your plan before accessing the Roadmap.';
-    } else if (!hasInterview && !hasResume) {
-        document.getElementById('gated-modal').classList.remove('hidden');
-    } else {
-        // Let roadmap-ui.js handle ALL generation logic (single orchestrator)
-        await initRoadmap(userRole, false, skillGaps);
-
-        // Mark roadmap as completed to allow dashboard access
-        localStorage.setItem('nextStep_roadmapCompleted', 'true');
-        console.log("Roadmap loaded. Dashboard access unlocked.");
-
-        // Sync with Firestore
+        // 5. Sync with Firestore
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
                     const userRef = doc(db, "users", user.uid);
                     await updateDoc(userRef, {
-                        roadmapGenerated: true
+                        roadmapGenerated: true,
+                        updatedAt: serverTimestamp()
                     });
                 } catch (e) {
-                    console.error("Error updating roadmap status:", e);
+                    console.error("[Roadmap] Sync error:", e);
                 }
             }
         });
@@ -55,8 +61,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Unlock Sample Mode (Preview)
 window.unlockSampleMode = function () {
-    document.getElementById('gated-modal').classList.add('hidden');
-    const userData = JSON.parse(localStorage.getItem('nextStep_user') || '{}');
-    const userRole = userData.targetRole || 'sde';
-    initRoadmap(userRole, true); // true = isSample
+    document.getElementById('gated-modal')?.classList.add('hidden');
+    const userRole = appState.user?.targetRole || 'sde';
+    // @ts-ignore
+    if (window.initRoadmap) window.initRoadmap(userRole, true); 
 };

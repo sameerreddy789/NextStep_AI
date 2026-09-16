@@ -49,9 +49,9 @@
     --shadow-glow: 0 0 40px rgba(59, 130, 246, 0.3);
 
     /* Transitions */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: 500ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-fast: var(--duration-fast) var(--ease-in-out);
+    --transition-normal: var(--duration-normal) var(--ease-out);
+    --transition-smooth: var(--duration-slow) var(--ease-out);
 
     /* Premium Glass System - Ultra Clear */
     --glass-bg: rgba(10, 10, 15, 0.2);
@@ -64,6 +64,31 @@
     --glass-blur: blur(8px);
     /* Minimal Blur */
     --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    /* Claymorphism System */
+    --clay-bg: #232937;
+    --clay-border-radius: 32px;
+    --clay-shadow-outer: 0 16px 32px rgba(0, 0, 0, 0.25);
+    --clay-shadow-inner: inset 0 -8px 12px rgba(0, 0, 0, 0.3), inset 0 8px 12px rgba(255, 255, 255, 0.1);
+    --clay-shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.35);
+
+    /* Motion Design Tokens */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+    
+    --duration-fast: 150ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
+    --duration-very-slow: 1000ms;
+
+    /* Spacing Grid (8px based) */
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --space-6: 48px;
+    --space-8: 64px;
 }
 
 /* ===== Reset & Base ===== */

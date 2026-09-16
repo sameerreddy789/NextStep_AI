@@ -187,10 +187,23 @@
 
     /* Modals full width */
     .modal-content,
-    .custom-modal {
+    .custom-modal,
+    .dialog-content.clay-card {
         width: 92% !important;
         max-width: 92% !important;
         margin: 16px auto;
+        padding: 20px;
+        border-radius: 20px;
+    }
+
+    .clay-card {
+        padding: 16px;
+        border-radius: 24px;
+    }
+
+    .clay-btn {
+        width: 100%;
+        padding: 12px;
     }
 
     /* ===== Interview Page ===== */
