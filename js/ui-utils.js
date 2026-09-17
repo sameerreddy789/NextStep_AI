@@ -186,4 +186,5 @@ window.escapeHTML = escapeHTML;
 // @ts-ignore
 window.showConfirmDialog = showConfirmDialog;
 
+export { UIUtils };
 export default UIUtils;

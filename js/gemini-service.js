@@ -277,11 +277,36 @@ class GeminiService {
         const response = await this.#request(prompt);
         return this.#parseJSON(response);
     }
+    /**
+     * Legacy & convenience alias for analyzeResume
+     */
+    async analyzePDF(file, targetRole = 'sde', onProgress = null) {
+        return this.analyzeResume(file, targetRole, onProgress);
+    }
+
+    // Static facade methods for modules that call GeminiService directly as a namespace
+    static async analyzeResume(source, targetRole = 'sde', onProgress = null) {
+        return geminiService.analyzeResume(source, targetRole, onProgress);
+    }
+    static async analyzePDF(file, targetRole = 'sde', onProgress = null) {
+        return geminiService.analyzePDF(file, targetRole, onProgress);
+    }
+    static async generateQuestions(skills, role = 'sde', mode = 'mixed', count = 5) {
+        return geminiService.generateQuestions(skills, role, mode, count);
+    }
+    static async evaluateAnswer(question, answer) {
+        return geminiService.evaluateAnswer(question, answer);
+    }
+    static isAvailable() {
+        return geminiService.isAvailable();
+    }
 }
 
-// Exports
-export { GeminiService };
 export const geminiService = new GeminiService();
+export { GeminiService };
 export default geminiService;
+
 // Legacy Support
-window.GeminiService = geminiService;
+if (typeof window !== 'undefined') {
+    window.GeminiService = geminiService;
+}
