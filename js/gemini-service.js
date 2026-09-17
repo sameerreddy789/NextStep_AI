@@ -121,7 +121,8 @@ class GeminiService {
                             temperature: 0.7,
                             topK: 40,
                             topP: 0.95,
-                            maxOutputTokens: 8192
+                            maxOutputTokens: 8192,
+                            responseMimeType: 'application/json'
                         }
                     }),
                     signal
@@ -179,17 +180,30 @@ class GeminiService {
      * @private
      */
     #parseJSON(text) {
-        if (!text) return null;
-        const cleaned = text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+        if (!text || typeof text !== 'string') return null;
+        const cleaned = text.trim().replace(/^```[a-zA-Z]*\s*/i, '').replace(/\s*```$/i, '').trim();
         try {
             return JSON.parse(cleaned);
         } catch {
-            const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-            try {
-                return match ? JSON.parse(match[0]) : null;
-            } catch {
-                return null;
+            const firstBrace = text.indexOf('{');
+            const firstBracket = text.indexOf('[');
+            let start = -1;
+            let end = -1;
+            if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+                start = firstBrace;
+                end = text.lastIndexOf('}');
+            } else if (firstBracket !== -1) {
+                start = firstBracket;
+                end = text.lastIndexOf(']');
             }
+            if (start !== -1 && end > start) {
+                try {
+                    return JSON.parse(text.slice(start, end + 1));
+                } catch {
+                    return null;
+                }
+            }
+            return null;
         }
     }
 
@@ -206,21 +220,33 @@ class GeminiService {
      * Advanced Resume Analysis with Multimodal Support
      */
     async analyzeResume(source, targetRole = 'sde', onProgress = null) {
-        const isFile = source instanceof File;
+        const isFile = typeof File !== 'undefined' && source instanceof File;
         const base64 = isFile ? await this.#fileToBase64(source) : null;
         
-        const prompt = `You are a Senior Technical Recruiter. Analyze the provided resume for a ${targetRole} role.
-        
+        let prompt = `You are a Senior Technical Recruiter. Analyze the provided resume for a ${targetRole} role.\n`;
+        if (!isFile && typeof source === 'string') {
+            prompt += `\nRESUME CONTENT:\n${source}\n`;
+        }
+
+        prompt += `
         CRITICAL INSTRUCTIONS:
-        1. Extract EXACT technical skills and categorize them.
+        1. Extract EXACT technical skills and categorize them into present, partial, and missing.
         2. Evaluate experience for impact (use metrics if available).
-        3. Calculate a "Readiness Score" based on market demand for ${targetRole}.
+        3. Calculate a "Readiness Score" (0-100) based on market demand for ${targetRole}.
         4. Provide actionable ATS optimization tips.
 
         Few-Shot Example Output:
         {
             "skills": { "present": ["React", "Node.js"], "partial": ["Docker"], "missing": ["Kubernetes"] },
-            "atsScore": { "overall": 85, "suggestions": ["Quantify project impacts"] }
+            "atsScore": { "overall": 85, "suggestions": ["Quantify project impacts"] },
+            "score": 85,
+            "readiness": 80,
+            "experience": [
+                { "title": "Software Engineer", "company": "Tech Corp", "duration": "2 years" }
+            ],
+            "projects": [
+                { "name": "E-Commerce App", "tech": "React, Node.js" }
+            ]
         }
 
         RESPOND ONLY WITH JSON.`;
