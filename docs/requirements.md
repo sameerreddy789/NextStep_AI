@@ -11,7 +11,8 @@ This document specifies the requirements for the resume analysis and interview v
 **Platform Philosophy**: NextStep AI follows a continuous loop: **ASSESS → PLAN → PRACTICE → MEASURE → ADJUST → REPEAT**
 
 **This Feature's Role**: The resume analysis feature (resume.html) implements the **interview-aware workflow** (not interview-first):
-```
+
+```text
 Resume Upload → Instant Analysis → Results Display → CTA: "Take Instant Interview" → Validation → Readiness Score → Personalized Roadmap
 ```
 
@@ -24,6 +25,7 @@ The system performs deep AI analysis of resumes, conducts adaptive mock intervie
 ## Platform Context
 
 **NextStep AI** is a hybrid frontend application built with:
+
 - **HTML5, CSS3, JavaScript (ES6+)** - Vanilla JS for most pages
 - **React Components** - Used where interactivity demands it (code editor, complex UI)
 - **LocalStorage** - Client-side data persistence
@@ -34,12 +36,14 @@ The system performs deep AI analysis of resumes, conducts adaptive mock intervie
 **Why Hybrid Stack?**
 > "We use vanilla JS for most pages to keep things lightweight, and React components where interactivity demands it. No backend needed - proving this works even under low connectivity."
 
-**Target Audience**: Students, freshers, and career switchers worldwide
+**Target Audience**: Students, freshers, and career switchers worldwide:
+
 - 🎓 **Students**: "I don't know what companies expect"
 - 🌱 **Freshers**: "I freeze in interviews"
 - 🔄 **Career Switchers**: "I need a structured path"
 
 **Core Differentiators**:
+
 1. **Interview-Aware Validation** - Encourage (not force) interview validation with strong CTA
 2. **Readiness Score (0-100)** - Always visible in sidebar, updates live, transparent reasons
 3. **Language-Aware Learning** - 13+ languages supported (language as learning constraint)
@@ -52,6 +56,7 @@ The system performs deep AI analysis of resumes, conducts adaptive mock intervie
 This document covers the resume upload, simulated analysis, results display, interview encouragement, and structured storage within the NextStep AI platform.
 
 **In Scope**:
+
 - Resume upload and validation (resume.html)
 - Simulated AI-powered skill extraction (demo data for hackathon)
 - Results display with organized sections (skills, experience, projects)
@@ -63,6 +68,7 @@ This document covers the resume upload, simulated analysis, results display, int
 - **Production Deployment via Firebase Hosting**
 
 **Out of Scope** (covered by other platform features):
+
 - Interview module - full practice engine (interview.html)
 - Interview feedback and scoring (feedback.html)
 - Readiness score calculation algorithm (dashboard.html, sidebar.js)
@@ -101,7 +107,7 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a NextStep AI user, I want to upload my resume in common formats from the resume.html page, so that the system can analyze my skills and display results with a clear path to validation.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — File Upload and Validation
 
 1. WHEN a user uploads a file on resume.html, THE File_Validator SHALL verify the file format is PDF or DOC/DOCX
 2. WHEN a user uploads a file exceeding 10MB, THE File_Validator SHALL reject the upload and return a descriptive error message with glassmorphism-styled notification
@@ -117,7 +123,7 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a NextStep AI user, I want the system to analyze my resume and show me what skills I have, what's missing, and my overall readiness, so I can understand where I stand.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Simulated Resume Analysis
 
 1. WHEN resume upload completes, THE System SHALL display simulated analysis results using demo data
 2. THE analysis SHALL show three categories of skills: Present (✓ green), Partial (◐ yellow), Missing (✗ red)
@@ -133,7 +139,7 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a NextStep AI user, I want to see a clear call-to-action to validate my resume through an interview, so I can get verified skills for my roadmap.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Interview Encouragement CTA
 
 1. WHEN analysis results are displayed, THE System SHALL show a prominent warning: "⚠️ Resume Claims Need Validation"
 2. THE System SHALL display a large, glowing CTA button: "Take Instant Interview →"
@@ -148,7 +154,7 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a NextStep AI user, I want to see my resume analysis results organized clearly with visual indicators, so I can quickly understand my strengths and gaps.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Results Display and Organization
 
 1. THE results page SHALL display a stats grid with four key metrics: Resume Score, Skill Coverage, Missing Skills Count, Job Readiness
 2. THE stats SHALL use large numbers with descriptive labels and appropriate icons
@@ -164,7 +170,7 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a NextStep AI user, I want my resume data stored locally, so it's available across all platform features without requiring re-upload.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Data Persistence and Storage
 
 1. WHEN analysis completes, THE Data_Store SHALL persist resume data to LocalStorage with key 'careerPilot_resume'
 2. THE stored data SHALL include: score, coverage, readiness, skills (present/partial/missing), experience, projects
@@ -174,13 +180,14 @@ These features exist in the platform but are specified separately.
 6. WHEN storage fails (LocalStorage quota exceeded), THE System SHALL display an error and suggest clearing old data
 7. THE System SHALL provide a way to export resume data as JSON for backup
 8. THE System SHALL track upload timestamp and filename in metadata
-6. WHEN a user confirms the data, THE User_Interface SHALL submit the finalized extraction result for storage
+9. WHEN a user confirms the data, THE User_Interface SHALL submit the finalized extraction result for storage
 
 ### Requirement 6: Gemini AI Service (CORE)
 
 **User Story:** As a system component, I want a centralized AI service to handle complex analysis and evaluation, so that the platform can provide intelligent insights.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Gemini AI Service
+
 1. THE System SHALL implement GeminiService to interact with Google's Gemini-3.1-Flash-Lite model.
 2. THE Service SHALL support multimodal input (PDF resumes) for direct AI analysis without manual text extraction.
 3. THE Service SHALL implement exponential backoff retry logic for rate-limited (429) requests.
@@ -191,7 +198,8 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a user, I want an interview experience that adapts to my performance and provides instant feedback, so I can improve effectively.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Adaptive Interview Engine
+
 1. THE InterviewEngine SHALL dynamically select questions based on the candidate's target role and resume-claimed skills.
 2. THE Engine SHALL support "Mixed" mode (Technical + Behavioral) and "Specialized" modes.
 3. THE Engine SHALL implement "Speaker Toggle" for AI-guided voice interviews using Web Speech API.
@@ -203,18 +211,19 @@ These features exist in the platform but are specified separately.
 
 **User Story:** As a user, I want to see how my skills stack up against real-time industry demands, so I can focus on what matters.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Live Market Gap Analysis
+
 1. THE System SHALL use SerpAPI to fetch live job market trends and role requirements.
 2. THE SkillGapAnalyzer SHALL compare live market data with the user's verified skills using Gemini AI.
 3. THE Analyzer SHALL categorize gaps into: Must-Have, Good-to-Have, and Future-Proof.
 4. THE Analyzer SHALL provide AI-generated "Market Relevance Justifications" for each identified skill.
 5. THE User_Interface SHALL allow users to manually refresh analysis for different roles.
 
-### Requirement 8: Error Handling and Recovery
+### Requirement 9: Error Handling and Recovery
 
 **User Story:** As a user, I want clear error messages when something goes wrong, so that I understand what happened and can take corrective action.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Error Handling and Recovery
 
 1. WHEN any component encounters an error, THE System SHALL log the error with sufficient detail for debugging
 2. WHEN an error occurs during extraction, THE User_Interface SHALL display a user-friendly error message and offer to retry
@@ -222,11 +231,11 @@ These features exist in the platform but are specified separately.
 4. WHEN network connectivity is lost during upload, THE System SHALL preserve the upload state and allow resumption when connectivity is restored
 5. IF multiple consecutive errors occur, THEN THE System SHALL provide contact information for user support
 
-### Requirement 9: Resume Format Handling
+### Requirement 10: Resume Format Handling
 
 **User Story:** As a user, I want the system to handle various resume formats and layouts, so that my resume is processed regardless of how I formatted it.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Resume Format Handling
 
 1. WHEN a resume uses a multi-column layout, THE Resume_Parser SHALL extract text in logical reading order
 2. WHEN a resume contains tables, THE Resume_Parser SHALL extract table content and preserve structural relationships
@@ -234,11 +243,11 @@ These features exist in the platform but are specified separately.
 4. WHEN a resume uses non-standard fonts or formatting, THE Resume_Parser SHALL extract the underlying text content
 5. WHEN text extraction produces garbled or malformed output, THE System SHALL notify the user that the resume format may not be supported
 
-### Requirement 10: Data Privacy and Security
+### Requirement 11: Data Privacy and Security
 
 **User Story:** As a CareerPilot AI user, I want my resume data to be handled securely, so that my personal information is protected.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Data Privacy and Security
 
 1. THE System SHALL store all data in the browser's LocalStorage, ensuring data remains on the user's device only
 2. THE System SHALL not transmit resume data to external servers in the current implementation (frontend-only)
@@ -248,11 +257,11 @@ These features exist in the platform but are specified separately.
 6. WHEN backend integration is added (future enhancement), THE System SHALL not use resume data for AI training without explicit user consent
 7. THE System SHALL implement basic XSS protection by sanitizing user inputs before rendering
 
-### Requirement 11: Performance and Responsiveness
+### Requirement 12: Performance and Responsiveness
 
 **User Story:** As a CareerPilot AI user, I want resume analysis to complete quickly, so that I can proceed to other platform features without delay.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Performance and Responsiveness
 
 1. THE System SHALL complete resume extraction within 30 seconds under normal conditions
 2. IF extraction exceeds expected time, THE User_Interface SHALL display progress feedback with animated loading states matching CareerPilot's design system
@@ -261,11 +270,11 @@ These features exist in the platform but are specified separately.
 5. THE System SHALL provide smooth animations and micro-interactions consistent with CareerPilot's UX guidelines
 6. THE System SHALL lazy-load heavy libraries (PDF parser) to improve initial page load time
 
-### Requirement 12: Interview Code Editor (NEW)
+### Requirement 13: Interview Code Editor (NEW)
 
 **User Story:** As a user, I want a robust code editor during technical interviews to write, execute, and debug code in real-time.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Interview Code Editor
 
 1. **Monaco Editor Integration**: The system SHALL integrate the Monaco Editor (VS Code engine) for a familiar coding experience.
 2. **Language Support**: The editor SHALL support syntax highlighting and snippets for JavaScript, Python, and Java.
@@ -274,11 +283,11 @@ These features exist in the platform but are specified separately.
 5. **Auto-Save**: The system SHALL automatically save the user's code to LocalStorage to prevent data loss.
 6. **Theme Consistency**: The editor SHALL use a dark theme (`vs-dark`) that matches the application's design system.
 
-### Requirement 13: Interview-First Validation (NEW)
+### Requirement 14: Interview-First Validation (NEW)
 
 **User Story:** As a CareerPilot AI user, I want my resume claims to be validated through an instant interview, so that my roadmap is built from verified skills, not assumptions.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Interview-First Validation
 
 1. WHEN resume extraction completes, THE System SHALL automatically trigger a mandatory validation interview
 2. THE System SHALL display a notification: "⚠️ Resume Claims Need Validation" with a "Start Interview" button
@@ -289,11 +298,11 @@ These features exist in the platform but are specified separately.
 7. THE System SHALL store both resume claims and interview results for comparison
 8. THE User_Interface SHALL display a progress indicator: "Step 1/3: Resume Uploaded → Step 2/3: Interview → Step 3/3: Roadmap"
 
-### Requirement 14: Skill Reconciliation (NEW)
+### Requirement 15: Skill Reconciliation (NEW)
 
 **User Story:** As a CareerPilot AI user, I want the system to compare my resume claims with my interview performance, so that I get an honest assessment of my skills.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Skill Reconciliation
 
 1. WHEN interview completes, THE Skill_Reconciler SHALL compare resume-claimed skills with interview-demonstrated skills
 2. THE Skill_Reconciler SHALL categorize each skill as: "Verified", "Over-Claimed", or "Under-Demonstrated"
@@ -305,11 +314,11 @@ These features exist in the platform but are specified separately.
 8. THE reconciled skill set (not raw resume data) SHALL be used for roadmap generation
 9. THE System SHALL provide explanations for each discrepancy (e.g., "Arrays: Claimed 'Expert' but failed medium-level question")
 
-### Requirement 15: Readiness Score Integration (NEW)
+### Requirement 16: Readiness Score Integration (NEW)
 
 **User Story:** As a CareerPilot AI user, I want to see my interview readiness score (0-100) update after resume validation, so that I understand my starting point.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Readiness Score Integration
 
 1. WHEN skill reconciliation completes, THE System SHALL calculate an initial readiness score (0-100)
 2. THE readiness score SHALL be based on: verified skills count, experience level, claim accuracy, and interview performance
@@ -320,9 +329,11 @@ These features exist in the platform but are specified separately.
 7. WHEN the score updates, THE System SHALL show the change with a +/- indicator and reason (e.g., "+5% - Arrays interview passed")
 8. THE sidebar readiness widget SHALL be clickable and navigate to a detailed breakdown page
 
+### Requirement 17: Platform Integration (NEW)
+
 **User Story:** As a CareerPilot AI user, I want my resume data to seamlessly integrate with other platform features, so I can get a complete career development experience.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Platform Integration
 
 1. WHEN resume extraction completes, THE System SHALL update the dashboard.html with profile completion status
 2. THE extracted technical skills SHALL be available to skill-gap.html for comparison against job requirements
@@ -333,11 +344,11 @@ These features exist in the platform but are specified separately.
 7. WHEN a user navigates from resume.html to other features, THE System SHALL preserve extraction state
 8. THE System SHALL display consistent UI components (cards, buttons, notifications) using the global styles.css design system
 
-### Requirement 16: Roadmap Completion Celebration (NEW)
+### Requirement 18: Roadmap Completion Celebration (NEW)
 
 **User Story:** As a NextStep AI user, I want to see a congratulatory popup when I complete my roadmap, with options to apply for jobs or explore related skills, so I can take the next step in my career journey.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Roadmap Completion Celebration
 
 1. WHEN all roadmap tasks are marked as complete, THE System SHALL display a congratulatory popup modal
 2. THE popup SHALL display completion statistics: weeks completed, total tasks finished, and "100% Job Ready" indicator
@@ -352,11 +363,11 @@ These features exist in the platform but are specified separately.
 9. THE System SHALL allow users to close the popup and return to the roadmap page
 10. THE popup SHALL re-appear on page load if all tasks remain complete, allowing users to access job links and skills at any time
 
-### Requirement 17: UI/UX Enhancements (NEW)
+### Requirement 19: UI/UX Enhancements (NEW)
 
 **User Story:** As a NextStep AI user, I want a polished, responsive, and accessible interface with helpful feedback, so I can use the platform comfortably on any device and have a professional experience.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — UI/UX Enhancements
 
 1. **Toast Notifications**:
    - THE System SHALL implement a toast notification system with 4 types: success, error, warning, info
@@ -410,15 +421,15 @@ These features exist in the platform but are specified separately.
    - THE System SHALL lazy-load heavy components
    - THE System SHALL maintain 60fps animations
    - THE System SHALL minimize JavaScript execution on scroll
-### Requirement 18: Deployment & Hosting (NEW)
+
+### Requirement 20: Deployment & Hosting (NEW)
 
 **User Story:** As a user, I want to access the platform via a reliable, public URL, so that I can use it from any device without local setup.
 
-#### Acceptance Criteria
+#### Acceptance Criteria — Deployment & Hosting
 
 1. **Firebase Hosting**: The application SHALL be deployed to Firebase Hosting for global availability.
 2. **CDN Delivery**: Static assets (HTML, CSS, JS) SHALL be served via Firebase's global CDN for low latency.
 3. **SSL Security**: The application SHALL be served over HTTPS with a valid SSL certificate.
 4. **Cache Control**: The hosting configuration SHALL implement appropriate cache-control headers for static assets (long cache for hashed assets, no-cache for HTML).
 5. **Clean URLs**: The hosting configuration SHALL support clean URLs (dropping .html extensions where possible).
-
